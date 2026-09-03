@@ -38,3 +38,19 @@
 - LEARN: ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws chainable to ATO
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+## RANKED HYPOTHESES 2026-09-03 22:27:33 UTC
+- [72] api.smartcard.elringklinger.com: Smartcard API versioned endpoint enumeration via path traversal (from art/lead_bigpickle.txt)
+- [65] api.smartcard.elringklinger.com: Smartcard API — Versioned Endpoint Enumeration + Backend Downtime Info Leak (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: Test Smartcard API versioned endpoints with exact requests:
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://api.smartcard.elringklinger.com/api/v2/ && GET https://api.smartcard.elringklinger.com/api/beta/ && GET https://api.smartcard.elringklinger.c
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Versioned endpoints likely exist based on 404 at root. Auth systems are high-value targets per directives.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot API error discrimination confirms method-level authorization logic. Enumeration may reveal accessible en
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
+- LEARN: REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/* returns 502 confirming versioned endpoint exists with live backend routing — auth systems high-value 
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api returns 200 JSON with err_code discrimination (1 vs 49) proving auth logic executes pre-rejection; 
+- LEARN: ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws chainable to ATO
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives

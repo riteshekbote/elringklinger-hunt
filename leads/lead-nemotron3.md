@@ -108,3 +108,54 @@ testability: PASSIVE
 [LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
 [RISK] elringklinger: 78 — 13 dedicated hosts with 2 confirmed live high-value APIs (smartcard /api/v1/ 502, Pardot /api 405) + 2 unprobed EDI B2B; active testing now 2/13; smartcard auth + Pardot business logic + EDI IDOR cover top-3 directive classes (AUTH, BUSLOGIC, IDOR); 502 on /api/v1/ may leak debug/stack traces on retry
+## 2026-09-03 22:27:21 UTC [target] (model nemotron3)
+[NEW] `api.smartcard.elringklinger.com/api/v1/*` all return HTTP 502 (nginx gateway) — backend consistently down, no debug/stack traces leaked in responses
+[NEW] `go.events.elringklinger.com/api?method=getCampaigns&version=3` returns HTTP 200 JSON with `err_code:1` (invalid key) — confirms method enumeration works, version param accepted, auth logic executes pre-rejection
+[NEW] `go.events.elringklinger.com/api?method=getVersion` returns HTTP 200 JSON with `err_code:1` — version endpoint accessible without valid key
+[CHANGED] Pardot API error code discrimination confirmed: `err_code:1` (invalid key) vs earlier `err_code:49` (method not found) — proves method-level auth logic
+[CHANGED] Probe coverage: 2/13 hosts tested with deeper endpoint enumeration (was 2/13 basic)
+[PRIO] api.smartcard.elringklinger.com,7.80,attack_surface=8,business_value=9,tech_exposure=7,gate_ease=7,cloud_surface=7,freshness=8
+[PRIO] go.events.elringklinger.com,8.25,attack_surface=9,business_value=7,tech_exposure=9,gate_ease=9,cloud_surface=8,freshness=9
+[PRIO] edi2.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] edi7.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] dtspc-tst.elringklinger.com,7.15,attack_surface=8,business_value=5,tech_exposure=8,gate_ease=8,cloud_surface=7,freshness=8
+[HYP] Smartcard API — Versioned Endpoint Enumeration + Backend Downtime Info Leak
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 65
+reasoning: /api/v1/ returns 502 confirming versioned path exists; "smartcard" naming implies auth token/card provisioning; all sub-endpoints (/health, /actuator/health, /auth/login) return identical 502 — consistent backend routing but no debug info leaked. Need to enumerate v2, v3, beta, internal paths and check for framework fingerprints (Spring Boot actuator, Swagger)
+evidence_needed: Existence of /api/v2/, /api/beta/, /swagger.json, /openapi.json, /.well-known/openid-configuration; framework headers (Spring, Node, Go); JWT/OAuth2 token structure
+verify_steps: GET /api/v2/, GET /api/beta/, GET /api/internal/, GET /swagger.json, GET /openapi.json, GET /.well-known/openid-configuration (all GET/HEAD, no auth)
+impact: Token forgery, session hijacking, unauthorized card provisioning — CRITICAL
+testability: PASSIVE
+[HYP] Events Platform — Pardot API Method Enumeration + Unauthenticated Endpoint Discovery
+class: BUSLOGIC
+asset: go.events.elringklinger.com
+confidence: 80
+reasoning: /api accepts version param (v3 works), returns JSON with err_code discrimination (1=invalid key, 49=method not found per prior finding); OPTIONS returns 200 with Pardot headers; GET getCampaigns+getVersion return 200 JSON proving method enumeration viable; POST getProspects returns 405 suggesting method exists but requires POST. Need to enumerate all Pardot API methods (getProspects, getCampaigns, getEmails, getLists, getTags, getVisitors, getOpportunities, queryProspects) and test which return data without valid api_key/user_key
+evidence_needed: Complete method list from Pardot API docs; which methods allow GET vs POST; whether any method returns data with invalid/empty keys; rate limits
+verify_steps: GET /api?api_key=test&method=getEmails&format=json&version=3, GET /api?api_key=test&method=getLists&format=json&version=3, GET /api?api_key=test&method=getTags&format=json&version=3, GET /api?api_key=test&method=getVisitors&format=json&version=3, GET /api?api_key=test&method=queryProspects&format=json&version=3 (all GET, no auth)
+impact: Marketing PII disclosure (emails, names, campaign engagement, prospect scores), prospect enumeration — MEDIUM-HIGH
+testability: PASSIVE
+[HYP] EDI Endpoints — IDOR/BOLA on Partner Document Exchange
+class: IDOR
+asset: edi2.elringklinger.com
+confidence: 60
+reasoning: EDI hosts (edi2, edi7) handle B2B document exchange (orders, invoices, ASNs). Multi-tenant EDI platforms frequently expose document IDs in paths (/documents/{id}, /partners/{id}/messages) with missing authorization checks. Both hosts completely unprobed — no HTTP status, no tech stack info
+evidence_needed: API structure (REST/soap); document/partner ID format; auth model (API key, cert, basic); cross-tenant access control
+verify_steps: GET /, GET /api/, GET /v1/, GET /health, GET /actuator/health, GET /docs, GET /swagger.json (all GET/HEAD, no auth)
+impact: Cross-partner PII/commercial data disclosure (orders, invoices, pricing), supply chain manipulation — HIGH
+testability: PASSIVE
+[PARKED] Smartcard API — Versioned Endpoint Enumeration + Backend Downtime Info Leak: confidence 65 ≥ 40, class AUTH not rejected, verify_steps concrete — KEPT
+[PARKED] Events Platform — Pardot API Method Enumeration + Unauthenticated Endpoint Discovery: confidence 80 ≥ 40, class BUSLOGIC not rejected, verify_steps concrete — KEPT
+[PARKED] EDI Endpoints — IDOR/BOLA on Partner Document Exchange: confidence 60 ≥ 40, class IDOR not rejected, verify_steps concrete — KEPT
+[FINAL] 1. Events Platform — Pardot API Method Enumeration + Unauthenticated Endpoint Discovery (80)
+[FINAL] 2. Smartcard API — Versioned Endpoint Enumeration + Backend Downtime Info Leak (65)
+[FINAL] 3. EDI Endpoints — IDOR/BOLA on Partner Document Exchange (60)
+[NEXT] PROBE: GET https://api.smartcard.elringklinger.com/api/v2/ && GET https://api.smartcard.elringklinger.com/api/beta/ && GET https://api.smartcard.elringklinger.com/swagger.json && GET https://api.smartcard.elringklinger.com/openapi.json && GET https://api.smartcard.elringklinger.com/.well-known/openid-configuration && GET https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json&version=3 && GET https://go.events.elringklinger.com/api?api_key=test&method=getLists&format=json&version=3 && GET https://go.events.elringklinger.com/api?api_key=test&method=getTags&format=json&version=3 && GET https://go.events.elringklinger.com/api?api_key=test&method=getVisitors&format=json&version=3 && GET https://go.events.elringklinger.com/api?api_key=test&method=queryProspects&format=json&version=3 (GET/HEAD only, 1 rps, no auth)
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/* returns 502 confirming versioned endpoint exists with live backend routing — auth systems high-value per directives
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api returns 200 JSON with err_code discrimination (1 vs 49) proving auth logic executes pre-rejection; method enumeration viable with version param
+[LEARN] ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws chainable to ATO
+[LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
+[LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+[RISK] elringklinger: 80 — 13 dedicated hosts with 2 confirmed live high-value APIs (smartcard /api/v1/ 502 backend routing, Pardot /api 200 JSON method enumeration) + 2 unprobed EDI B2B; active testing now 2/13 with deep endpoint coverage; Pardot method enumeration (confidence 80) + smartcard versioned auth (65) + EDI IDOR (60) cover top-3 directive classes (BUSLOGIC, AUTH, IDOR); 502 on smartcard may leak debug on edge/retry; Pardot unauthenticated method discovery is immediate next win

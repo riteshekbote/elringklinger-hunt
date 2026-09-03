@@ -53,3 +53,13 @@ www.elringklinger.com
 - NEW `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 (Bad Gateway) — endpoint exists but backend down, confirming versioned API path `/api/v1/` is real
 - NEW `go.events.elringklinger.com/api` returns HTTP 405 for multiple method params — Pardot API endpoint confirmed live, processes auth logic before rejection (error codes 1 vs 49 per earlier finding)
 - CHANGED Probe coverage: 2/13 hosts actively tested (was 0/13)
+
+## 2026-09-03 22:27:33 UTC
+- NEW `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 — live backend, versioned path confirmed
+- NEW `go.events.elringklinger.com/api` returns HTTP 405 with method-specific error codes (1 vs 49) — Pardot API live
+- CHANGED Probe coverage: 2/13 hosts actively tested (was 0/13)
+- NEW `api.smartcard.elringklinger.com/api/v1/*` all return HTTP 502 (nginx gateway) — backend consistently down, no debug/stack traces leaked in responses
+- NEW `go.events.elringklinger.com/api?method=getCampaigns&version=3` returns HTTP 200 JSON with `err_code:1` (invalid key) — confirms method enumeration works, version param accepted, auth logic executes p
+- NEW `go.events.elringklinger.com/api?method=getVersion` returns HTTP 200 JSON with `err_code:1` — version endpoint accessible without valid key
+- CHANGED Pardot API error code discrimination confirmed: `err_code:1` (invalid key) vs earlier `err_code:49` (method not found) — proves method-level auth logic
+- CHANGED Probe coverage: 2/13 hosts tested with deeper endpoint enumeration (was 2/13 basic)

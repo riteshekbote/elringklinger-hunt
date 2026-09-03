@@ -1,4 +1,7 @@
-## 2026-09-03 19:44:15 UTC [target] (model bigpickle)
+## 2026-09-03 22:25:10 UTC [target] (model bigpickle)
+[NEW] `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 — live backend, versioned path confirmed
+[NEW] `go.events.elringklinger.com/api` returns HTTP 405 with method-specific error codes (1 vs 49) — Pardot API live
+[CHANGED] Probe coverage: 2/13 hosts actively tested (was 0/13)
 [PRIO] api.smartcard.elringklinger.com, 7.8, surface=8(auth/API), value=8(PHI/credentials), tech=9(versioned API), gate=6(requires valid API key), cloud=3, freshness=7
 [PRIO] go.events.elringklinger.com, 6.5, surface=7(Pardot+OAuth), value=7(marketing PII), tech=8(OAuth flow), gate=5(Pardot API key), cloud=2, freshness=6
 [PRIO] edi2.elringklinger.com, 6.2, surface=7(EDI/B2B), value=8(business docs), tech=6(EDI protocols), gate=4(multi-tenant), cloud=1, freshness=5
@@ -41,4 +44,4 @@ testability: AUTH_HELPED
 [LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
 [LEARN] REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
-[RISK] elringklinger: 65/100. Surface is moderate — 13 dedicated hosts, 3 with HTTP responses, 1 API endpoint returning 404 (likely versioned). Program scope is broad ("all company-owned infrastructure") but discoverable attack surface is limited to:
+[RISK] elringklinger: 65/100. Surface is moderate — 13 dedicated hosts, 3 with HTTP responses, 1 API endpoint returning 404 (likely versioned). Program scope is broad ("all company-owned infrastructure") but discoverable attack surface is limited to 3 active targets (Smartcard API, Pardot API, EDI). No high-value APIs accessible without auth. Best bet is versioned endpoint enumeration on Smartcard API or finding unprotected Pardot methods.
