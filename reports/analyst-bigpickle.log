@@ -1,0 +1,585 @@
+===== ANALYST bigpickle 2026-09-03 17:06:41 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m• [0mExplore workspace structure[90m Explore Agent[0m
+[0m• [0mFind scope and config files[90m Explore Agent[0m
+[0m✓ [0mExplore workspace structure[90m Explore Agent[0m
+[0m✓ [0mFind scope and config files[90m Explore Agent[0m
+[0m→ [0mRead recon-notes/DEEPER-FINDINGS.md
+[0m→ [0mRead recon-notes/DEDICATED-DEEP.md
+[0m→ [0mRead leads/lead-mimo.md
+[0m→ [0mRead reports/hypotheses.md
+[0m→ [0mRead reports/valid-bugs.md
+[0m→ [0mRead triage/run-2026-09-03-12-53.md
+[0m→ [0mRead leads/reposcan-elringklinger.md
+[0m
+[0m$ [0mcurl -sS -o /dev/null -w "HTTP %{http_code} | redirect: %{redirect_url} | Server: %{header_json}" --max-time 10 -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com/" 2>&1 || echo "CONNECT_FAILED"
+HTTP 404 | redirect:  | Server: {"server":["nginx"],
+"date":["Thu, 03 Sep 2026 16:59:52 GMT"],
+"content-type":["text/html"],
+"content-length":["146"],
+"vary":["Accept-Encoding"],
+"x-xss-protection":["1; mode=block"],
+"x-content-type-options":["nosniff"],
+"referrer-policy":["no-referrer-when-downgrade"],
+"permissions-policy":["interest-cohort=()"],
+"strict-transport-security":["max-age=31536000; includeSubDomains"],
+"content-security-policy":["default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-ancestors 'self';"]
+}
+[0m
+[0m$ [0mcurl -sS -D- -o /dev/null --max-time 10 -A "Mozilla/5.0" "https://ir.elringklinger.com/" 2>&1 | head -30
+HTTP/2 301 
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';
+location: https://elringklinger.de/investor-relations
+cache-control: max-age=0
+expires: Thu, 03 Sep 2026 16:59:53 GMT
+content-length: 362
+content-type: text/html; charset=iso-8859-1
+date: Thu, 03 Sep 2026 16:59:53 GMT
+server: Apache
+[0m
+[0m$ [0mcurl -sS -o /dev/null -w "HTTP %{http_code} | redirect: %{redirect_url} | Server: %{header_json}" --max-time 10 -L -A "Mozilla/5.0" "https://go.events.elringklinger.com/" 2>&1; echo "---"; curl -sS -D- -o /dev/null --max-time 10 -A "Mozilla/5.0" "https://go.events.elringklinger.com/" 2>&1 | head -30
+HTTP 200 | redirect:  | Server: {"content-language":["en-US"],
+"cache-control":["private, no-store","max-age=0"],
+"strict-transport-security":["max-age=31536000; includeSubDomains; preload"],
+"content-security-policy":["default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';"],
+"content-length":["210594"],
+"expires":["Thu, 03 Sep 2026 16:59:53 GMT"],
+"vary":["Accept-Encoding"],
+"x-ua-compatible":["IE=edge"],
+"x-content-type-options":["nosniff"],
+"x-frame-options":["SAMEORIGIN"],
+"referrer-policy":["strict-origin-when-cross-origin"],
+"permissions-policy":["microphone=(), camera=()"],
+"content-type":["text/html; charset=utf-8"],
+"date":["Thu, 03 Sep 2026 16:59:53 GMT"],
+"server":["Apache"]
+}---
+HTTP/1.1 302 Found
+Date: Thu, 03 Sep 2026 16:59:54 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sat, 02 Sep 2028 16:59:54 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+Now I'll probe the highest-value unprobed hosts to gather intelligence for hypothesis generation.
+[0m$ [0mcurl -sS -o /dev/null -w "HTTP %{http_code} | %{redirect_url} | Server: %{header_json}" --max-time 10 -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" "https://dtspc-tst.elringklinger.com/" 2>&1 || echo "CONNECT_FAILED"
+curl: (28) Connection timed out after 10002 milliseconds
+HTTP 000 |  | Server: {
+}CONNECT_FAILED
+[0m
+[0m$ [0mcurl -sS -D- -o /dev/null --max-time 10 -A "Mozilla/5.0" "http://dtspc-tst.elringklinger.com/" 2>&1 | head -30
+curl: (28) Connection timed out after 10001 milliseconds
+[0m
+[0m$ [0mfor host in aircontrol.elringklinger.com avconf.elringklinger.com cctv.elringklinger.com cgline.elringklinger.com edi2.elringklinger.com edi7.elringklinger.com ektrcctv.elringklinger.com fwasvvideo1.elringklinger.com imap.elringklinger.com; do echo "=== $host ==="; curl -sS -D- -o /dev/null --max-time 8 -A "Mozilla/5.0" "https://$host/" 2>&1 | head -20; echo; done
+=== aircontrol.elringklinger.com ===
+curl: (28) Connection timed out after 8001 milliseconds
+
+=== avconf.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== cctv.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== cgline.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== edi2.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== edi7.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== ektrcctv.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+
+=== fwasvvideo1.elringklinger.com ===
+curl: (7) Failed to connect to fwasvvideo1.elringklinger.com port 443 after 219 ms: Couldn't connect to server
+
+=== imap.elringklinger.com ===
+curl: (28) Connection timed out after 8002 milliseconds
+[0m
+[0m$ [0mcurl -sS --max-time 10 -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com/" 2>&1
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mfor path in /api /v1 /v2 /graphql /docs /swagger /openapi.json /.env /admin /login /health /status /robots.txt /sitemap.xml /api/health /api/docs /api/swagger /api/config /api/status /api/info /api/version; do echo -n "$path → "; curl -sS -o /dev/null -w "%{http_code}" --max-time 6 -A "Mozilla/5.0" "https://go.events.elringklinger.com${path}" 2>&1; echo; done
+/api → 401
+/v1 → 302
+/v2 → 302
+/graphql → 302
+/docs → 302
+/swagger → 302
+/openapi.json → 302
+/.env → 302
+/admin → 302
+/login → 302
+/health → 302
+/status → 302
+/robots.txt → 200
+/sitemap.xml → 302
+/api/health → 401
+/api/docs → 401
+/api/swagger → 401
+/api/config → 401
+/api/status → 401
+/api/info → 401
+/api/version → 401
+[0m
+[0m$ [0mfor path in /api /v1 /v2 /graphql /docs /swagger /openapi.json /.env /admin /login /health /status /api/v1 /api/v2 /robots.txt /sitemap.xml /api/health /api/docs /api/swagger /api/openapi.json /.git/config /server-info /debug /test /api/users /api/auth /api/login /api/config /api/status /api/info /api/version; do echo -n "$path → "; curl -sS -o /dev/null -w "%{http_code}" --max-time 6 -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com${path}" 2>&1; echo; done
+/api → 502
+/v1 → 404
+/v2 → 404
+/graphql → 404
+/docs → 404
+/swagger → 404
+/openapi.json → 404
+/.env → 404
+/admin → 404
+/login → 404
+/health → 404
+/status → 404
+/api/v1 → 502
+/api/v2 → 502
+/robots.txt → 200
+/sitemap.xml → 404
+/api/health → 502
+/api/docs → 502
+/api/swagger → 502
+/api/openapi.json → 502
+/.git/config → 404
+/server-info → 404
+/debug → 404
+/test → 404
+/api/users → 502
+/api/auth → 502
+/api/login → 502
+/api/config → 502
+/api/status → 502
+/api/info → 502
+/api/version → 502
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com/robots.txt" 2>&1
+User-agent: *
+Disallow: /
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://go.events.elringklinger.com/robots.txt" 2>&1
+User-agent: *
+Disallow: /webmail/
+Disallow: /shared/webmail/
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com/api" 2>&1 | head -50
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://go.events.elringklinger.com/api" 2>&1 | head -50
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0mcurl -sS --max-time 10 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/" 2>&1 | grep -iE "location|set-cookie|pardot|salesforce|cookie" | head -20
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://api.smartcard.elringklinger.com/api" 2>&1 | head -30
+HTTP/2 502 
+server: nginx
+date: Thu, 03 Sep 2026 17:02:38 GMT
+content-type: text/html
+content-length: 150
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+referrer-policy: no-referrer-when-downgrade
+permissions-policy: interest-cohort=()
+strict-transport-security: max-age=31536000; includeSubDomains
+content-security-policy: default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-ancestors 'self';
+
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" -X POST "https://go.events.elringklinger.com/api" 2>&1 | head -20
+HTTP/1.1 401 Unauthorized
+Date: Thu, 03 Sep 2026 17:02:39 GMT
+Content-Type: application/json
+Content-Length: 37
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+{"code":49,"message":"Access Denied"}
+[0m
+[0m$ [0mcurl -sS --max-time 10 -A "Mozilla/5.0" -I "https://go.events.elringklinger.com/" 2>&1 | head -30
+HTTP/1.1 302 Found
+Date: Thu, 03 Sep 2026 17:02:39 GMT
+Content-Type: text/html; charset=UTF-8
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sat, 02 Sep 2028 17:02:39 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/api?method=getCampaigns" 2>&1 | head -20
+HTTP/1.1 401 Unauthorized
+Date: Thu, 03 Sep 2026 17:02:41 GMT
+Content-Type: application/json
+Content-Length: 79
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: Accept-Encoding,User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0mcurl -sS --max-time 10 -A "Mozilla/5.0" -D- "https://elringklinger.com/" 2>&1 | grep -iE "server|x-powered|set-cookie|location|framework|wp-|laravel|django|express|asp\.net" | head -20
+location: https://elringklinger.de/en/
+server: Apache
+<address>Apache Server at elringklinger.com Port 443</address>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/?utm_source=test" 2>&1 | grep -iE "location" | head -5
+location: http://elringklinger.com
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/?pi_campaign=test" 2>&1 | grep -iE "location" | head -5
+location: http://elringklinger.com
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/?email=test@test.com" 2>&1 | grep -iE "location|set-cookie|pardot" | head -10
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://go.events.elringklinger.com/api?api_key=test" 2>&1 | head -20
+HTTP/1.1 200 OK
+Date: Thu, 03 Sep 2026 17:03:08 GMT
+Content-Type: text/xml; charset=utf-8
+Content-Length: 129
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: Accept-Encoding,User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 10 -D- -A "Mozilla/5.0" "https://elringklinger.de/" 2>&1 | grep -iE "server|x-powered|framework|wp-|laravel|django|express|asp\.net|joomla|drupal|typo3|generator" | head -10
+server: Apache
+	This website is powered by TYPO3 - inspiring people to share!
+	TYPO3 is a free open source Content Management Framework initially created by Kasper Skaarhoj and licensed under GNU/GPL.
+	TYPO3 is copyright 1998-2026 of Kasper Skaarhoj. Extensions are copyright of their respective owners.
+	Information and contribution at https://typo3.org/
+<meta name="generator" content="TYPO3 CMS">
+<link rel="stylesheet" href="/typo3temp/assets/css/4a387a0811b3f95243ec83f2d43630e0.css?1777362611" media="all">
+     <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="857ede29-a77b-4749-844f-d28fa3cb1398" type="text/javascript" async></script><link rel="apple-touch-icon" sizes="76x76" href="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_d2784eed47.png"><link rel="apple-touch-icon" sizes="120x120" href="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_ae2ebd4527.png"><link rel="apple-touch-icon" sizes="152x152" href="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_526a793b01.png"><link rel="apple-touch-icon" sizes="180x180" href="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_04b72d722b.png"><link rel="icon" type="image/png" sizes="192x192" href="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_c92da31c00.png"><meta name="msapplication-square70x70logo" content="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_0ef1ab3739.png"/><meta name="msapplication-square150x150logo" content="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_89fa1f865c.png"/><meta name="msapplication-square310x310logo" content="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_2497f8267b.png"/><meta name="msapplication-square310x310logo" content="/typo3temp/assets/_processed_/c/b/csm_touch_icon_big_2497f8267b.png"/>     <!-- Matomo -->
+<div class="page"><header class="header"><div class="container-fluid header-inner"><div class="logo"><a href="/"><?xml version="1.0" encoding="utf-8"?><!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  --><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+    xmlns:f='http://typo3.org/ns/TYPO3Fluid/Fluid/ViewHelpers'
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://go.events.elringklinger.com/api?api_key=test&version=2" 2>&1
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://go.events.elringklinger.com/api?api_key=test&version=3" 2>&1
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://go.events.elringklinger.com/api?api_key=test&format=json" 2>&1
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+[0m
+[0m$ [0mfor path in /typo3/ /typo3conf/ /typo3conf/ext/ /typo3conf/localconf.php /typo3conf/LocalConfiguration.php /typo3temp/ /typo3/sysext/ /typo3/index.php /typo3/login /typo3/mod.php /typo3/ajax.php /typo3conf/ext/ /fileadmin/ /typo3conf/ext/localconf.php; do echo -n "$path → "; curl -sS -o /dev/null -w "%{http_code}" --max-time 6 -A "Mozilla/5.0" "https://elringklinger.de${path}" 2>&1; echo; done
+/typo3/ → 401
+/typo3conf/ → 403
+/typo3conf/ext/ → 301
+/typo3conf/localconf.php → 404
+/typo3conf/LocalConfiguration.php → 404
+/typo3temp/ → 200
+/typo3/sysext/ → 301
+/typo3/index.php → 200
+/typo3/login → 200
+/typo3/mod.php → 302
+/typo3/ajax.php → 302
+/typo3conf/ext/ → 301
+/fileadmin/ → 403
+/typo3conf/ext/localconf.php → 404
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://elringklinger.de/typo3/index.php" 2>&1 | head -100
+...output truncated...
+
+Full output saved to: /home/runner/.local/share/opencode/tool-output/tool_06839f88d001EbjxgGbU674skw
+
+<script nonce="wzmyGv3v3s-_4aYkawGWucy5LBg08nlcpT0bKXzD2-lcmBzIvFKYwA">Object.assign(globalThis, {"litNonce":"wzmyGv3v3s-_4aYkawGWucy5LBg08nlcpT0bKXzD2-lcmBzIvFKYwA","TYPO3":{"settings":{"ajaxUrls":{"login":"\/typo3\/ajax\/login","logout":"\/typo3\/ajax\/logout","login_preflight":"\/typo3\/ajax\/login\/preflight","login_timedout":"\/typo3\/ajax\/login\/timedout?skipSessionUpdate=1"},"cssUrls":{"backend":"\/_assets\/081fa96a07de1dccb64a8a83e1567439\/Css\/backend.css?1786432642"},"cache":{"iconCacheIdentifier":"41b2406a282d43479836b7f809ce50df5779de6d"}}}})</script>
+<script type="module" async="async" src="/_assets/1ee1d3e909b58d32e30dcea666dd3224/JavaScript/Contrib/bootstrap.js?bust=28582ef99b54147c9981fdc09716da257caa3ee3"></script>
+<script type="module" async="async" src="/_assets/081fa96a07de1dccb64a8a83e1567439/JavaScript/login.js?bust=28582ef99b54147c9981fdc09716da257caa3ee3"></script>
+<script type="module" async="async" src="/_assets/081fa96a07de1dccb64a8a83e1567439/JavaScript/user-pass-login.js?bust=28582ef99b54147c9981fdc09716da257caa3ee3"></script>
+
+
+
+
+
+</head>
+<body>
+
+
+
+
+
+
+
+
+
+<div class="typo3-login">
+    <div class="typo3-login-inner">
+        <div class="typo3-login-container">
+            <div class="typo3-login-wrap">
+                <div class="card card-login">
+                    <header class="card-heading">
+                        <h1 class="visually-hidden">Login</h1>
+                        <div class="typo3-login-logo"><svg xmlns:xlink="http://www.w3.org/1999/xlink" id="Ebene_1" x="0px" y="0px" width="178px" height="64px" viewBox="0 0 178 64" xml:space="preserve" aria-hidden="true">
+<g>
+	<path fill="#024CA3" d="M72.571,13.351c0.222,1.642,0.251,2.725,0.251,4.118V35.34h3.734V17.469c0-2.105-0.056-3.964-0.223-5.14   L72.571,13.351z M80.292,19.483l-3.652,6.875l4.794,8.981h4.405l-5.603-9.229l4.544-6.627H80.292z"/>
+	<path fill="#024CA3" d="M90.485,12.421l-3.819,0.96c0.139,1.426,0.195,2.694,0.195,4.77v11.831c0,2.26,0.056,2.756,0.334,3.561   c0.446,1.334,1.728,2.17,3.316,2.17c0.809,0,1.59-0.155,2.23-0.436l-0.641-2.476c-0.195,0.062-0.279,0.062-0.418,0.062   c-0.306,0-0.613-0.156-0.752-0.434c-0.223-0.435-0.25-0.805-0.25-3.529V16.542C90.68,14.312,90.624,13.288,90.485,12.421"/>
+	<path fill="#024CA3" d="M97.417,12.547c-1.281,0-2.341,1.146-2.341,2.571c0,1.424,1.03,2.569,2.285,2.569   c1.282,0,2.312-1.145,2.312-2.569C99.674,13.693,98.671,12.547,97.417,12.547 M95.494,19.763v15.579h3.735v-16.23L95.494,19.763z"/>
+	<path fill="#024CA3" d="M102.592,20.134c0.334,1.052,0.503,2.353,0.503,3.716v11.49h3.733V24.128   c0.864-0.868,1.84-1.424,2.593-1.424c0.976,0,1.254,0.526,1.254,2.322V35.34h3.68V23.756c0-0.99-0.084-1.671-0.28-2.26   c-0.444-1.363-1.839-2.293-3.428-2.293c-0.835,0-1.811,0.249-2.564,0.682c-0.613,0.373-1.086,0.744-1.644,1.177   c0-0.65-0.195-1.332-0.529-1.984L102.592,20.134z"/>
+	<path fill="#024CA3" d="M123.244,22.239c1.421,0,2.257,0.867,2.257,2.354c0,1.456-0.809,2.261-2.286,2.261   c-1.311,0-2.201-0.65-2.201-2.261C121.014,23.106,121.821,22.239,123.244,22.239 M130.546,18.585   c-0.865,0.867-1.923,1.363-2.955,1.363c-0.474,0-0.976-0.125-1.756-0.341c-1.03-0.279-1.756-0.402-2.563-0.402   c-3.651,0-6.021,2.106-6.021,5.357c0,2.354,1.004,3.81,3.066,4.398c-2.343,0.682-2.619,1.642-2.619,2.663   c0,1.085,0.417,1.798,1.085,2.076c0.671,0.309,1.758,0.464,3.43,0.495l1.589,0.031c1.478,0.031,2.619,0.465,2.619,1.888   c0,0.651-0.361,1.24-0.919,1.611c-0.585,0.402-1.394,0.526-2.341,0.526c-1.729,0-2.677-0.68-2.677-1.951   c0-0.434,0.028-0.649,0.167-1.021h-3.456c-0.14,0.309-0.334,0.742-0.334,1.609c0,1.083,0.39,2.014,1.17,2.818   c1.283,1.332,3.373,1.701,5.408,1.701c2.229,0,4.376-0.556,5.629-2.043c0.782-0.929,1.145-1.949,1.145-3.281   c0-1.425-0.392-2.51-1.227-3.376c-1.004-1.022-2.147-1.394-4.32-1.425l-2.008-0.032c-0.391,0-0.612-0.154-0.612-0.37   c0-0.434,0.528-0.806,1.477-1.302c0.279,0.031,0.391,0.031,0.558,0.031c3.038,0,5.269-1.982,5.269-4.707   c0-1.054-0.28-1.857-0.837-2.601c0.224,0.03,0.613,0.092,0.977,0.092c1.03,0,1.812-0.34,2.619-1.178L130.546,18.585z"/>
+	<path fill="#024CA3" d="M136.467,25.677v-0.062c0-2.198,0.809-3.438,2.229-3.438c0.752,0,1.282,0.31,1.646,0.929   c0.332,0.589,0.444,1.208,0.444,2.386v0.185H136.467z M143.045,31.097c-1.143,1.052-2.341,1.579-3.624,1.579   c-1.923,0-3.009-1.394-3.009-3.839v-0.125h8.25v-0.96c0-3.312-0.585-5.449-1.896-6.936c-0.92-1.052-2.481-1.672-4.126-1.672   c-1.895,0-3.317,0.68-4.487,2.137c-1.254,1.549-1.784,3.438-1.784,6.287c0,4.987,2.648,8.209,6.745,8.209   c2.008,0,3.735-0.714,5.38-2.201L143.045,31.097z"/>
+	<path fill="#024CA3" d="M146.964,20.103c0.305,0.897,0.528,2.509,0.528,4.645v10.594h3.735V24.129   c0.696-0.899,1.449-1.332,2.285-1.332c0.418,0,0.725,0.091,1.086,0.308l1.032-3.653c-0.585-0.28-0.836-0.341-1.394-0.341   c-0.418,0-0.919,0.093-1.227,0.248c-0.695,0.341-1.588,1.208-2.118,2.013c-0.055-0.897-0.25-1.609-0.586-2.261L146.964,20.103z"/>
+	<path fill="#BCBEE0" d="M135.869,13.604c7.154-5.896,14.207-9.355,19.436-9.468c-4.912,1.526-10.65,4.804-16.419,9.468H135.869z"/>
+	<path fill="#BCBEE0" d="M137.366,55.319c-9.155,5.884-17.485,7.742-21.509,3.99c-3.046-2.84-3.047-8.315-0.603-14.97h-2.664   c-1.588,4.936-2.016,9.508-1.181,13.264c0.34,1.986,1.171,3.594,2.499,4.708C118.485,66.15,127.684,62.959,137.366,55.319"/>
+	<path fill="#024CA3" d="M141.803,62.373c5.032-3.351,10.063-7.713,14.711-12.925c15.619-17.513,20.862-37.994,11.712-45.747   c-2.659-2.253-6.242-3.183-10.372-2.938c6.871-1.585,12.779-0.747,16.455,2.928c8.48,8.48,1.856,28.855-14.797,45.506   C153.855,54.854,147.706,59.229,141.803,62.373"/>
+	<path fill="#ED1C29" d="M4.098,25.677v-0.062c0-2.198,0.808-3.438,2.229-3.438c0.752,0,1.282,0.31,1.644,0.929   c0.334,0.589,0.447,1.208,0.447,2.386v0.185H4.098z M10.676,31.097c-1.143,1.052-2.342,1.579-3.624,1.579   c-1.922,0-3.01-1.394-3.01-3.839v-0.125h8.25v-0.96c0-3.312-0.585-5.449-1.895-6.936c-0.92-1.052-2.481-1.672-4.125-1.672   c-1.896,0-3.316,0.68-4.488,2.137C0.53,22.829,0,24.717,0,27.566c0,4.987,2.648,8.209,6.746,8.209c2.006,0,3.735-0.714,5.379-2.201   L10.676,31.097z"/>
+	<path fill="#ED1C29" d="M18.551,12.421l-3.819,0.96c0.139,1.426,0.195,2.694,0.195,4.77v11.831c0,2.26,0.056,2.756,0.335,3.561   c0.446,1.334,1.728,2.17,3.316,2.17c0.808,0,1.589-0.155,2.229-0.436l-0.641-2.476c-0.196,0.062-0.279,0.062-0.418,0.062   c-0.307,0-0.613-0.156-0.753-0.434c-0.223-0.435-0.251-0.805-0.251-3.529V16.542C18.746,14.312,18.691,13.288,18.551,12.421"/>
+	<path fill="#ED1C29" d="M22.725,20.103c0.306,0.897,0.529,2.509,0.529,4.645v10.594h3.735V24.129   c0.697-0.899,1.449-1.332,2.285-1.332c0.418,0,0.725,0.091,1.088,0.308l1.031-3.653c-0.586-0.28-0.836-0.341-1.395-0.341   c-0.417,0-0.919,0.093-1.226,0.248c-0.696,0.341-1.588,1.208-2.118,2.013c-0.056-0.897-0.251-1.609-0.585-2.261L22.725,20.103z"/>
+	<path fill="#ED1C29" d="M35.255,12.547c-1.282,0-2.341,1.146-2.341,2.571c0,1.424,1.031,2.569,2.285,2.569   c1.282,0,2.314-1.145,2.314-2.569C37.513,13.693,36.51,12.547,35.255,12.547 M33.332,19.763v15.579h3.734v-16.23L33.332,19.763z"/>
+	<path fill="#ED1C29" d="M40.43,20.134c0.334,1.052,0.501,2.353,0.501,3.716v11.49h3.735V24.128   c0.864-0.868,1.839-1.424,2.591-1.424c0.976,0,1.255,0.526,1.255,2.322V35.34h3.679V23.756c0-0.99-0.084-1.671-0.279-2.26   c-0.445-1.363-1.839-2.293-3.427-2.293c-0.837,0-1.812,0.249-2.565,0.682c-0.613,0.373-1.086,0.744-1.644,1.177   c0-0.65-0.195-1.332-0.529-1.984L40.43,20.134z"/>
+	<path fill="#ED1C29" d="M61.242,22.239c1.421,0,2.257,0.867,2.257,2.354c0,1.456-0.808,2.261-2.285,2.261   c-1.311,0-2.203-0.65-2.203-2.261C59.011,23.106,59.819,22.239,61.242,22.239 M68.544,18.585c-0.864,0.867-1.923,1.363-2.954,1.363   c-0.474,0-0.976-0.125-1.757-0.341c-1.031-0.279-1.756-0.402-2.564-0.402c-3.651,0-6.02,2.106-6.02,5.357   c0,2.354,1.003,3.81,3.065,4.398c-2.341,0.682-2.62,1.642-2.62,2.663c0,1.085,0.418,1.798,1.087,2.076   c0.668,0.309,1.756,0.464,3.428,0.495l1.589,0.031c1.477,0.031,2.62,0.465,2.62,1.888c0,0.651-0.362,1.24-0.919,1.611   c-0.585,0.402-1.394,0.526-2.341,0.526c-1.729,0-2.676-0.68-2.676-1.951c0-0.434,0.028-0.649,0.167-1.021h-3.456   c-0.139,0.309-0.334,0.742-0.334,1.609c0,1.083,0.39,2.014,1.17,2.818c1.282,1.332,3.372,1.701,5.408,1.701   c2.229,0,4.375-0.556,5.63-2.043c0.78-0.929,1.143-1.949,1.143-3.281c0-1.425-0.39-2.51-1.226-3.376   c-1.003-1.022-2.147-1.394-4.32-1.425l-2.008-0.032c-0.39,0-0.613-0.154-0.613-0.37c0-0.434,0.531-0.806,1.479-1.302   c0.278,0.031,0.39,0.031,0.557,0.031c3.039,0,5.269-1.982,5.269-4.707c0-1.054-0.279-1.857-0.836-2.601   c0.223,0.03,0.614,0.092,0.976,0.092c1.031,0,1.812-0.34,2.62-1.178L68.544,18.585z"/>
+</g>
+</svg></div>
+                    </header>
+                    <main class="card-body">
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://elringklinger.de/typo3temp/" 2>&1 | head -100
+(no output)
+[0m
+[0m$ [0mcurl -sS --max-time 8 -A "Mozilla/5.0" "https://elringklinger.de/typo3conf/ext/" 2>&1 | head -50
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html><head>
+<title>301 Moved Permanently</title>
+</head><body>
+<h1>Moved Permanently</h1>
+<p>The document has moved <a href="https://elringklinger.de/typo3conf/ext">here</a>.</p>
+<hr>
+<address>Apache Server at elringklinger.de Port 443</address>
+</body></html>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://elringklinger.de/typo3/login" 2>&1 | head -50
+HTTP/2 200 
+x-frame-options: SAMEORIGIN
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';
+expires: 0
+cache-control: no-cache, no-store
+pragma: no-cache
+set-cookie: be_typo_user=deleted; expires=Wed, 03 Sep 2025 17:03:45 GMT; Max-Age=0; path=/; domain=elringklinger.de; httponly; samesite=lax
+set-cookie: __Secure-typo3nonce_gcOSDV32Q0QJyCnkUFbVLg=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJub25jZSI6ImJvQzlLZXhlTU5zYXpMNXZWdnQ5RkxOalVZYno4bDVBQ0ZXb0JZeXhnN3RfSzNnM05GMExRUSIsInRpbWUiOiIyMDI2LTA5LTAzVDE5OjAzOjQ2KzAyOjAwIn0.ADezOdOrS8ylDLqhRSOM1qPLsAIXZDb6yVjFRj0t5KE; path=/; secure; httponly; samesite=strict
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+last-modified: Thu, 03 Sep 2026 17:03:46 GMT
+vary: Accept-Encoding
+x-ua-compatible: IE=edge
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: microphone=(), camera=()
+content-type: text/html; charset=utf-8
+date: Thu, 03 Sep 2026 17:03:46 GMT
+server: Apache
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+
+
+<link rel="icon" href="/_assets/4caf6c9308ed0c7682dc48ffb52a1bd1/Icons/favicon.ico">
+<title>TYPO3 CMS Login: ElringKlinger AG</title>
+<meta name="generator" content="TYPO3 CMS">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<link rel="stylesheet" href="/_assets/081fa96a07de1dccb64a8a83e1567439/Css/backend.css?1786432642" media="all" nonce="CDWdnDR8HhjFC-3UQphX6yKkqJfOiZVzoJjDJM8jmU6klD0WW3t_LQ">
+<link rel="stylesheet" href="/_assets/081fa96a07de1dccb64a8a83e1567439/Css/webfonts.css?1786432642" media="all" nonce="CDWdnDR8HhjFC-3UQphX6yKkqJfOiZVzoJjDJM8jmU6klD0WW3t_LQ">
+<link rel="stylesheet" href="/_assets/f6ef6adaf5c92bf687a31a3adbcb0f7b/Css/Backend/RecordList.css?1786465520" media="all" nonce="CDWdnDR8HhjFC-3UQphX6yKkqJfOiZVzoJjDJM8jmU6klD0WW3t_LQ">
+<style nonce="CDWdnDR8HhjFC-3UQphX6yKkqJfOiZVzoJjDJM8jmU6klD0WW3t_LQ">
+/*loginBackgroundImage*/
+
+            .typo3-login-carousel-control.right,
+            .typo3-login-carousel-control.left,
+            .card-login { border: 0; }
+            .typo3-login { background-image: url("/_assets/4caf6c9308ed0c7682dc48ffb52a1bd1/Images/Backend/elringklinger_bg.jpg"); }
+            .typo3-login-footnote { background-color: #000000; color: #ffffff; }
+        
+/*loginHighlightColor*/
+
+            .typo3-login {
+[0m
+[0m$ [0mecho "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" | base64 -d 2>/dev/null; echo; echo "---"; echo "eyJub25jZSI6ImJvQzlLZXhlTU5zYXpMNXZWdnQ5RkxOalVZYno4bDVBQ0ZXb0JZeXhnN3RfSzNnM05GMExRUSIsInRpbWUiOiIyMDI2LTA5LTAzVDE5OjAzOjQ2KzAyOjAwIn0" | base64 -d 2>/dev/null; echo
+{"typ":"JWT","alg":"HS256"}
+---
+{"nonce":"boC9KexeMNsazL5vVvt9FLNjUYbz8l5ACFWoBYyxg7t_K3g3NF0LQQ","time":"2026-09-03T19:03:46+02:00"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://elringklinger.de/typo3/ajax/login" 2>&1 | head -20
+HTTP/2 200 
+x-frame-options: SAMEORIGIN
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';
+expires: 0
+cache-control: no-cache, no-store
+pragma: no-cache
+set-cookie: be_typo_user=deleted; expires=Wed, 03 Sep 2025 17:04:05 GMT; Max-Age=0; path=/; domain=elringklinger.de; httponly; samesite=lax
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+last-modified: Thu, 03 Sep 2026 17:04:06 GMT
+vary: Accept-Encoding
+x-ua-compatible: IE=edge
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: microphone=(), camera=()
+content-type: application/json; charset=utf-8
+date: Thu, 03 Sep 2026 17:04:06 GMT
+server: Apache
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D- -A "Mozilla/5.0" "https://elringklinger.de/typo3/ajax/login/preflight" 2>&1 | head -20
+HTTP/2 200 
+x-frame-options: SAMEORIGIN
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:; media-src 'self' blob: https:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';
+expires: 0
+cache-control: no-cache, no-store
+pragma: no-cache
+set-cookie: be_typo_user=deleted; expires=Wed, 03 Sep 2025 17:04:05 GMT; Max-Age=0; path=/; domain=elringklinger.de; httponly; samesite=lax
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+last-modified: Thu, 03 Sep 2026 17:04:06 GMT
+vary: Accept-Encoding
+x-ua-compatible: IE=edge
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+referrer-policy: strict-origin-when-cross-origin
+permissions-policy: microphone=(), camera=()
+content-type: application/json; charset=utf-8
+date: Thu, 03 Sep 2026 17:04:06 GMT
+server: Apache
+[0m
+Now I have comprehensive data. Let me produce the structured analysis.
+
+---
+
+## STEP 1 — DELTA
+
+- [CHANGED] `api.smartcard.elringklinger.com` — live probe confirmed: nginx 404 on root, all `/api/*` → 502 Bad Gateway (backend down but nginx→backend routing confirmed). Security headers: CSP with `unsafe-eval`, `unsafe-inline`, HSTS.
+- [CHANGED] `go.events.elringklinger.com` — live probe confirmed: Pardot/Salesforce platform, 302→`http://elringklinger.com` (HTTP downgrade). Pardot API active at `/api` — returns XML/JSON error `{"code":49,"message":"Access Denied"}`. `robots.txt` reveals `/webmail/`, `/shared/webmail/`.
+- [CHANGED] `ir.elringklinger.com` — 301→`https://elringklinger.de/investor-relations`. Apache.
+- [NEW] `elringklinger.de` — TYPO3 CMS backend fully exposed at `/typo3/` (login page 200). Admin AJAX endpoints live. `typo3temp/` accessible (200). JWT nonce cookie set (`HS256`, `nonce`+`time` claims).
+- [CHANGED] Remaining 9 hosts (aircontrol, avconf, cctv, cgline, edi2, edi7, ektrcctv, imap, fwasvvideo1) — confirmed unreachable (timeout/connection refused).
+
+## STEP 2 — PRIORITIZE
+
+| # | Asset | a | b | t | g | c | f | **Score** |
+|---|---|---|---|---|---|---|---|---|
+| 1 | `go.events.elringklinger.com` | 7 | 8 | 8 | 2 | 5 | 9 | **6.7** |
+| 2 | `elringklinger.de` (TYPO3) | 6 | 9 | 7 | 1 | 3 | 9 | **6.1** |
+| 3 | `api.smartcard.elringklinger.com` | 5 | 6 | 6 | 1 | 3 | 9 | **5.0** |
+
+**Priority axes:** a=attack_surface, b=business_value, t=tech_exposure, g=gate_ease, c=cloud_surface, f=freshness.
+
+## STEP 3 — HYPOTHESES
+
+[HYP] Pardot API version/format enumeration + info disclosure
+class: BUSLOGIC
+asset: go.events.elringklinger.com
+confidence: 65
+reasoning: Pardot API at `/api` is live and returns structured XML/JSON errors. Version param accepted (v2/v3 both return "Invalid API key or user key"). `format=json` switches response format. The API distinguishes "Invalid API key or user key" (err_code 1) from "Access Denied" (err_code 49) — different error codes for different failure modes suggest the API logic processes auth before rejecting. If any legacy Pardot API endpoint allows unauthenticated read (e.g. prospect lookup by email, campaign list), it would leak PII/marketing data.
+evidence_needed: Authenticated Pardot API key (from Salesforce/Pardot admin). Without valid key, only error discrimination observable.
+verify_steps: PASSIVE: `curl https://go.events.elringklinger.com/api?api_key=test&format=json&version=2` (done). `curl https://go.events.elringklinger.com/api?api_key=test&method=getProspects` to test method enumeration. `curl https://go.events.elringklinger.com/api?user_key=test&api_key=test` to test dual-key auth.
+impact: If legacy Pardot API allows unauthenticated access → marketing PII (emails, names, campaign engagement). Severity: MEDIUM-HIGH if exploitable.
+testability: AUTH_HELPED
+
+[HYP] Pardot HTTP downgrade enables cookie injection on event tracking links
+class: MISCONFIG
+asset: go.events.elringklinger.com
+confidence: 55
+reasoning: Root path 302 redirects to `http://elringklinger.com` (plain HTTP). The Pardot tracking cookie (`pardot`) is set with no Secure flag and cleared on every request. If an attacker can craft a tracking link (e.g. via Pardot campaign URL), the initial HTTP response could be intercepted/modified before the redirect completes. The redirect target `http://elringklinger.com` itself redirects to HTTPS, but the intermediate HTTP hop is attacker-controllable on shared networks.
+evidence_needed: Confirm the redirect is triggered by campaign tracking URLs (pi_campaign, pi_aid params). Test if Pardot tracking cookie is set during the HTTP redirect chain.
+verify_steps: PASSIVE: `curl -D- https://go.events.elringklinger.com/?pi_campaign=testcampaign` — check if cookie is set on the 302 response. `curl -D- http://elringklinger.com/` — confirm HTTP→HTTPS redirect.
+impact: Attacker on same network can inject cookies or modify redirect content before HTTPS upgrade. Severity: LOW-MEDIUM (requires network position).
+testability: PASSIVE
+
+[HYP] TYPO3 backend exposed — version fingerprinting + session nonce predictability
+class: MISCONFIG
+asset: elringklinger.de
+confidence: 45
+reasoning: TYPO3 login page fully accessible at `/typo3/index.php` and `/typo3/login` (200). Backend CSS assets expose TYPO3 version hints (asset hashes `1786432642`, `1786465520` — likely Unix timestamps from build). JWT nonce cookie uses HS256 with `nonce`+`time` claims — the nonce is a random string, time is the issue time. This is standard TYPO3 security behavior, but the exposed login panel itself is an attack surface for credential stuffing (if lockout policy is weak — though that's out of scope per program). The `typo3temp/` directory is accessible (200) and may leak cached files.
+evidence_needed: Enumerate `typo3temp/` subdirectories for leaked files. Check TYPO3 version from asset timestamps. Test if `typo3conf/` contains any accessible config files.
+verify_steps: PASSIVE: `curl https://elringklinger.de/typo3temp/assets/` — list contents. `curl https://elringklinger.de/typo3conf/` (already 403). Check `/_assets/` paths for version info.
+impact: TYPO3 version disclosure → known CVE mapping. Exposed admin panel → credential stuffing target. Severity: LOW (login panel is expected per program scope exclusion).
+testability: PASSIVE
+
+## STEP 4 — SELF-CRITIQUE
+
+- [PARKED] **TYPO3 backend exposed**: Program explicitly excludes "Publicly accessible login panels" and "Username enumeration based on login or forgot password pages" and "Enforcement policies for brute force, rate limiting, or account lockout". The TYPO3 login is a standard feature, not a finding. Confidence 45 → **PARKED**.
+- [FINAL] **Pardot API version/format enumeration**: Survives. 65 confidence. The error discrimination (err_code 1 vs 49) is real intelligence. Testability limited without auth key but method enumeration is passive and may reveal additional endpoints.
+- [FINAL] **Pardot HTTP downgrade**: Survives. 55 confidence. Real misconfiguration, low exploitability without network position, but verifiable passively.
+
+## STEP 5 — NEXT ACTION
+
+[NEXT] PROBE: Test Pardot API method enumeration to discover accessible endpoints — exact request: `curl -sS --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json"` and `curl -sS --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json"` and `curl -sS --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json"` — check if different methods return different error codes (would indicate method existence).
+
+## STEP 6 — LEARNING
+
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot API error code discrimination (1 vs 49) confirms API processes auth logic before rejection. Method enumeration may reveal which endpoints exist.
+[LEARN] REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+[LEARN] ACCEPTED MISCONFIG @ go.events.elringklinger.com: HTTP downgrade redirect is real but low-severity. Worth tracking as chain primitive (e.g. combined with phishing).
+
+## STEP 7 — RISK
+
+[RISK] elringklinger: 25/100. Surface is thin — 13 dedicated hosts, 9 unreachable, 2 with HTTP, 1 TYPO3 CMS with standard admin. No high-value APIs accessible without auth. Program scope is broad ("all company-owned infrastructure") but actual discoverable attack surface is limited. Best bet is Pardot API method enumeration or finding additional subdomains via CT/DNS not yet discovered.

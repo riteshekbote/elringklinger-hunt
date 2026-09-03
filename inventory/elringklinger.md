@@ -38,3 +38,13 @@ www.elringklinger.com
 ## 2026-09-03 08:19:54 UTC
 
 ## 2026-09-03 12:54:04 UTC
+
+## 2026-09-03 17:06:41 UTC
+- NEW 13 dedicated subdomains discovered via wildcard-filtered enum (was 2 root domains)
+- NEW `api.smartcard.elringklinger.com` — API endpoint returning HTTP 404 at root (suggests versioned paths)
+- NEW `go.events.elringklinger.com` — HTTP 302 redirect (event platform, likely OAuth/SSO flow)
+- NEW `ir.elringklinger.com` — HTTP 301, Apache investor relations page
+- NEW `edi2.elringklinger.com`, `edi7.elringklinger.com` — EDI B2B endpoints (unprobed)
+- NEW `dtspc-tst.elringklinger.com` — Test environment indicator (tst suffix)
+- NEW 6 infrastructure hosts unprobed: aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap
+- CHANGED Probe coverage: 0/13 hosts actively tested (only passive HTTP status on 3)

@@ -13,3 +13,17 @@
 
 ## 2026-09-03 12:54:04 UTC
 
+
+## 2026-09-03 17:07:02 UTC
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/v2/ -> HTTP 404
+https://api.smartcard.elringklinger.com/swagger.json -> HTTP 404
+https://api.smartcard.elringklinger.com/openapi.json -> HTTP 404
+https://api.smartcard.elringklinger.com/.well-known/openid-configuration -> HTTP 404
+https://go.events.elringklinger.com/api?api_key=test&format=json&version=2` -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getProspects` -> HTTP 405
+https://go.events.elringklinger.com/api?user_key=test&api_key=test` -> HTTP 405
+https://go.events.elringklinger.com/?pi_campaign=testcampaign` -> 200 len=210594
+https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json -> HTTP 405
