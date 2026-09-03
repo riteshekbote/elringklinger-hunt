@@ -135,3 +135,107 @@ testability: PASSIVE
 
 **STEP 7 — RISK**
 [RISK] elringklinger: 72 — 13 dedicated hosts with 3 high-value unprobed API/OAuth/EDI surfaces; zero active testing done; wildcard enum suggests more hidden attack surface; smartcard auth + event OAuth + EDI B2B cover top-3 directive classes (AUTH, OAUTH, IDOR)
+===== ANALYST nemotron3 2026-09-03 19:50:40 UTC =====
+[0m
+> build · nemotron-3-ultra-free
+[0m
+[0m$ [0mls -la /home/runner/work/elringklinger-hunt/elringklinger-hunt/
+total 124
+drwxr-xr-x 12 runner runner  4096 Sep  3 19:43 .
+drwxr-xr-x  3 runner runner  4096 Sep  3 19:43 ..
+drwxr-xr-x  7 runner runner  4096 Sep  3 19:43 .git
+drwxr-xr-x  3 runner runner  4096 Sep  3 19:43 .github
+-rw-r--r--  1 runner runner  1776 Sep  3 19:43 README.md
+-rw-r--r--  1 runner runner    43 Sep  3 19:43 analyst-out.txt
+-rw-r--r--  1 runner runner 16690 Sep  3 19:43 analyst-prompt.txt
+-rw-r--r--  1 runner runner 12892 Sep  3 19:43 ctx.txt
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 inventory
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 knowledge
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 leads
+-rw-r--r--  1 runner runner  1127 Sep  3 19:43 probe-results.md
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 recon-notes
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 reports
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 reposcan-raw
+-rw-r--r--  1 runner runner  3211 Sep  3 19:43 scope.yml
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 scripts
+-rw-r--r--  1 runner runner    37 Sep  3 19:43 state_bigpickle.json
+-rw-r--r--  1 runner runner    37 Sep  3 19:43 state_laguna.json
+-rw-r--r--  1 runner runner    37 Sep  3 19:43 state_ling3.json
+-rw-r--r--  1 runner runner    37 Sep  3 19:43 state_longcat.json
+-rw-r--r--  1 runner runner    33 Sep  3 19:43 state_mimo.json
+-rw-r--r--  1 runner runner    37 Sep  3 19:43 state_nemotron3.json
+drwxr-xr-x  2 runner runner  4096 Sep  3 19:43 triage
+[0m
+[0m→ [0mRead inventory/elringklinger.md
+[0m→ [0mRead scope.yml
+[0m→ [0mRead probe-results.md
+[0m✱ [0mGlob "**/*.txt"[90m 9 matches[0m
+[0m→ [0mRead ctx.txt
+[0m→ [0mRead reports/hypotheses-nemotron3.txt
+[0m→ [0mRead reports/hypotheses-bigpickle.txt
+Now I have a complete picture. Let me run through the 8 steps with the new probe data.
+
+**STEP 1 — DELTA**
+[NEW] `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 (Bad Gateway) — endpoint exists but backend down, confirming versioned API path `/api/v1/` is real
+[NEW] `go.events.elringklinger.com/api` returns HTTP 405 for multiple method params — Pardot API endpoint confirmed live, processes auth logic before rejection (error codes 1 vs 49 per earlier finding)
+[CHANGED] Probe coverage: 2/13 hosts actively tested (was 0/13)
+
+**STEP 2 — PRIORITIZE**
+[PRIO] api.smartcard.elringklinger.com,8.55,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=7,cloud_surface=7,freshness=9
+[PRIO] go.events.elringklinger.com,8.10,attack_surface=8,business_value=7,tech_exposure=9,gate_ease=9,cloud_surface=8,freshness=8
+[PRIO] edi2.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] edi7.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] dtspc-tst.elringklinger.com,7.15,attack_surface=8,business_value=5,tech_exposure=8,gate_ease=8,cloud_surface=7,freshness=8
+
+**STEP 3 — HYPOTHESES**
+
+[HYP] Smartcard API — Broken Auth/IDOR on Versioned /api/v1/ Endpoint (Backend Down)
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 80
+reasoning: /api/v1/ returns 502 (not 404) proving the versioned endpoint exists and routes to a backend service. "smartcard" naming implies auth token issuance/card provisioning. 502 suggests backend misconfig or downtime — may expose debug info, stack traces, or internal routing on retry/edge cases.
+evidence_needed: Response body of 502 (debug trace?); headers revealing framework (Spring, Node, Go); /api/v1/auth, /api/v1/tokens, /api/v1/cards endpoints; JWT/OAuth2 token structure
+verify_steps: GET /api/v1/ (capture body/headers), GET /api/v1/health, GET /api/v1/actuator/health, GET /api/v1/auth/login, GET /api/v1/.well-known/openid-configuration, GET /api/v1/swagger.json (all GET/HEAD, no auth)
+impact: Token forgery, session hijacking, unauthorized card provisioning, privilege escalation — CRITICAL
+testability: PASSIVE
+
+[HYP] Events Platform — Pardot API Method Enumeration + Auth Logic Bypass
+class: BUSLOGIC
+asset: go.events.elringklinger.com
+confidence: 70
+reasoning: /api returns 405 for multiple methods (getCampaigns, getProspects, getEmails) with error code discrimination (1 vs 49) proving auth logic executes pre-rejection. Version param (v2/v3) accepted. 405 suggests methods exist but require POST or valid auth — method enumeration may reveal unauthenticated endpoints.
+evidence_needed: Which HTTP methods allowed (POST vs GET); valid method names via enumeration; whether any method returns data without valid api_key/user_key; rate limits
+verify_steps: OPTIONS /api, POST /api?api_key=test&method=getProspects&format=json, GET /api?api_key=test&method=getCampaigns&format=json&version=3, GET /api?api_key=test&method=getVersion&format=json (passive, no auth)
+impact: Marketing PII disclosure (emails, names, campaign engagement), prospect enumeration — MEDIUM-HIGH
+testability: PASSIVE
+
+[HYP] EDI Endpoints — IDOR/BOLA on Partner Document Exchange
+class: IDOR
+asset: edi2.elringklinger.com
+confidence: 60
+reasoning: EDI hosts handle B2B document exchange (orders, invoices, ASNs). Multi-tenant EDI platforms frequently expose document IDs in paths (/documents/{id}, /partners/{id}/messages) with missing authorization checks. Both edi2 and edi7 unprobed.
+evidence_needed: API structure (REST/soap); document/partner ID format; auth model (API key, cert, basic); cross-tenant access control
+verify_steps: GET /, GET /api/, GET /v1/, GET /health, GET /actuator/health, GET /docs, GET /swagger.json (all GET/HEAD, no auth)
+impact: Cross-partner PII/commercial data disclosure (orders, invoices, pricing), supply chain manipulation — HIGH
+testability: PASSIVE
+
+**STEP 4 — SELF-CRITIQUE**
+[PARKED] Smartcard API — Broken Auth/IDOR on Versioned /api/v1/ Endpoint: confidence 80 ≥ 40, class AUTH not rejected, verify_steps concrete — KEPT
+[PARKED] Events Platform — Pardot API Method Enumeration + Auth Logic Bypass: confidence 70 ≥ 40, class BUSLOGIC not rejected, verify_steps concrete — KEPT
+[PARKED] EDI Endpoints — IDOR/BOLA on Partner Document Exchange: confidence 60 ≥ 40, class IDOR not rejected, verify_steps concrete — KEPT
+[FINAL] 1. Smartcard API — Broken Auth/IDOR on Versioned /api/v1/ Endpoint (80)
+[FINAL] 2. Events Platform — Pardot API Method Enumeration + Auth Logic Bypass (70)
+[FINAL] 3. EDI Endpoints — IDOR/BOLA on Partner Document Exchange (60)
+
+**STEP 5 — NEXT ACTION**
+[NEXT] PROBE: GET https://api.smartcard.elringklinger.com/api/v1/ (capture full response body/headers) && GET https://api.smartcard.elringklinger.com/api/v1/health && GET https://api.smartcard.elringklinger.com/api/v1/actuator/health && GET https://api.smartcard.elringklinger.com/api/v1/auth/login && OPTIONS https://go.events.elringklinger.com/api && POST https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json (HEAD/GET/OPTIONS/POST, 1 rps, no auth)
+
+**STEP 6 — LEARNING**
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/ returns 502 confirming versioned endpoint exists with live backend routing — auth systems high-value per directives
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api returns 405 with method-specific error codes (1 vs 49) proving auth logic executes pre-rejection; method enumeration viable
+[LEARN] ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws chainable to ATO
+[LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
+[LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+**STEP 7 — RISK**
+[RISK] elringklinger: 78 — 13 dedicated hosts with 2 confirmed live high-value APIs (smartcard /api/v1/ 502, Pardot /api 405) + 2 unprobed EDI B2B; active testing now 2/13; smartcard auth + Pardot business logic + EDI IDOR cover top-3 directive classes (AUTH, BUSLOGIC, IDOR); 502 on /api/v1/ may leak debug/stack traces on retry

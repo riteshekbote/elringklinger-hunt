@@ -27,3 +27,17 @@ https://go.events.elringklinger.com/?pi_campaign=testcampaign` -> 200 len=210594
 https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json -> HTTP 405
 https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json -> HTTP 405
 https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json -> HTTP 405
+
+## 2026-09-03 19:51:08 UTC
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/actuator/health -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/auth/login -> HTTP 502
+https://go.events.elringklinger.com/api -> HTTP 401
+https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json -> HTTP 405
+https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
+https://api.smartcard.elringklinger.com/v1/ -> HTTP 404
+https://api.smartcard.elringklinger.com/swagger -> HTTP 404
+https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json -> HTTP 405
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>

@@ -48,3 +48,8 @@ www.elringklinger.com
 - NEW `dtspc-tst.elringklinger.com` — Test environment indicator (tst suffix)
 - NEW 6 infrastructure hosts unprobed: aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap
 - CHANGED Probe coverage: 0/13 hosts actively tested (only passive HTTP status on 3)
+
+## 2026-09-03 19:50:40 UTC
+- NEW `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 (Bad Gateway) — endpoint exists but backend down, confirming versioned API path `/api/v1/` is real
+- NEW `go.events.elringklinger.com/api` returns HTTP 405 for multiple method params — Pardot API endpoint confirmed live, processes auth logic before rejection (error codes 1 vs 49 per earlier finding)
+- CHANGED Probe coverage: 2/13 hosts actively tested (was 0/13)
