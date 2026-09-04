@@ -77,3 +77,10 @@ www.elringklinger.com
 - NEW Smartcard API common auth endpoints (/auth/login, /oauth/token, /login, /health) all return 404
 - NEW Smartcard API framework probes (/metrics, /graphql, /swagger-ui.html) all return 404
 - CHANGED OAuth redirect_uri flaw hypothesis confidence reduced — parameter not reflected in redirect location
+
+## 2026-09-04 09:47:59 UTC
+- NEW go.events.elringklinger.com/api?v5 endpoints hypothesized by bigpickle (api/v5/campaign, api/v5/prospect) — untested Pardot REST API tier distinct from /api?method= legacy endpoint
+- NEW Smartcard API backend consistently down (502) across v1/v2/beta — no framework fingerprint, no actuator, no common auth endpoints, no GraphQL/Swagger; only nginx gateway headers visible
+- CHANGED OAuth redirect_uri hypothesis on go.events.elringklinger.com CONFIRMED REJECTED — tested on 4 endpoints, parameter ignored, fixed redirect to HTTP downgrade
+- CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) all connection timeout — 10/13 dedicated hosts unreachable
+- CHANGED Probe coverage: 2/13 hosts with deep testing (go.events Pardot /api, smartcard versioned paths); 10/13 hosts no live HTTP response

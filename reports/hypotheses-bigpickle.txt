@@ -1,12 +1,39 @@
-## 2026-09-04 05:15:40 UTC [target] (model bigpickle)
-[HYP] Pardot v5 API tier exposes distinct auth-gated endpoints with different key/credential requirements
+## 2026-09-04 09:45:25 UTC [target] (model bigpickle)
+[PRIO] api.smartcard.elringklinger.com,5.75 — auth/systems high value, backend-down is temporary state
+[PRIO] go.events.elringklinger.com,4.95 — live Pardot with untested v5 tier, visitor tracking endpoints
+[PRIO] dtspc-tst.elringklinger.com,4.30 — TEST environment flag (tst suffix) = potential staging with weaker controls
+[HYP] Smartcard API backend recovery probe across versioned paths
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: Backend has returned 502 uniformly since first probe (~30h). Nginx gateway is live and routing — backend outage is transient. When backend recovers, /api/v1/ may expose unauthenticated smartcard provisioning endpoints. Previous probes confirmed v1/v2/beta routing exists.
+evidence_needed: Any non-502 response (200/401/403/404) on /api/v1/ or /api/v2/
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (check for non-502)
+impact: Unauthenticated smartcard API access → credential cloning, identity fraud. HIGH severity.
+testability: PASSIVE
+[HYP] Pardot v5 REST-style resource endpoints bypass legacy API key auth
 class: AUTH
 asset: go.events.elringklinger.com/api/v5
 confidence: 42
-reasoning: v5 returns HTTP 401 "Access Denied" ({code:49}) while v1-v4 return JSON err_code 49/198 regardless — v5 is a separately-routed API tier that may accept OAuth bearer vs legacy API keys, potentially with different IDOR posture on GET resource methods.
-evidence_needed: a v5 endpoint returning a resource (200) instead of 401/198/1; or a 401 differing between methods to indicate per-method authz
-verify_steps: PASSIVE: GET https://go.events.elringklinger.com/api/v5/{resource} for resource in campaign, prospect, user, visitor, account, list, folder, tag; compare status codes
-impact: If any v5 resource responds without credentials → marketing PII / campaign data exposure. Severity MEDIUM-HIGH.
+reasoning: v5 tier returns HTTP 401 "Access Denied" (code:49) while v1-v4 return JSON err_code on same methods — v5 is a separately-routed API tier. REST-style resource paths (/api/v5/campaign, /api/v5/prospect) may accept different auth (OAuth bearer vs legacy key) or have per-resource authz gaps.
+evidence_needed: Any v5 resource endpoint returning 200 JSON instead of 401
+verify_steps: PASSIVE: GET https://go.events.elringklinger.com/api/v5/campaign, GET https://go.events.elringklinger.com/api/v5/prospect, GET https://go.events.elringklinger.com/api/v5/visitor
+impact: Marketing PII, campaign data, visitor tracking. MEDIUM-HIGH severity.
 testability: PASSIVE
-[NEXT] PROBE: GET https://go.events.elringklinger.com/api/v5/campaign, GET https://go.events.elringklinger.com/api/v5/prospect, GET https://go.events.elringklinger.com/api/v5/user, GET https://go.events.elringklinger.com/api/v5/visitor (compare 401 vs resource response)
-[RISK] elringklinger: 34/100. All 13 dedicated hosts are either backend-down (Smartcard API, 502), auth-gated + redirect-hardcoded (Pardot), or unreachable from external (EDI, CCTV, IMAP, all infra). Production domain elringklinger.de is now timing out. The remaining live surface (Pardot tracking + auth-gated API) exposes no unauthenticated data path after exhaustive enumeration of ~20 API methods, v1-v5 tiers, tracking endpoints, and redirect vectors. Only weak survivor is v5 API tier enumeration (42 confidence). No real logic flaw identified; surface is a dead end until Smartcard backend or EDI hosts come online within reach.
+[HYP] Test environment (dtspc-tst) exposes staging API or debug interface
+class: MISCONFIG
+asset: dtspc-tst.elringklinger.com
+confidence: 38
+reasoning: "tst" suffix strongly indicates test/staging environment. Staging environments commonly have weaker auth, debug flags, test credentials, or older software versions. Previous probe timed out (could be intermittent or host-dependent protocol).
+evidence_needed: HTTP response (any status) from dtspc-tst.elringklinger.com
+verify_steps: PASSIVE: GET https://dtspc-tst.elringklinger.com/, HEAD https://dtspc-tst.elringklinger.com/
+impact: Staging data leakage, debug endpoints, test credentials. MEDIUM severity.
+testability: PASSIVE
+[PARKED] Test environment staging probe: confidence 38 < 40 threshold. Staging hosts often firewalled to internal-only. But "tst" suffix is a strong signal — keeping as [NEXT] candidate if other leads dead-end.
+[FINAL] Smartcard API recovery: 45 confidence, PASSIVE, HIGH impact. Backend recovery is probabilistic but the only path to high-value finding.
+[FINAL] Pardot v5 resource enumeration: 42 confidence, PASSIVE, MEDIUM-HIGH impact. Only untested vector on live target.
+[NEXT] PROBE: Re-check Smartcard backend + probe Pardot v5 resources + try dtspc-tst. Three parallel GETs:
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 for 30+ hours — transient outage, not architectural block. Recovery probe is passive and HIGH-value.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 tier has distinct auth behavior (401 vs JSON err_code on v1-v4). Untested resource paths remain.
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: 7 Pardot methods confirmed enumerable but all require valid API key (err_code:1). No unauthenticated data path via method enumeration alone.
+[RISK] elringklinger: 30/100. All active targets either backend-down (Smartcard, 502 for 30h), auth-gated (Pardot, err_code:1 on all methods), or unreachable (EDI, test env, infrastructure hosts). Remaining live surface is a dead end without Smartcard backend recovery or accessible staging host. Program scope is broad but discoverable attack surface is functionally zero at current state. Smartcard recovery is the single highest-leverage event — it unlocks a HIGH-severity finding path.

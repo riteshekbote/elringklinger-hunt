@@ -75,3 +75,17 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/ return 502 confirming versioned endpoint routing exists with live nginx gateway 
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+## RANKED HYPOTHESES 2026-09-04 09:47:59 UTC
+- [70] go.events.elringklinger.com: Events Platform — Pardot API v5 REST Tier Enumeration + Auth Boundary Testing (from art/lead_nemotron3.txt)
+- [45] api.smartcard.elringklinger.com: Smartcard API backend recovery probe across versioned paths (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: Re-check Smartcard backend + probe Pardot v5 resources + try dtspc-tst. Three parallel GETs:
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api/v5/campaign && GET https://go.events.elringklinger.com/api/v5/prospect && GET https://go.events.elringklinger
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 for 30+ hours — transient outage, not architectural block. Recovery probe is passive and HIGH-value
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 tier has distinct auth behavior (401 vs JSON err_code on v1-v4). Untested resource paths remain.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: 7 Pardot methods confirmed enumerable but all require valid API key (err_code:1). No unauthenticated data path 
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api method enumeration confirmed for 7 methods (getCampaigns, getVersion, getEmails, getLists, getTags,
+- LEARN: REJECTED OATH @ go.events.elringklinger.com: OAuth redirect_uri parameter tested on login, auth, oauth/authorize, oauth/token — all ignore parameter, redirect f
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/ return 502 confirming versioned endpoint routing exists with live nginx gateway 
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
