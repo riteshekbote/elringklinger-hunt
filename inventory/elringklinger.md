@@ -110,3 +110,10 @@ www.elringklinger.com
 - NEW `go.events.elringklinger.com/api` returns HTTP 405 for multiple method params — Pardot API endpoint confirmed live, processes auth logic before rejection (error codes 1 vs 49 per earlier finding)
 - CHANGED Probe coverage: 2/13 hosts actively tested (was 0/13)
 - CHANGED Pardot v5 REST tier (/api/v5/*) now returns 198 "Endpoint not found" for all 18 previously-confirmed resource endpoints (prospects, campaigns, visitors, emails, lists, tags, etc.) — tier appears disab
+
+## 2026-09-04 22:16:28 UTC
+- CHANGED Pardot v5 REST tier (/api/v5/*) now returns 198 "Endpoint not found" for all 18 previously-confirmed resource endpoints — tier disabled/removed since 17:48 UTC probe
+- CHANGED Legacy Pardot /api?method= endpoint now returns 200 JSON with err_code:49 (Access Denied) for 7 methods (was err_code:1 previously) — auth behavior shifted
+- CHANGED Smartcard API backend still 502 after 30+ hours across all versioned paths — no recovery
+- CHANGED 10/13 dedicated hosts remain unreachable (connection timeout)
+- NEW go.events.elringklinger.com/api prioritized as primary live attack surface (score 8.75)

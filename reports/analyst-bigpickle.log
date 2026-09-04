@@ -4072,3 +4072,77 @@ Analysis complete and written. Summary:
 
 ## STEP 6-7
 - [RISK] elringklinger: **60/100** — strongest confirmed finding is the Pardot auth flaw, reportable at MEDIUM (broken token validation + error-code oracle) because live PII extraction is program-forbidden and the BU-id gate is un-located.
+===== ANALYST bigpickle 2026-09-04 22:16:28 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X GET https://api.smartcard.elringklinger.com/api/v1/ --max-time 15; curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X GET https://api.smartcard.elringklinger.com/api/v2/ --max-time 15
+502 0.736175s
+502 0.825675s
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X GET "https://go.events.elringklinger.com/api/v5/prospects" -H "Authorization: Bearer xxxxxx" -H "Pardot-Business-Unit-Id: 0Uv510000000000000" --max-time 15; curl -s -o /dev/null -w "%{http_code} %{time_total}s\n" -X HEAD "https://go.events.elringklinger.com/pi.js" --max-time 15
+404 0.427719s
+200 15.003213s
+[0m
+[0m$ [0mcurl -s -w "\nHTTP:%{http_code} time:%{time_total}\n" -X GET "https://go.events.elringklinger.com/api/v5/prospects" -H "Authorization: Bearer xxxxxx" -H "Pardot-Business-Unit-Id: 0Uv510000000000000" --max-time 20
+{"code":198,"message":"Endpoint not found"}
+HTTP:404 time:0.331423
+[0m
+[0m$ [0mcurl -s -o /tmp/pi.js -w "HTTP:%{http_code} size:%{size_download}\n" -X GET "https://go.events.elringklinger.com/pi.js" --max-time 30; wc -c /tmp/pi.js 2>/dev/null; head -c 400 /tmp/pi.js 2>/dev/null
+HTTP:200 size:4036
+4036 /tmp/pi.js
+/*!
+	Marketing Cloud Account Engagement's Engagement Tracker Javascript - 2023-04-13 11:24:52
+	If you're an ad blocker, block the URI only. Don't block the domain.
+*/
+function checkNamespace(e){for(var r=e.split("."),t=window,i=0;i<r.length;i++){var p=r[i];t[p]||(t[p]={}),t=t[p]}}function piTracker(e){if(checkNamespace("pi.tracker"),pi.tracker.visitor_id=piGetCookie("visitor_id"+(piAId-1e3)),pi.tr
+[0m
+[0m◈ [0mParallel Web Search "ElringKlinger pardot "0Uv" business unit salesforce account engagement"
+[0m◈ [0mParallel Web Search "elringklinger "pi.pardot.com" OR "pardot" go.events.elringklinger tracking"
+STEP 1 — DELTA
+- CHANGED go.events.elringklinger.com/api/v5/prospects: garbage Bearer + synthetic 0Uv BU now returns HTTP 404 with body `{"code":198,"message":"Endpoint not found"}` — v5 REST tier still disabled (was 401/code:49 pre-disable); bearer-bypass not currently live-reachable.
+- NEW go.events.elringklinger.com/pi.js: serves stock Marketing Cloud Account Engagement Engagement Tracker JS (2023-04-13 build, 4KB, 200) — confirms MCAE/Pardot custom tracker domain; `piAId-1e3` visitor-cookie relationship visible. Vendor stock asset, no finding.
+- CONFIRMED api.smartcard.elringklinger.com/api/v1/ and /v2/ still 502 (50h+ backend outage, nginx gateway live only).
+- REJECTED RAG output: no ElringKlinger 0Uv BU id present in public web index (only generic Salesforce format docs surfaced).
+
+STEP 2 — PRIORITIZE
+- [PRIO] go.events.elringklinger.com/api, 6.5, attack_surface7/business_value9/tech7/gate3/cloud3/fresh7
+- [PRIO] api.smartcard.elringklinger.com, 6.15, attack_surface8/business_value9/tech6/gate2/cloud2/fresh5
+
+STEP 3 — HYPOTHESES
+- [HYP] Pardot v5 API — Missing Bearer-Token Validation (architectural, currently dormant tier)
+- class: AUTH
+- asset: go.events.elringklinger.com/api/v5/*
+- confidence: 72
+- reasoning: Prior probes: no `Authorization`→401/code:49; `Bearer <garbage>`→auth skipped, BU layer discriminates (181 missing/182 bad-format/201 unknown/198 route). Today same request → HTTP 404 body `{"code":198}`: tier disabled/removed since 2026-09-04 20:06, so flaw is no longer live-demonstrable; evidence retained only from observed window. Program rule (no live customer-data extraction) capped proof at error-code oracle regardless.
+- evidence_needed: (a) v5 tier returning non-404 on `/api/v5/<object>` again (tier re-enable) — would re-arm oracle; (b) org 0Uv BU id (no public source found) — would flip 201→200.
+- verify_steps: PASSIVE/read-only: `GET https://go.events.elringklinger.com/api/v5/prospects` with `Authorization: Bearer <garbage>` + `Pardot-Business-Unit-Id: 0Uv510000000000000` (1rps) — current baseline is 404/code:198; any 200/400/401/403 changes tier state. Do NOT send a real BU against live data.
+- impact: If BU id leaks and tier returns: any unauthenticated party reads all Pardot objects (prospect PII, campaigns, emails, visitor analytics, users) — CRITICAL. Current state: documented auth-architecture flaw + error-code oracle, MEDIUM reportable.
+- testability: AUTH_HELPED
+- [HYP] Smartcard API — Backend Recovery Exposing Versioned Endpoints
+- class: AUTH
+- asset: api.smartcard.elringklinger.com
+- confidence: 40
+- reasoning: nginx gateway live; `/api/v1/`, `/v2/`, `/api/v1/auth|tokens|cards|health` all 502 for 50h+; no framework/actuator/swagger/OIDC fingerprint. Re-verified today: 502 on v1 and v2.
+- evidence_needed: non-502 response (200/401/404-with-body) on `/api/v1/`.
+- verify_steps: PASSIVE: `GET https://api.smartcard.elringklinger.com/api/v1/` (1rps).
+- impact: Unauthenticated smartcard provisioning/IDOR if backend returns. HIGH if realized.
+- testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+- [PARKED] BU-id discovery via public RAG: exhaustive web/RAG search surfaced only generic Salesforce docs on `0Uv`+15 format, no ElringKlinger-specific identifier; no further public-source path — closed as dead end.
+- [PARKED] Tracker piAId→BU-id correlation: org-identity confirmation only (LOW value), no data-access unlock demonstrated.
+- [PARKED] Pardot legacy /api?method= enumeration: already mapped 7 methods to err_code:1 (invalid key); no unauthenticated data path via method enum — exhaustion reached.
+- [FINAL] ranked: 1) Pardot v5 missing-Bearer-validation (72, dormant tier, AUTH_HELPED) 2) Smartcard recovery (40, PASSIVE).
+
+STEP 5 — NEXT ACTION
+[NEXT] PROBE: `GET https://api.smartcard.elringklinger.com/api/v1/` (1rps read-only) — backend-recovery check, only remaining path to a HIGH-severity finding; run alongside one baseline `GET https://go.events.elringklinger.com/api/v5/prospects` (Bearer garbage + synthetic 0Uv) to confirm v5 tier stays dormant.
+
+STEP 6 — LEARNING
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: With garbage Bearer + synthetic BU, /api/v5/prospects now HTTP 404 body `{"code":198,"message":"Endpoint not found"}` — v5 tier stays disabled; bearer-bypass not currently live, architectural evidence retained from prior window.
+- [LEARN] ACCEPTED OTHER @ go.events.elringklinger.com/pi.js: Stock MCAE Engagement Tracker JS (2023-04-13) served — confirms Pardot custom tracker domain; vendor asset, no vuln.
+- [LEARN] REJECTED OTHER @ public-RAG: No ElringKlinger 0Uv business-unit id in web index (only generic Salesforce format docs); BU-id leak hypothesis has no public source.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 across v1/v2 (50h+) — recovery probe negative, nginx gateway live only.
+
+STEP 7 — RISK
+[RISK] elringklinger: 55/100 — The only substantive finding (Pardot v5 missing-Bearer-validation, ~72) is now architecturally documented but its live surface is disabled (HTTP 404/code:198), and even in its live window full CRITICAL impact was doubly blocked by the un-located 0Uv BU gate and the program's no-live-customer-data rule — reportable severity MEDIUM (broken token validation + error-code oracle). Smartcard stays 502 (50h+); EDI/test/infra hosts unreachable; OAuth redirect closed; BU-id RAG dead-ended. Score down-ticked from 60: no regression evidence, but current live demonstrable surface shrank and the highest-value escalation path (BU id) has no public source.
