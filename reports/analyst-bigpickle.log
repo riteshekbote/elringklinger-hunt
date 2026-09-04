@@ -1002,3 +1002,987 @@ STEP 6 — LEARNING:
 
 STEP 7 — RISK:
 - [RISK] elringklinger: 58/100. External attack surface has narrowed to 2 live targets: Smartcard API (backend down, 502) and Pardot events API (all methods key-gated). EDI + all infra hosts unreachable externally. No unauth data endpoints, no exposed docs, no redirect flaw. Program scope broad but practically inaccessible without valid credentials; best lead blocked by backend outage until it comes online.
+===== ANALYST bigpickle 2026-09-04 05:15:50 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m# [0mTodos
+[•] STEP 1: DELTA analysis
+[ ] STEP 2: PRIORITIZE assets
+[ ] STEP 3: HYPOTHESES generation
+[ ] STEP 4: SELF-CRITIQUE and finalize
+[ ] STEP 5: NEXT ACTION selection
+[ ] STEP 6: LEARNING extraction
+[ ] STEP 7: RISK assessment
+[ ] Live probe: Check Smartcard API backend recovery
+[ ] Live probe: Check EDI endpoints reachability
+[ ] Live probe: Explore remaining unprobed hosts
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code}|%{time_total}|%{remote_ip}" --max-time 10 -H "User-Agent: Mozilla/5.0" https://api.smartcard.elringklinger.com/api/v1/ 2>/dev/null; echo ""
+502|0.635207|128.140.36.59
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code}|%{time_total}|%{remote_ip}" --max-time 10 -H "User-Agent: Mozilla/5.0" https://go.events.elringklinger.com/ 2>/dev/null; echo ""
+302|0.255317|18.208.125.13
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code}|%{time_total}|%{remote_ip}" --max-time 10 -H "User-Agent: Mozilla/5.0" https://edi2.elringklinger.com/ 2>/dev/null; echo ""
+000|10.001519|
+[0m
+[0m$ [0mcurl -s -o /dev/null -w "%{http_code}|%{time_total}|%{remote_ip}" --max-time 10 -H "User-Agent: Mozilla/5.0" https://edi7.elringklinger.com/ 2>/dev/null; echo ""
+000|10.002622|
+[0m
+[0m$ [0mcurl -si --max-time 10 -H "User-Agent: Mozilla/5.0" https://api.smartcard.elringklinger.com/api/v1/ 2>/dev/null
+HTTP/2 502 
+server: nginx
+date: Fri, 04 Sep 2026 05:05:45 GMT
+content-type: text/html
+content-length: 150
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+referrer-policy: no-referrer-when-downgrade
+permissions-policy: interest-cohort=()
+strict-transport-security: max-age=31536000; includeSubDomains
+content-security-policy: default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-ancestors 'self';
+
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mfor host in aircontrol avconf cctv cgline ektrcctv fwasvvideo1 imap dtspc-tst; do echo -n "$host.elringklinger.com: "; curl -s -o /dev/null -w "%{http_code}|%{time_total}|%{remote_ip}" --max-time 8 -H "User-Agent: Mozilla/5.0" "https://$host.elringklinger.com/" 2>/dev/null; echo ""; done
+aircontrol.elringklinger.com: 000|8.001934|
+avconf.elringklinger.com: 000|8.002769|
+cctv.elringklinger.com: 000|8.002858|
+cgline.elringklinger.com: 000|8.002359|
+ektrcctv.elringklinger.com: 000|8.002867|
+fwasvvideo1.elringklinger.com: 000|0.144628|
+imap.elringklinger.com: 000|8.002135|
+dtspc-tst.elringklinger.com: 000|8.002062|
+[0m
+[0m$ [0mcurl -si --max-time 10 -H "User-Agent: Mozilla/5.0" https://go.events.elringklinger.com/ 2>/dev/null
+HTTP/1.1 302 Found
+Date: Fri, 04 Sep 2026 05:06:49 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sun, 03 Sep 2028 05:06:49 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+[0m$ [0mecho "--- fwasvvideo1 fast-refused DNS check ---"; dig +short fwasvvideo1.elringklinger.com; echo "--- imap port 993 ---"; curl -s -o /dev/null -w "%{http_code}|%{time_total}" --max-time 5 "imaps://imap.elringklinger.com/" 2>/dev/null; echo ""; echo "--- imap port 143 ---"; timeout 5 bash -c 'echo "" | nc -w 3 imap.elringklinger.com 143 2>&1' 2>/dev/null; echo "--- dtspc-tst HTTP ---"; curl -s -o /dev/null -w "%{http_code}|%{time_total}" --max-time 5 "http://dtspc-tst.elringklinger.com/" 2>/dev/null; echo ""
+--- fwasvvideo1 fast-refused DNS check ---
+193.100.246.246
+--- imap port 993 ---
+000|5.002519
+--- imap port 143 ---
+--- dtspc-tst HTTP ---
+000|5.002589
+[0m
+[0m$ [0mfor host in aircontrol avconf cctv cgline ektrcctv fwasvvideo1 imap dtspc-tst; do echo -n "HTTP $host: "; curl -s -o /dev/null -w "%{http_code}|%{time_total}" --max-time 5 -H "User-Agent: Mozilla/5.0" "http://$host.elringklinger.com/" 2>/dev/null; echo ""; done
+HTTP aircontrol: 000|5.002148
+HTTP avconf: 000|5.003033
+HTTP cctv: 000|5.002118
+HTTP cgline: 000|5.001926
+HTTP ektrcctv: 000|5.001779
+HTTP fwasvvideo1: 000|5.001695
+HTTP imap: 000|5.001705
+HTTP dtspc-tst: 000|5.001193
+[0m
+[0m$ [0m# Try Pardot API with different endpoint patterns and POST
+echo "--- Pardot API POST methods ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/api" -X POST -d "method=getCampaigns&format=json" -H "Content-Type: application/x-www-form-urlencoded" 2>/dev/null | head -c 500
+echo ""
+echo "--- Pardot version 4 ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&version=4&format=json" 2>/dev/null | head -c 500
+echo ""
+echo "--- Pardot pi/version endpoints ---"
+for path in /api/v1 /api/v2 /pi/versions /api/v5 /xmlrpc /api/v3; do echo -n "$path: "; curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://go.events.elringklinger.com${path}" 2>/dev/null; echo ""; done
+--- Pardot API POST methods ---
+{"code":49,"message":"Access Denied"}
+--- Pardot version 4 ---
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+--- Pardot pi/version endpoints ---
+/api/v1: 401
+/api/v2: 401
+/pi/versions: 302
+/api/v5: 401
+/xmlrpc: 302
+/api/v3: 401
+[0m
+[0m$ [0m# Check HTTP (non-TLS) on Smartcard API - maybe different backend
+echo "--- Smartcard API HTTP ---"
+curl -si --max-time 8 "http://api.smartcard.elringklinger.com/api/v1/" 2>/dev/null
+echo ""
+echo "--- Smartcard API other paths ---"
+for path in /health /status /metrics /actuator /actuator/health /env /info /debug /admin /internal /v1 /v2 /beta /api/internal /api/admin /api/health; do echo -n "/api${path}: "; curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://api.smartcard.elringklinger.com${path}" 2>/dev/null; echo ""; done
+--- Smartcard API HTTP ---
+HTTP/1.1 301 Moved Permanently
+Server: nginx
+Date: Fri, 04 Sep 2026 05:07:51 GMT
+Content-Type: text/html
+Content-Length: 162
+Connection: keep-alive
+Location: https://api.smartcard.elringklinger.com/api/v1/
+
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+--- Smartcard API other paths ---
+/api/health: 404
+/api/status: 404
+/api/metrics: 404
+/api/actuator: 404
+/api/actuator/health: 404
+/api/env: 404
+/api/info: 404
+/api/debug: 404
+/api/admin: 404
+/api/internal: 404
+/api/v1: 404
+/api/v2: 404
+/api/beta: 404
+/api/api/internal: 502
+/api/api/admin: 502
+/api/api/health: 502
+[0m
+[0m$ [0m# Check main elringklinger.com and www for interesting paths
+echo "--- elringklinger.com root ---"
+curl -s -o /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://elringklinger.com/" 2>/dev/null
+echo ""
+echo "--- www.elringklinger.com ---"
+curl -s -o /dev/null -w "%{http_code}" --max-time 8 "https://www.elringklinger.com/" 2>/dev/null
+echo ""
+echo "--- Common API/admin paths on main domain ---"
+for path in /api /api/v1 /admin /wp-admin /graphql /sitemap.xml /.env /config /swagger /openapi.json /.git/HEAD /actuator /health /metrics; do echo -n "elringklinger.com$path: "; curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://elringklinger.com${path}" 2>/dev/null; echo ""; done
+--- elringklinger.com root ---
+301|https://elringklinger.de/en/
+--- www.elringklinger.com ---
+301
+--- Common API/admin paths on main domain ---
+elringklinger.com/api: 301
+elringklinger.com/api/v1: 301
+elringklinger.com/admin: 301
+elringklinger.com/wp-admin: 301
+elringklinger.com/graphql: 301
+elringklinger.com/sitemap.xml: 301
+elringklinger.com/.env: 301
+elringklinger.com/config: 301
+elringklinger.com/swagger: 301
+elringklinger.com/openapi.json: 301
+elringklinger.com/.git/HEAD: 301
+elringklinger.com/actuator: 000
+elringklinger.com/health: 000
+elringklinger.com/metrics: 000
+[0m
+[0m$ [0m# Pardot versioned API deeper probe
+echo "--- POST to versioned endpoints ---"
+for ver in v1 v2 v3 v4 v5; do
+  echo -n "POST /api/$ver: "; 
+  curl -s --max-time 8 "https://go.events.elringklinger.com/api/$ver" -X POST -d "method=getCampaigns&format=json" -H "Content-Type: application/x-www-form-urlencoded" 2>/dev/null | head -c 300
+  echo ""
+done
+echo "--- GET versioned with api_key ---"
+for ver in v1 v2 v3 v5; do
+  echo -n "GET /api/$ver?method=getVersion: "; 
+  curl -s --max-time 8 "https://go.events.elringklinger.com/api/$ver?api_key=test&method=getVersion&format=json" 2>/dev/null | head -c 300
+  echo ""
+done
+--- POST to versioned endpoints ---
+POST /api/v1: {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+POST /api/v2: {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+POST /api/v3: {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+POST /api/v4: {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+POST /api/v5: {"code":49,"message":"Access Denied"}
+--- GET versioned with api_key ---
+GET /api/v1?method=getVersion: {"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+GET /api/v2?method=getVersion: {"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+GET /api/v3?method=getVersion: {"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+GET /api/v5?method=getVersion: {"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0m# Follow Pardot pi/versions and xmlrpc redirects
+echo "--- pi/versions redirect ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/pi/versions" 2>/dev/null
+echo ""
+echo "--- xmlrpc redirect ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/xmlrpc" 2>/dev/null
+echo ""
+echo "--- Pardot API additional methods ---"
+for method in getFolder getFolders getTag getTags getScore getScores getProspects getVisitorsEmail getVisitorActivity; do
+  echo -n "method=$method: "; 
+  curl -s --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=$method&format=json" 2>/dev/null | head -c 200
+  echo ""
+done
+--- pi/versions redirect ---
+HTTP/1.1 302 Found
+Date: Fri, 04 Sep 2026 05:08:24 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sun, 03 Sep 2028 05:08:24 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+
+--- xmlrpc redirect ---
+HTTP/1.1 302 Found
+Date: Fri, 04 Sep 2026 05:08:24 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sun, 03 Sep 2028 05:08:24 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+
+--- Pardot API additional methods ---
+method=getFolder: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getFolders: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getTag: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getTags: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getScore: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getScores: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getProspects: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getVisitorsEmail: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+method=getVisitorActivity: {"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+[0m
+[0m$ [0m# Follow elringklinger.com redirects to see what's actually there
+echo "--- Following redirects ---"
+for path in /api /admin /graphql /swagger /openapi.json /.env /.git/HEAD /wp-admin /sitemap.xml /config; do
+  echo -n "elringklinger.com$path -> "; 
+  curl -s -o /dev/null -w "%{http_code} -> %{redirect_url}" --max-time 8 "https://elringklinger.com${path}" 2>/dev/null; 
+  echo ""
+done
+--- Following redirects ---
+elringklinger.com/api -> 000 -> 
+elringklinger.com/admin -> 000 -> 
+elringklinger.com/graphql -> 000 -> 
+elringklinger.com/swagger -> 000 -> 
+elringklinger.com/openapi.json -> 000 -> 
+elringklinger.com/.env -> 000 -> 
+elringklinger.com/.git/HEAD -> 000 -> 
+elringklinger.com/wp-admin -> 000 -> 
+elringklinger.com/sitemap.xml -> 000 -> 
+elringklinger.com/config -> 000 ->
+[0m
+[0m$ [0m# Pardot v5 API - different response format, worth exploring
+echo "--- Pardot v5 full response headers ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/api/v5" 2>/dev/null
+echo ""
+echo "--- Pardot v5 with various methods ---"
+for method in getVersion getAccount getUser getUserCampaigns getFolders getTags getScore; do
+  echo -n "v5/$method: "; 
+  curl -s --max-time 8 "https://go.events.elringklinger.com/api/v5?api_key=test&method=$method&format=json" 2>/dev/null | head -c 300
+  echo ""
+done
+--- Pardot v5 full response headers ---
+HTTP/1.1 401 Unauthorized
+Date: Fri, 04 Sep 2026 05:09:54 GMT
+Content-Type: application/json
+Content-Length: 37
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+{"code":49,"message":"Access Denied"}
+--- Pardot v5 with various methods ---
+v5/getVersion: {"code":198,"message":"Endpoint not found"}
+v5/getAccount: {"code":198,"message":"Endpoint not found"}
+v5/getUser: {"code":198,"message":"Endpoint not found"}
+v5/getUserCampaigns: {"code":198,"message":"Endpoint not found"}
+v5/getFolders: {"code":198,"message":"Endpoint not found"}
+v5/getTags: {"code":198,"message":"Endpoint not found"}
+v5/getScore: {"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0m# Check Pardot tracking/tracker endpoints - these sometimes have no auth
+echo "--- Pardot tracking endpoints ---"
+for path in /p/ /t/ /l/ /e/ /visitor /analytics /track /tracking; do
+  echo -n "$path: "; 
+  curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://go.events.elringklinger.com${path}" 2>/dev/null
+  echo ""
+done
+echo "--- Pardot form handlers ---"
+for path in /form/ /form-handler/ /submit/ /landing-page /lp/ /email/hTfSjNjB; do
+  echo -n "$path: "; 
+  curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://go.events.elringklinger.com${path}" 2>/dev/null
+  echo ""
+done
+--- Pardot tracking endpoints ---
+/p/: 302
+/t/: 200
+/l/: 200
+/e/: 200
+/visitor: 302
+/analytics: 200
+/track: 302
+/tracking: 302
+--- Pardot form handlers ---
+/form/: 302
+/form-handler/: 302
+/submit/: 302
+/landing-page: 302
+/lp/: 302
+/email/hTfSjNjB: 302
+[0m
+[0m$ [0m# Smartcard API: test /api/api/* paths - this is a path confusion finding
+echo "--- Smartcard nested /api/api paths full response ---"
+for path in /api/api/ /api/api/health /api/api/internal /api/api/admin /api/api/v1 /api/api/v2 /api/api/debug /api/api/metrics /api/api/status /api/api/config /api/api/env; do
+  echo -n "$path: "; 
+  curl -s -o /dev/null -w "%{http_code}|%{time_total}" --max-time 8 "https://api.smartcard.elringklinger.com${path}" 2>/dev/null
+  echo ""
+done
+--- Smartcard nested /api/api paths full response ---
+/api/api/: 502|0.552894
+/api/api/health: 502|0.494977
+/api/api/internal: 502|0.518212
+/api/api/admin: 502|0.531381
+/api/api/v1: 502|0.501954
+/api/api/v2: 502|0.557240
+/api/api/debug: 502|0.501538
+/api/api/metrics: 502|0.612454
+/api/api/status: 502|0.510813
+/api/api/config: 502|0.511054
+/api/api/env: 502|0.557444
+[0m
+[0m$ [0mecho "--- Pardot /t/ ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/t/" 2>/dev/null
+echo ""
+echo "--- Pardot /l/ ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/l/" 2>/dev/null
+echo ""
+echo "--- Pardot /e/ ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/e/" 2>/dev/null
+--- Pardot /t/ ---
+HTTP/1.1 200 OK
+Date: Fri, 04 Sep 2026 05:10:14 GMT
+Content-Type: text/xml; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+
+--- Pardot /l/ ---
+HTTP/1.1 200 OK
+Date: Fri, 04 Sep 2026 05:10:14 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 92
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+x-pardot-canary: true
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+p3p: CP="NOI DSP COR CURa ADMa DEVa TAIa OUR BUS IND UNI COM NAV INT", policyref="/w3c/p3p.xml"
+vary: Accept-Encoding,User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+<p>This link is mis-configured. Please contact your site administrator to have it fixed.</p>
+--- Pardot /e/ ---
+HTTP/1.1 200 OK
+Date: Fri, 04 Sep 2026 05:10:14 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+[0m$ [0mecho "--- Pardot /analytics ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/analytics" 2>/dev/null
+echo ""
+echo "--- Pardot /track ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://go.events.elringklinger.com/track" 2>/dev/null
+echo ""
+echo "--- Pardot /visitor ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://go.events.elringklinger.com/visitor" 2>/dev/null
+echo ""
+echo "--- Pardot /p/ ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://go.events.elringklinger.com/p/" 2>/dev/null
+echo ""
+--- Pardot /analytics ---
+HTTP/1.1 200 OK
+Date: Fri, 04 Sep 2026 05:10:23 GMT
+Content-Type: text/javascript; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+p3p: CP="CAO DSP AND SO ON" policyref="/w3c/p3p.xml"
+vary: User-Agent
+X-Pardot-Route: 9b06e8e2308c32c7bf9ba8adfb7be2e1
+
+
+--- Pardot /track ---
+302|http://elringklinger.com/
+--- Pardot /visitor ---
+302|http://elringklinger.com/
+--- Pardot /p/ ---
+302|http://elringklinger.com/
+[0m
+Interesting - `/t/`, `/l/`, `/e/`, `/analytics` on Pardot return 200. Let me examine these.
+[0m$ [0m# Pardot tracking endpoint is usually /t.js or similar with tracking IDs - let's see if dir listing or known params
+echo "--- Pardot tracking script ---"
+for path in /t.js /l.js /e.js /t/ck.js /t/pi.js /analytics/pi.js /pi.js; do
+  echo -n "$path: "; 
+  curl -s -o /dev/null -w "%{http_code}|%{content_type}" --max-time 5 "https://go.events.elringklinger.com${path}" 2>/dev/null
+  echo ""
+done
+--- Pardot tracking script ---
+/t.js: 302|text/html; charset=UTF-8
+/l.js: 302|text/html; charset=UTF-8
+/e.js: 302|text/html; charset=UTF-8
+/t/ck.js: 200|text/xml; charset=utf-8
+/t/pi.js: 200|text/xml; charset=utf-8
+/analytics/pi.js: 302|text/html; charset=UTF-8
+/pi.js: 200|application/javascript
+[0m
+[0m$ [0mecho "--- Pardot /pi.js content ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/pi.js" 2>/dev/null | head -c 2000
+echo ""
+echo "--- Pardot /t/ck.js ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/t/ck.js" 2>/dev/null | head -c 500
+--- Pardot /pi.js content ---
+/*!
+	Marketing Cloud Account Engagement's Engagement Tracker Javascript - 2023-04-13 11:24:52
+	If you're an ad blocker, block the URI only. Don't block the domain.
+*/
+function checkNamespace(e){for(var r=e.split("."),t=window,i=0;i<r.length;i++){var p=r[i];t[p]||(t[p]={}),t=t[p]}}function piTracker(e){if(checkNamespace("pi.tracker"),pi.tracker.visitor_id=piGetCookie("visitor_id"+(piAId-1e3)),pi.tracker.visitor_id_sign=piGetCookie("visitor_id"+(piAId-1e3)+"-hash"),pi.tracker.pi_opt_in=piGetCookie("pi_opt_in"+(piAId-1e3)),"false"!=pi.tracker.pi_opt_in||void 0!==pi.tracker.title&&pi.tracker.notify_pi){var r=piGetParameter(document.URL,"pi_campaign_id");null!=r?pi.tracker.campaign_id=r:"undefined"!=typeof piCId&&""!=piCId&&null!=piCId?pi.tracker.campaign_id=piCId:pi.tracker.campaign_id=null,pi.tracker.account_id=piAId,pi.tracker.title=document.title,"undefined"!=typeof piPoints&&(pi.tracker.pi_points=piPoints),pi.tracker.url=void 0!==e?e:document.URL,pi.tracker.referrer=document.referrer,null==pi.tracker.referrer&&(pi.tracker.referrer=piGetParameter(document.URL,"referrer")),pi.tracker.referrer=pi.tracker.referrer;var t=piGetParameter(document.URL,"pi_ad_id");null!=t&&(pi.tracker.pi_ad_id=t);var i=piGetParameter(document.URL,"creative");null!=i&&(pi.tracker.creative=i);var p=piGetParameter(document.URL,"matchtype");null!=p&&(pi.tracker.matchtype=p);var a=piGetParameter(document.URL,"keyword");null!=a&&(pi.tracker.keyword=a);var c=piGetParameter(document.URL,"network");null!=c&&(pi.tracker.network=c);var n=piGetParameter(document.URL,"device");null!=n&&(pi.tracker.device=n),"undefined"!=typeof piIncludeInActivities&&(pi.tracker.pi_include_in_activies=piIncludeInActivities),"undefined"!=typeof piProfileId&&(pi.tracker.pi_profile_id=piProfileId);var o=piGetParameter(document.URL,"pi_profile_id");null!=o&&(pi.tracker.pi_profile_id=o);var d=piGetParameter(document.URL,"pi_email");null!=d&&(pi.tracker.pi_email=d);var u=piGetParameter(document.URL,"pi_list_email");null!=u&&(pi
+--- Pardot /t/ck.js ---
+[0m
+[0m$ [0m# Check what pi.js does - Pardot visitor tracking
+echo "--- pi.js with params ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/pi.js" -H "Referer: https://go.events.elringklinger.com/" 2>/dev/null | head -c 3000
+--- pi.js with params ---
+/*!
+	Marketing Cloud Account Engagement's Engagement Tracker Javascript - 2023-04-13 11:24:52
+	If you're an ad blocker, block the URI only. Don't block the domain.
+*/
+function checkNamespace(e){for(var r=e.split("."),t=window,i=0;i<r.length;i++){var p=r[i];t[p]||(t[p]={}),t=t[p]}}function piTracker(e){if(checkNamespace("pi.tracker"),pi.tracker.visitor_id=piGetCookie("visitor_id"+(piAId-1e3)),pi.tracker.visitor_id_sign=piGetCookie("visitor_id"+(piAId-1e3)+"-hash"),pi.tracker.pi_opt_in=piGetCookie("pi_opt_in"+(piAId-1e3)),"false"!=pi.tracker.pi_opt_in||void 0!==pi.tracker.title&&pi.tracker.notify_pi){var r=piGetParameter(document.URL,"pi_campaign_id");null!=r?pi.tracker.campaign_id=r:"undefined"!=typeof piCId&&""!=piCId&&null!=piCId?pi.tracker.campaign_id=piCId:pi.tracker.campaign_id=null,pi.tracker.account_id=piAId,pi.tracker.title=document.title,"undefined"!=typeof piPoints&&(pi.tracker.pi_points=piPoints),pi.tracker.url=void 0!==e?e:document.URL,pi.tracker.referrer=document.referrer,null==pi.tracker.referrer&&(pi.tracker.referrer=piGetParameter(document.URL,"referrer")),pi.tracker.referrer=pi.tracker.referrer;var t=piGetParameter(document.URL,"pi_ad_id");null!=t&&(pi.tracker.pi_ad_id=t);var i=piGetParameter(document.URL,"creative");null!=i&&(pi.tracker.creative=i);var p=piGetParameter(document.URL,"matchtype");null!=p&&(pi.tracker.matchtype=p);var a=piGetParameter(document.URL,"keyword");null!=a&&(pi.tracker.keyword=a);var c=piGetParameter(document.URL,"network");null!=c&&(pi.tracker.network=c);var n=piGetParameter(document.URL,"device");null!=n&&(pi.tracker.device=n),"undefined"!=typeof piIncludeInActivities&&(pi.tracker.pi_include_in_activies=piIncludeInActivities),"undefined"!=typeof piProfileId&&(pi.tracker.pi_profile_id=piProfileId);var o=piGetParameter(document.URL,"pi_profile_id");null!=o&&(pi.tracker.pi_profile_id=o);var d=piGetParameter(document.URL,"pi_email");null!=d&&(pi.tracker.pi_email=d);var u=piGetParameter(document.URL,"pi_list_email");null!=u&&(pi.tracker.pi_list_email=u);var m=piGetParameter(document.URL,"utm_campaign");null!=m&&(pi.tracker.utm_campaign=m);var l=piGetParameter(document.URL,"utm_medium");null!=l&&(pi.tracker.utm_medium=l);var _=piGetParameter(document.URL,"utm_source");null!=_&&(pi.tracker.utm_source=_);var k=piGetParameter(document.URL,"utm_content");null!=k&&(pi.tracker.utm_content=k);var s=piGetParameter(document.URL,"utm_term");null==s&&(s=piGetParameter(document.URL,"_kk")),null!=s&&(pi.tracker.utm_term=s);var v=piGetParameter(document.URL,"gclid");null!=v&&(pi.tracker.gclid=v);var f=piGetParameter(document.URL,"pi_content");null!=f&&(pi.tracker.pi_content=f);var U=piGetParameter(document.URL,"pi_em");null!=U&&(pi.tracker.pi_em=U);var G="ver=3";for(property in pi.tracker)G+="&"+property+"="+encodeURIComponent(pi.tracker[property]);var P=!1;try{P=location.protocol+"//"}catch(e){}if(null==P&&(P="http://"),"string"!=typeof piTUrl||-1==piTUrl.indexOf("localhost")&&-1===piTUrl.indexOf("app.dev.pardot"))g=P+"pi.
+[0m
+[0m$ [0m# The pi.js tracker calls pi.tracker domain - extract the actual endpoint
+curl -s --max-time 8 "https://go.events.elringklinger.com/pi.js" 2>/dev/null | grep -oE "pi[._][a-zA-Z]+\.[a-zA-Z.]+" | sort -u | head -30
+pi.pardot.com
+pi.tracker.account
+pi.tracker.campaign
+pi.tracker.creative
+pi.tracker.device
+pi.tracker.gclid
+pi.tracker.keyword
+pi.tracker.matchtype
+pi.tracker.network
+pi.tracker.notify
+pi.tracker.pi
+pi.tracker.referrer
+pi.tracker.title
+pi.tracker.url
+pi.tracker.utm
+pi.tracker.visitor
+[0m
+This is standard Pardot engagement tracker JS — nothing exploitable there. Let me check the tracking beacon endpoint which is what pi.js calls, and check the elringklinger.de main domain since the root redirects there.
+[0m$ [0m# elringklinger.de is TYPO3 - check for admin/backend, install tool, typo3 extension exposure
+echo "--- TYPO3 paths ---"
+for path in /typo3/ /typo3/sysext/ /typo3/install/ /typo3/index.php /install.php /typo3conf/ /fileadmin/ /uploads/ /typo3temp/ /?eID= /typo3/sysext/core/ /typo3/sysext/; do
+  echo -n "elringklinger.de$path: "; 
+  curl -s -o /dev/null -w "%{http_code}|%{redirect_url}" --max-time 6 "https://elringklinger.de${path}" 2>/dev/null
+  echo ""
+done
+--- TYPO3 paths ---
+elringklinger.de/typo3/: 000|
+elringklinger.de/typo3/sysext/: 000|
+elringklinger.de/typo3/install/: 000|
+elringklinger.de/typo3/index.php: 000|
+elringklinger.de/install.php: 000|
+elringklinger.de/typo3conf/: 000|
+elringklinger.de/fileadmin/: 000|
+elringklinger.de/uploads/: 000|
+elringklinger.de/typo3temp/: 000|
+elringklinger.de/?eID=: 000|
+elringklinger.de/typo3/sysext/core/: 000|
+elringklinger.de/typo3/sysext/: 000|
+[0m
+[0m$ [0m# Check elringklinger.de main domain - this is where all traffic redirects
+echo "--- elringklinger.de ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://elringklinger.de/en/" 2>/dev/null
+echo ""
+echo "--- elringklinger.de common paths ---"
+for path in / /api /admin /graphql /login /wp-admin /wp-json/ /sitemap.xml /.env /.git/HEAD /swagger /openapi.json /actuator /health; do
+  echo -n "elringklinger.de$path: "; 
+  curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://elringklinger.de${path}" 2>/dev/null
+  echo ""
+done
+--- elringklinger.de ---
+000|
+--- elringklinger.de common paths ---
+elringklinger.de/: 000
+elringklinger.de/api: 000
+elringklinger.de/admin: 000
+elringklinger.de/graphql: 000
+elringklinger.de/login: 000
+elringklinger.de/wp-admin: 000
+elringklinger.de/wp-json/: 000
+elringklinger.de/sitemap.xml: 000
+elringklinger.de/.env: 000
+elringklinger.de/.git/HEAD: 000
+elringklinger.de/swagger: 000
+elringklinger.de/openapi.json: 000
+elringklinger.de/actuator: 000
+elringklinger.de/health: 
+
+<shell_metadata>
+shell tool terminated command after exceeding timeout 90000 ms. If this command is expected to take longer and is not waiting for interactive input, retry with a larger timeout value in milliseconds.
+</shell_metadata>
+[0m
+[0m$ [0m# The core pi.js sends to pi.pardot.com - let's see the full URL construction
+curl -s --max-time 8 "https://go.events.elringklinger.com/pi.js" 2>/dev/null | grep -oE "pi\.tracker\.[a-z_]+" | sort -u
+pi.tracker.account_id
+pi.tracker.campaign_id
+pi.tracker.creative
+pi.tracker.device
+pi.tracker.gclid
+pi.tracker.keyword
+pi.tracker.matchtype
+pi.tracker.network
+pi.tracker.notify_pi
+pi.tracker.pi_ad_id
+pi.tracker.pi_content
+pi.tracker.pi_em
+pi.tracker.pi_email
+pi.tracker.pi_include_in_activies
+pi.tracker.pi_list_email
+pi.tracker.pi_opt_in
+pi.tracker.pi_points
+pi.tracker.pi_profile_id
+pi.tracker.referrer
+pi.tracker.title
+pi.tracker.url
+pi.tracker.utm_campaign
+pi.tracker.utm_content
+pi.tracker.utm_medium
+pi.tracker.utm_source
+pi.tracker.utm_term
+pi.tracker.visitor_id
+pi.tracker.visitor_id_sign
+[0m
+elringklinger.de is timing out now. That's also been previously REJECTED as a TYPO3 login panel (out of scope). Let me focus on the Pardot tracking beacon, which is the actual data-collection endpoint that pi.js calls.
+[0m$ [0m# Get the piAId and piCId variables which are usually embedded in page embedding the tracker
+echo "--- Check for piAId in tracking scripts ---"
+curl -s --max-time 8 "https://go.events.elringklinger.com/analytics" -H "Accept: application/json" 2>/dev/null | head -c 500
+echo ""
+echo "--- Try known Pardot tracking endpoints with account id ---"
+curl -sio /dev/null -w "%{http_code}" --max-time 8 "https://go.events.elringklinger.com/t/?pi_opt_in=true" 2>/dev/null
+echo ""
+curl -sio /dev/null -w "%{http_code}" --max-time 8 "https://go.events.elringklinger.com/l/?visitor_id=test" 2>/dev/null
+echo ""
+# Check the tracking pixel approach - /t/?pi_uid=
+curl -s --max-time 8 "https://go.events.elringklinger.com/t/?pi_uid=test&pi_opt_in=true&url=https://elringklinger.com" 2>/dev/null | head -c 300
+--- Check for piAId in tracking scripts ---
+
+--- Try known Pardot tracking endpoints with account id ---
+200
+200
+[0m
+[0m$ [0m# The /t/ beacon accepts tracking params. This is a legitimate Pardot visitor tracking endpoint.
+# Let me check what data comes back and whether form handlers leak.
+# Also test the /l/ link-tracker which is typically /l/{linkid} and /e/{emailid}/{id}
+echo "--- These are Pardot standard tracking endpoints (legit/public). Checking for abuse vectors ---"
+# Form handler identifiers often predictable - check for open form handler endpoint that accepts submissions
+echo "--- Pardot form endpoint via pi_form_handlers ---"
+for ph in /pfw/ /form/ /jquery.js /track.js; do
+  echo -n "$ph: "; curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://go.events.elringklinger.com${ph}" 2>/dev/null; echo ""
+done
+curl -s --max-time 8 "https://go.events.elringklinger.com/pi.js" 2>/dev/null | grep -oE "piTUrl[^;]*" | head -5
+--- These are Pardot standard tracking endpoints (legit/public). Checking for abuse vectors ---
+--- Pardot form endpoint via pi_form_handlers ---
+/pfw/: 302
+/form/: 302
+/jquery.js: 302
+/track.js: 302
+piTUrl||-1==piTUrl.indexOf("localhost")&&-1===piTUrl.indexOf("app.dev.pardot"))g=P+"pi.pardot.com/analytics?"
+piTUrl+"/analytics?"
+[0m
+[0m$ [0m# Explore the /t/ and /l/ beacons more - the actual tracker pixel
+echo "--- /t/ with full query ---"
+curl -si --max-time 8 "https://go.events.elringklinger.com/t/?pi_opt_in=true&visitor_id=1234567&url=https%3A%2F%2Felringklinger.com%2F&referrer=https%3A%2F%2Fgoogle.com&title=test" 2>/dev/null
+echo ""
+echo "--- check redirect target after tracking ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://go.events.elringklinger.com/t/?" 2>/dev/null
+echo ""
+--- /t/ with full query ---
+HTTP/1.1 200 OK
+Date: Fri, 04 Sep 2026 05:12:54 GMT
+Content-Type: text/xml; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+
+--- check redirect target after tracking ---
+200|
+[0m
+The `/t/`, `/l/`, `/e/`, `/analytics` endpoints are all standard Pardot/Salesforce Marketing Cloud engagement tracking endpoints (public, intended to receive visitor tracking data, not data-leakage). These are not findings.
+
+Let me now re-examine the Smartcard API — the interesting finding there is that `/api/api/*` nested paths all return 502 (same as `/api/v1/*`), but bare `/api/*` paths return 404. This means the nginx routing matches a specific location prefix. Let me explore what other prefixes route to the live backend vs 404.
+[0m$ [0m# The 502 responses reveal which paths reach the live backend vs 404 (no route)
+# Bare /api/ = 404 but /api/{anything}/api/* = 502? Wait, need to clarify
+# Earlier: /api/api/health = 502, /api/v1/ = 502, /api/health = 404
+# So the routing pattern: /api/{something}/ routes to backend, exact /api/health doesn't
+# Let me map which first-segment prefixes hit backend
+echo "--- Smartcard first-segment routing map ---"
+for seg in v1 v2 v3 beta internal admin health api dev test stag uat prod auth user users smartcard card sc cards provision identity token oauth; do
+  echo -n "/api/$seg/: "; 
+  curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://api.smartcard.elringklinger.com/api/$seg/" 2>/dev/null
+  echo ""
+done
+--- Smartcard first-segment routing map ---
+/api/v1/: 502
+/api/v2/: 502
+/api/v3/: 502
+/api/beta/: 502
+/api/internal/: 502
+/api/admin/: 502
+/api/health/: 502
+/api/api/: 502
+/api/dev/: 502
+/api/test/: 502
+/api/stag/: 502
+/api/uat/: 502
+/api/prod/: 502
+/api/auth/: 502
+/api/user/: 502
+/api/users/: 502
+/api/smartcard/: 502
+/api/card/: 502
+/api/sc/: 502
+/api/cards/: 502
+/api/provision/: 502
+/api/identity/: 502
+/api/token/: 502
+/api/oauth/: 502
+[0m
+[0m$ [0m# Elringklinger.com all 301 to elringklinger.de which is timing out (unreachable)
+# Check if elringklinger.com might be a takeover candidate or different
+echo "--- elringklinger.com headers ---"
+curl -si --max-time 10 "https://elringklinger.com/" 2>/dev/null
+echo ""
+echo "--- elringklinger.com full redirect chain ---"
+curl -sIL --max-time 12 "https://elringklinger.com/" 2>/dev/null
+--- elringklinger.com headers ---
+
+--- elringklinger.com full redirect chain ---
+[0m
+Interesting. Now ALL `/api/*/` subpaths return 502 — they all hit the backend (which is down). The distinction is `/api/*` (no trailing slash) returns 404 while `/api/*/` (with trailing slash) returns 502. This is nginx routing: the location `^~ /api/` proxies to backend, and a bare `/api/{seg}` without trailing slash doesn't match the proxy rule.
+
+Wait, but earlier `/api/health` (no trailing slash) returned 404 and `/api/v1/` (with slash) was 502. Let me re-verify this pattern.
+
+Actually looking back: `/api/v1` returned 404, `/api/api/health` returned 502. Then the routing map shows all `/api/{something}/` (with trailing slash) return 502. So the pattern is: the nginx config proxies `location ~ ^/api/.+/` or similar to the backend, and bare `/api/{seg}` without trailing slash falls to the default 404 handler.
+
+Actually wait, `/api/api/health` — that's `/api/api/health` not just `/api/api/` + health. And it returned 502. And `/api/health` returns 404 but `/api/health/` returns 502. So the distinguishing factor is the trailing slash. This is most likely a proxy_pass config where `location /api/` proxies everything, and a redirect/normalization 404s on paths without trailing slash.
+
+Hmm, but the important point is: **all `/api/*/` paths route to the same backend**, which is uniformly down (502). There's no path-based routing distinction that we can exploit to reach different backends. And the backend being uniformly down means there's no live endpoint to test.
+
+Let me verify the trailing-slash theory and also check if the smartcard backend ever comes online by checking response variance.
+[0m$ [0m# Check non-trailing-slash 404 responses and whether they differ (could reveal route structure)
+curl -s --max-time 8 "https://api.smartcard.elringklinger.com/api/health" 2>/dev/null
+echo "---"
+curl -s --max-time 8 "https://api.smartcard.elringklinger.com/api/v1" 2>/dev/null
+echo "---"
+curl -s --max-time 8 "https://api.smartcard.elringklinger.com/api/oauth/token" 2>/dev/null
+echo "---"
+curl -s --max-time 8 "https://api.smartcard.elringklinger.com/api/auth/login" 2>/dev/null
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+---
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+---
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+---
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0m# Verify trailing slash = 502 vs no slash = 404 pattern
+for p in "/api" "/api/" "/api/v1" "/api/v1/" "/api/health" "/api/health/" "/api/x" "/api/x/" "/api/foo/bar" "/api/foo/bar/"; do
+  echo -n "GET $p: "; curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://api.smartcard.elringklinger.com${p}" 2>/dev/null; echo ""
+done
+GET /api: 502
+GET /api/: 502
+GET /api/v1: 502
+GET /api/v1/: 502
+GET /api/health: 502
+GET /api/health/: 502
+GET /api/x: 502
+GET /api/x/: 502
+GET /api/foo/bar: 502
+GET /api/foo/bar/: 502
+[0m
+Important correction! Now ALL `/api*` paths return 502, including `/api` and `/api/health` without trailing slash. Earlier these returned 404 or the root `/api/` / `/api/v1/` returned 502. Wait, earlier I recorded `/api/health: 404` — but that was with a different curl invocation. Let me recheck... Actually, earlier I tested `/api/health` in the loop where MOST returned 404 including `/api/health: 404`, `/api/status: 404`, `.env: 404`. But now `/api/health` returns 502.
+
+Wait, that earlier loop tested paths with `/api` as the additional prefix:
+```
+for path in /health /status /metrics /actuator /actuator/health /env /info /debug /admin /internal /v1 /v2 /beta /api/internal /api/admin /api/health
+  curl "https://api.smartcard.elringklinger.com${path}" 
+```
+Wait no, it was `echo -n "/api${path}: "` but the curl was to `${path}`. Let me re-look: `curl "https://api.smartcard.elringklinger.com${path}"` — so it tested `/health`, `/status` etc directly, not `/api/health`. So `/api/health: 404` label was wrong; it was actually `/health: 404`. My earlier "$path" values included `/api/internal`, `/api/admin`, `/api/health` which returned 502.
+
+OK so reconciling: The correct picture is `/api*` and all subpaths return 502 (proxied to down backend). Non-`/api` paths like `/health`, `/status` all return 404 (nginx default). And what about the root `/`?
+[0m$ [0m# Also check http (non-TLS) on sub-paths and whether the backend-vs-nginx distinction shows via body timing
+# Check response time variance as signal of backend liveness
+for i in 1 2 3; do
+  echo -n "probe $i /api/v1/: "; curl -s -o /dev/null -w "%{http_code}|%{time_total}" --max-time 8 "https://api.smartcard.elringklinger.com/api/v1/" 2>/dev/null; echo ""
+done
+probe 1 /api/v1/: 502|0.481953
+probe 2 /api/v1/: 502|0.601952
+probe 3 /api/v1/: 502|0.494450
+[0m
+[0m$ [0m# Clarify root and non-api paths
+echo "--- root ---"
+curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://api.smartcard.elringklinger.com/" 2>/dev/null; echo ""
+for p in /health /status /swagger /swagger.json /openapi.json /.well-known /favicon.ico /.env /actuator /health/status /v1 /v2 /docs /redoc; do
+  echo -n "$p: "; curl -s -o /dev/null -w "%{http_code}" --max-time 6 "https://api.smartcard.elringklinger.com${p}" 2>/dev/null; echo ""
+done
+--- root ---
+404
+/health: 404
+/status: 404
+/swagger: 404
+/swagger.json: 404
+/openapi.json: 404
+/.well-known: 404
+/favicon.ico: 404
+/.env: 404
+/actuator: 404
+/health/status: 404
+/v1: 404
+/v2: 404
+/docs: 404
+/redoc: 404
+[0m
+So the confirmed picture on Smartcard API:
+- Root `/` → 404 (nginx default)
+- `/api*` → 502 (proxied to backend, consistently down, response ~0.5s consistent)
+- Everything else → 404
+
+The backend has been consistently down across all probes spanning multiple days. This is a dead-end until the backend comes online. The hypothesis about "backend recovery" depends on intermittent availability that hasn't materialized.
+
+Let me pivot to the one genuinely reachable live asset: `go.events.elringklinger.com` (Pardot). The API requires a valid API key (all methods return err_code:1). But let me reconsider what's actually in scope and check for any genuinely anim gap.
+
+Let me now check the main elringklinger.com and www.elringklinger.com properly — they were the seed inventory entries and 301 to elringklinger.de which is now timing out entirely.
+
+Let me also reconsider whether go.events Pardot has any non-auth-required endpoints that leak data.
+[0m$ [0m# Pardot: test open/anon endpoints that may leak prospect data - known Pardot URL patterns
+# Some Pardot instances expose a "visit" or "become a prospect" flow
+echo "--- Pardot prospect/account endpoints ---"
+for p in /api/prospect /prospect /become /visit /prospects /createsession /authenticate /login /wf/touch /wf/open /gi/.js; do
+  echo -n "$p: "; curl -s -o /dev/null -w "%{http_code}|%{redirect_url}" --max-time 6 "https://go.events.elringklinger.com${p}" 2>/dev/null; echo ""
+done
+--- Pardot prospect/account endpoints ---
+/api/prospect: 401|
+/prospect: 302|http://elringklinger.com/
+/become: 302|http://elringklinger.com/
+/visit: 302|http://elringklinger.com/
+/prospects: 302|http://elringklinger.com/
+/createsession: 302|http://elringklinger.com/
+/authenticate: 302|http://elringklinger.com/
+/login: 302|http://elringklinger.com/
+/wf/touch: 302|http://elringklinger.com/
+/wf/open: 302|http://elringklinger.com/
+/gi/.js: 302|http://elringklinger.com/
+[0m
+[0m$ [0m# www.elringklinger.com
+echo "--- www.elringklinger.com ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "https://www.elringklinger.com/" 2>/dev/null; echo ""
+echo "--- elringklinger.com http ---"
+curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 8 "http://elringklinger.com/" 2>/dev/null; echo ""
+echo "--- follow chain ---"
+curl -sIL --max-time 15 -H "User-Agent: Mozilla/5.0" "https://www.elringklinger.com/" 2>/dev/null | grep -iE "HTTP/|location:" | head -30
+--- www.elringklinger.com ---
+000|
+--- elringklinger.com http ---
+000|
+--- follow chain ---
+[0m
+All non-API paths on go.events 302 to http://elringklinger.com. This whole host is basically: Pardot API (401/404, auth-gated) + 302-routed marketing pages + tracking endpoints. There's nothing exploitable without a valid API key.
+
+Let me review this critically. All reachable live assets are dead ends:
+1. **api.smartcard** — backend down (502 on all `/api*`), no route distinctions exploitable
+2. **go.events (Pardot)** — API auth-gated, tracking endpoints are legit public functionality, marketing pages all 302 to main site
+3. **edi2/edi7** — unreachable (timeout)
+4. **All infra hosts** — unreachable (timeout)
+5. **elringklinger.com/de** — redirects to elringklinger.de which is unreachable/timing out
+
+Let me do a couple more targeted probes on the Pardot host to see if the redirect target can be manipulated (open redirect chaining), which is the only live primitives.
+[0m$ [0m# Also test path-based redirect following
+echo "--- Path based ---"
+for p in "/@evil.com" "/http://evil.com" "/%5C%5Cevil.com" "//evil.com" "/\evil.com" "/login?next=//evil.com"; do
+  echo -n "$p -> "; curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 6 "https://go.events.elringklinger.com${p}" 2>/dev/null; echo ""
+done
+--- Path based ---
+/@evil.com -> 302|http://elringklinger.com/
+/http://evil.com -> 302|http://elringklinger.com/
+/%5C%5Cevil.com -> 302|http://elringklinger.com/
+//evil.com -> 302|http://elringklinger.com/
+/\evil.com -> 302|http://elringklinger.com/
+/login?next=//evil.com -> 302|http://elringklinger.com/
+[0m
+[0m$ [0m# Test if the 302 redirect target can be influenced (open redirect / redirect_uri reflection)
+echo "--- Test redirect_uri / return / next / url params ---"
+for q in "redirect_uri=https://evil.com" "return=https://evil.com" "next=https://evil.com" "url=https://evil.com" "redirect=https://evil.com" "referrer=https://evil.com" "dest=https://evil.com" "target=https://evil.com" "r=https://evil.com" "returnUrl=https://evil.com"; do
+  echo -n "?$q -> "; curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 6 "https://go.events.elringklinger.com/?$q" 2>/dev/null; echo ""
+  echo -n "/track?$q -> "; curl -sio /dev/null -w "%{http_code}|%{redirect_url}" --max-time 6 "https://go.events.elringklinger.com/track?$q" 2>/dev/null; echo ""
+done
+--- Test redirect_uri / return / next / url params ---
+?redirect_uri=https://evil.com -> 302|http://elringklinger.com/
+/track?redirect_uri=https://evil.com -> 302|http://elringklinger.com/
+?return=https://evil.com -> 302|http://elringklinger.com/
+/track?return=https://evil.com -> 302|http://elringklinger.com/
+?next=https://evil.com -> 302|http://elringklinger.com/
+/track?next=https://evil.com -> 302|http://elringklinger.com/
+?url=https://evil.com -> 302|http://elringklinger.com/
+/track?url=https://evil.com -> 302|http://elringklinger.com/
+?redirect=https://evil.com -> 302|http://elringklinger.com/
+/track?redirect=https://evil.com -> 302|http://elringklinger.com/
+?referrer=https://evil.com -> 302|http://elringklinger.com/
+/track?referrer=https://evil.com -> 302|http://elringklinger.com/
+?dest=https://evil.com -> 302|http://elringklinger.com/
+/track?dest=https://evil.com -> 302|http://elringklinger.com/
+?target=https://evil.com -> 302|http://elringklinger.com/
+/track?target=https://evil.com -> 302|http://elringklinger.com/
+?r=https://evil.com -> 302|http://elringklinger.com/
+/track?r=https://evil.com -> 302|http://elringklinger.com/
+?returnUrl=https://evil.com -> 302|http://elringklinger.com/
+/track?returnUrl=https://evil.com -> 302|http://elringklinger.com/
+[0m
+[0m# [0mTodos
+[✓] STEP 1: DELTA analysis
+[✓] STEP 2: PRIORITIZE assets
+[✓] STEP 3: HYPOTHESES generation
+[✓] STEP 4: SELF-CRITIQUE and finalize
+[✓] STEP 5: NEXT ACTION selection
+[✓] STEP 6: LEARNING extraction
+[✓] STEP 7: RISK assessment
+[✓] Live probe: Check Smartcard API backend recovery
+[✓] Live probe: Check EDI endpoints reachability
+[✓] Live probe: Explore remaining unprobed hosts
+[0m
+The redirect is hardcoded to `http://elringklinger.com/` regardless of parameters or paths. No open redirect and no redirect_uri reflection. This is a hardcoded catch-all 302 for any unmatched route. The `/\evil.com` returned a redirect URL of `http://elringklinger.com/` too — no reflection.
+
+That's the end of the live attack surface. Let me verify the final state of what remains reachable, and assess whether the Pardot `/api/v5` (which returns 401 Access Denied with `x-pardot-rsp: 0/0/1`) differs meaningfully from v1-v4.
+
+Actually, let me reconsider the Pardot v5 API — `/api/v5` returns HTTP 401 "Access Denied" while `/api/v1..v4` return err_code 49 "Access Denied" even without auth. The v5 endpoint is a distinct API tier. The `/api/v5` requires POST. Let me not go too deep — all auth-gated.
+
+Let me finalize my analysis. The delta from my previous session:
+- Smartcard API backend confirmed consistently down across all probes (multiple days) — no route distinctions, no recovery
+- Pardot: confirmed hardcoded 302, no open redirect, all API methods auth-gated (err_code:1), v1/v2/v3/v4 return err_code 49/198, v5 returns HTTP 401
+- EDI + all infra hosts remain unreachable
+- elringklinger.de (production site) now times out
+
+Everything reachable has been thoroughly enumerated. The surface is genuinely limited to dead/misconfigured backends and auth-gated marketing APIs. There are no NEW exploitable weaknesses discovered this session — the main finding is confirmation that the live surface is at a dead-end.
+
+Let me reconsider what remains worth tracking and finalize.
+## STEP 1 — DELTA
+- [CHANGED] `api.smartcard.elringklinger.com`: ALL `/api*` paths (with/without trailing slash) return 502 — backend uniformly down; earlier 404-vs-502 distinction was a mislabeled test, not a route-level finding. No path-based backend routing distinction exploitable.
+- [CHANGED] `go.events.elringklinger.com`: 302 redirect target is HARDCODED to `http://elringklinger.com/` — no redirect_uri/next/return/url/referrer/dest/target param reflection, no path-based redirect. OAuth redirect_uri chain closed.
+- [NEW] `go.events.elringklinger.com/api/v5` returns HTTP 401 `{"code":49}` distinct from v1-v4 (err_code 198/49 in JSON) — v5 is a separately-auth-gated API tier.
+- [NEW] `go.events.elringklinger.com/t/`, `/l/`, `/e/`, `/analytics`, `/pi.js` return 200 — standard Pardot/Salesforce engagement-tracking endpoints (public, non-sensitive collection, not a finding).
+- [CHANGED] `elringklinger.com`/`www.elringklinger.com` 301→`elringklinger.de` which now times out entirely (unreachable). Production site down.
+- [CONFIRMED] edi2, edi7, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap, dtspc-tst — all unreachable (TCP timeout / port closed). Only fwasvvideo1 resolves (193.100.246.246) but no HTTP.
+
+## STEP 2 — PRIORITIZE
+- [PRIO] api.smartcard.elringklinger.com, 5.9, surface=8(auth/API), value=8(PHI/credentials), tech=8(API gateway), gate=1(backend down, nothing reachable, no route discrimination), cloud=3, freshness=7 — HIGHEST surface but gate=1 because backend is uniformly 502; no live code to probe
+- [PRIO] go.events.elringklinger.com, 5.3, surface=7(Pardot/API/tracking), value=6(marketing PII), tech=7(Pardot v5 API), gate=3(no unauth method found among ~20 enumerated; redirect hardcoded), cloud=2, freshness=6 — live but fully auth/redirect-hardcoded
+- [PRIO] edi2/edi7.elringklinger.com, 4.4, surface=7(EDI/B2B), value=8(business docs), tech=6(EDI), gate=2(unreachable from external), cloud=1, freshness=4
+
+## STEP 3 — HYPOTHESES
+[HYP] Pardot v5 API tier exposes distinct auth-gated endpoints with different key/credential requirements
+class: AUTH
+asset: go.events.elringklinger.com/api/v5
+confidence: 42
+reasoning: v5 returns HTTP 401 "Access Denied" ({code:49}) while v1-v4 return JSON err_code 49/198 regardless — v5 is a separately-routed API tier that may accept OAuth bearer vs legacy API keys, potentially with different IDOR posture on GET resource methods.
+evidence_needed: a v5 endpoint returning a resource (200) instead of 401/198/1; or a 401 differing between methods to indicate per-method authz
+verify_steps: PASSIVE: GET https://go.events.elringklinger.com/api/v5/{resource} for resource in campaign, prospect, user, visitor, account, list, folder, tag; compare status codes
+impact: If any v5 resource responds without credentials → marketing PII / campaign data exposure. Severity MEDIUM-HIGH.
+testability: PASSIVE
+
+## STEP 4 — SELF-CRITIQUE
+- [PARKED] Smartcard API backend-downtime info-disclosure: backend uniformly 502 across all `/api*` for days with no variance; no route discrimination, no debug/trace leakage, no recovery observed. Dynamic state, not a reproducible vuln. Confidence <40.
+- [PARKED] Smartcard versioned endpoint enumeration: all `/api*`/ hit same dead backend; no 404-vs-502 discrimination to map routes (earlier distinction was test labeling error). Confidence <40.
+- [PARKED] EDI cross-tenant IDOR: edi2/edi7 unreachable from external; no endpoint to test. Confidence <40.
+- [PARKED] Pardot OAuth redirect_uri: redirect target hardcoded to http://elringklinger.com, no param/path reflection after exhaustive testing. Closed.
+- [FINAL] Pardot v5 API tier enumeration: 42 confidence, PASSIVE, MEDIUM impact (requires liveness confirmation). Weak but the only remaining live surface.
+
+## STEP 5 — NEXT ACTION
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api/v5/campaign, GET https://go.events.elringklinger.com/api/v5/prospect, GET https://go.events.elringklinger.com/api/v5/user, GET https://go.events.elringklinger.com/api/v5/visitor (compare 401 vs resource response)
+
+## STEP 6 — LEARNING
+- [LEARN] ACCEPTED MISCONFIG @ api.smartcard.elringklinger.com: Backend uniformly 502 on all /api* for days — dead backend, no route discrimination, no recovery. Not exploitable in current state.
+- [LEARN] ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect target hardcoded to http://elringklinger.com regardless of redirect_uri/next/return/url/referrer/dest/target params and path — no open redirect, no param reflection. Chain primitive does NOT exist here.
+- [LEARN] REJECTED OTHER @ go.events.elringklinger.com: /t/, /l/, /e/, /analytics, /pi.js are standard Pardot engagement-tracker public endpoints — not data leakage.
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com: /api/v5 returns HTTP 401 while v1-v4 return JSON err_code 198/49 — v5 is a distinct API tier with different auth posture.
+- [LEARN] REJECTED MISCONFIG @ elringklinger.com: elringklinger.com 301→elringklinger.de which is now fully unreachable (timeout) — production site down, no attack surface accessible.
+
+## STEP 7 — RISK
+[RISK] elringklinger: 34/100. All 13 dedicated hosts are either backend-down (Smartcard API, 502), auth-gated + redirect-hardcoded (Pardot), or unreachable from external (EDI, CCTV, IMAP, all infra). Production domain elringklinger.de is now timing out. The remaining live surface (Pardot tracking + auth-gated API) exposes no unauthenticated data path after exhaustive enumeration of ~20 API methods, v1-v5 tiers, tracking endpoints, and redirect vectors. Only weak survivor is v5 API tier enumeration (42 confidence). No real logic flaw identified; surface is a dead end until Smartcard backend or EDI hosts come online within reach.
+
+---
+**Summary for analysis session:** The exhaustive probe of all in-scope live surface produced zero new exploitable findings. Confirmed Smartcard API backend is uniformly down (502, no route discrimination), Pardot redirect is hardcoded (no open redirect), all ~20 Pardot methods require valid API key, EDI and all infra hosts are unreachable, and production site elringklinger.de now times out. The one weak remaining lead is the Pardot `/api/v5` tier (distinct HTTP 401 vs v1-v4 JSON errors) — emitted as a PASSIVE probe to test for any unauthenticated v5 resource access. Risk assessment lowered to 34/100 reflecting the confirmed exhaustion of reachable attack surface.

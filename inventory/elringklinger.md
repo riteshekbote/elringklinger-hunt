@@ -70,3 +70,10 @@ www.elringklinger.com
 - NEW go.events.elringklinger.com/api?method=getEmails|getLists|getTags|getVisitors|queryProspects all return HTTP 200 JSON with err_code:1 (invalid key) — method enumeration confirmed for 5 additional Pard
 - NEW go.events.elringklinger.com/ returns HTTP 302 to http://elringklinger.com (HTTP downgrade) with pardot cookie deletion — confirms OAuth/SSO initiation flow with redirect_uri to root domain
 - NEW edi2.elringklinger.com, edi7.elringklinger.com, dtspc-tst.elringklinger.com, aircontrol.elringklinger.com, avconf.elringklinger.com, cctv.elringklinger.com, cgline.elringklinger.com — all connection t
+
+## 2026-09-04 05:15:50 UTC
+- NEW OAuth redirect_uri parameter tested on go.events.elringklinger.com login, auth, oauth/authorize, oauth/token — all ignore/invalidate parameter, redirect fixed to http://elringklinger.com (HTTP downgra
+- NEW Smartcard API actuator endpoints (/actuator/health, /actuator/env, /actuator/mappings) all return 404 — not Spring Boot or actuator disabled
+- NEW Smartcard API common auth endpoints (/auth/login, /oauth/token, /login, /health) all return 404
+- NEW Smartcard API framework probes (/metrics, /graphql, /swagger-ui.html) all return 404
+- CHANGED OAuth redirect_uri flaw hypothesis confidence reduced — parameter not reflected in redirect location

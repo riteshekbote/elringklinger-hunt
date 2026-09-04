@@ -208,3 +208,52 @@ testability: PASSIVE
 [LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unreachable (timeout)
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
 [RISK] elringklinger: 82 — 13 dedicated hosts with 2 confirmed live high-value APIs (smartcard versioned auth routing 502, Pardot /api 200 JSON method enumeration) + OAuth/SSO redirect flow confirmed + 2 EDI B2B unreachable; active testing now 2/13 with deep coverage; Pardot OAuth redirect_uri (confidence 75) + smartcard versioned auth (60) + EDI IDOR (55) cover top-3 directive classes (OATH, AUTH, IDOR); smartcard backend down but routing layer reveals versioning; Pardot unauthenticated method discovery complete — redirect_uri validation is immediate next win
+## 2026-09-04 05:08:41 UTC [target] (model nemotron3)
+[NEW] OAuth redirect_uri parameter tested on go.events.elringklinger.com login, auth, oauth/authorize, oauth/token — all ignore/invalidate parameter, redirect fixed to http://elringklinger.com (HTTP downgrade)
+[NEW] Smartcard API actuator endpoints (/actuator/health, /actuator/env, /actuator/mappings) all return 404 — not Spring Boot or actuator disabled
+[NEW] Smartcard API common auth endpoints (/auth/login, /oauth/token, /login, /health) all return 404
+[NEW] Smartcard API framework probes (/metrics, /graphql, /swagger-ui.html) all return 404
+[CHANGED] OAuth redirect_uri flaw hypothesis confidence reduced — parameter not reflected in redirect location
+[PRIO] go.events.elringklinger.com,7.85,attack_surface=8,business_value=7,tech_exposure=8,gate_ease=9,cloud_surface=8,freshness=9
+[PRIO] api.smartcard.elringklinger.com,7.20,attack_surface=7,business_value=9,tech_exposure=6,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] edi2.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] edi7.elringklinger.com,7.30,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=5,cloud_surface=7,freshness=8
+[PRIO] dtspc-tst.elringklinger.com,7.15,attack_surface=8,business_value=5,tech_exposure=8,gate_ease=8,cloud_surface=7,freshness=8
+[HYP] Events Platform — Pardot API Unauthenticated Method Enumeration + Version Parameter Access
+class: BUSLOGIC
+asset: go.events.elringklinger.com
+confidence: 80
+reasoning: Pardot /api accepts version=3 parameter; 7 methods (getCampaigns, getVersion, getEmails, getLists, getTags, getVisitors, queryProspects) return 200 JSON with err_code:1 (invalid key) proving auth logic executes pre-rejection; method enumeration works unauthenticated
+evidence_needed: Whether any method returns data without valid key; whether version parameter allows access to deprecated/vulnerable API versions; whether rate limiting exists
+verify_steps: GET https://go.events.elringklinger.com/api?api_key=test&method=getVersion&format=json&version=3 (already confirmed 200), GET https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json&version=2, GET https://go.events.elringklinger.com/api?api_key=test&method=getVersion&format=json&version=1 (test version downgrade)
+impact: API surface mapping, potential version downgrade to less protected endpoints, method enumeration for targeted auth bypass — MEDIUM
+testability: PASSIVE
+[HYP] Smartcard API — Versioned Auth Endpoint Enumeration + Backend Framework Identification
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 55
+reasoning: /api/v1/, /api/v2/, /api/beta/ all return 502 (nginx gateway) confirming versioned routing; backend consistently down; no Spring Boot actuator, no common auth endpoints, no GraphQL/Swagger; "smartcard" naming implies token/card provisioning auth system; framework unknown
+evidence_needed: Framework identification headers (X-Powered-By, Server beyond nginx); any non-404 endpoint under /api/v1/*; JWT/OAuth2 token structure if auth endpoints found; backend technology stack
+verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/ (capture full headers/body), GET https://api.smartcard.elringklinger.com/api/v2/, GET https://api.smartcard.elringklinger.com/api/beta/ (all GET, no auth)
+impact: Token forgery, session hijacking, unauthorized smartcard provisioning — CRITICAL
+testability: PASSIVE
+[HYP] EDI Endpoints — IDOR/BOLA on Multi-tenant B2B Document Exchange
+class: IDOR
+asset: edi2.elringklinger.com
+confidence: 50
+reasoning: EDI hosts (edi2, edi7) handle B2B document exchange; multi-tenant EDI platforms frequently expose document/partner IDs with missing authorization; both hosts unreachable (connection timeout 8s); if reachable, likely SOAP/REST APIs with predictable ID patterns
+evidence_needed: Live HTTP response; API structure (REST vs SOAP); document/partner ID format; auth model (API key, cert, basic auth); cross-tenant access control on document endpoints
+verify_steps: GET https://edi2.elringklinger.com/ (increase timeout to 30s), GET https://edi2.elringklinger.com/api/, GET https://edi2.elringklinger.com/v1/, GET https://edi2.elringklinger.com/health, GET https://edi7.elringklinger.com/ (all GET/HEAD, no auth)
+impact: Cross-partner PII/commercial data disclosure (orders, invoices, pricing), supply chain manipulation — HIGH
+testability: PASSIVE
+[PARKED] Events Platform — Pardot OAuth/SSO redirect_uri Validation Flaw: confidence dropped to 35 — redirect_uri parameter tested on 4 endpoints (login, auth, oauth/authorize, oauth/token), all ignore parameter and redirect fixed to http://elringklinger.com; no open redirect
+[PARKED] EDI Endpoints — IDOR/BOLA on Multi-tenant B2B Document Exchange: confidence 50 ≥ 40 but hosts unreachable (timeout) — requires network-level check before meaningful testing
+[FINAL] 1. Events Platform — Pardot API Unauthenticated Method Enumeration + Version Parameter Access (80)
+[FINAL] 2. Smartcard API — Versioned Auth Endpoint Enumeration + Backend Framework Identification (55)
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api?api_key=test&method=getVersion&format=json&version=2 && GET https://go.events.elringklinger.com/api?api_key=test&method=getVersion&format=json&version=1 && GET https://api.smartcard.elringklinger.com/api/v1/ && GET https://api.smartcard.elringklinger.com/api/v2/ && GET https://api.smartcard.elringklinger.com/api/beta/ (GET only, 1 rps, no auth, capture full headers/body)
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api method enumeration confirmed for 7 methods (getCampaigns, getVersion, getEmails, getLists, getTags, getVisitors, queryProspects) — all return 200 JSON with err_code:1 (invalid key), proving auth logic executes pre-rejection; version=3 parameter accepted
+[LEARN] REJECTED OATH @ go.events.elringklinger.com: OAuth redirect_uri parameter tested on login, auth, oauth/authorize, oauth/token — all ignore parameter, redirect fixed to http://elringklinger.com (HTTP downgrade); no open redirect via redirect_uri
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/ return 502 confirming versioned endpoint routing exists with live nginx gateway — no Spring Boot actuator, no common auth endpoints exposed, framework unidentified
+[LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unreachable (timeout)
+[LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+[RISK] elringklinger: 78 — 13 dedicated hosts with 2 confirmed live high-value APIs (Pardot /api 200 JSON method enumeration + version param, smartcard versioned auth routing 502 nginx gateway) + 2 EDI B2B unreachable; active testing 2/13; Pardot method enumeration (80) + smartcard versioned auth (55) cover top directive classes (BUSLOGIC, AUTH); OAuth redirect_uri flaw disproven; smartcard backend down but versioned routing confirmed; Pardot version parameter downgrade testing is immediate next win

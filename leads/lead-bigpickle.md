@@ -136,3 +136,15 @@ testability: AUTH_HELPED (blocked by backend outage)
 [PARKED] Pardot method enumeration: all methods return err_code:1 invalid key regardless of method name/version — no unauthenticated method exists; requires valid API key (not available). Confidence dropped to <40.
 [PARKED] EDI cross-tenant IDOR: edi2/edi7 time out on external HTTPS — no reachable endpoint to test; requires tenant auth. Confidence <40.
 [PARKED] go.events OAuth redirect_uri: all paths hardcode 302 → http://elringklinger.com, no param reflection. Closed.
+## 2026-09-04 05:15:40 UTC [target] (model bigpickle)
+[HYP] Pardot v5 API tier exposes distinct auth-gated endpoints with different key/credential requirements
+class: AUTH
+asset: go.events.elringklinger.com/api/v5
+confidence: 42
+reasoning: v5 returns HTTP 401 "Access Denied" ({code:49}) while v1-v4 return JSON err_code 49/198 regardless — v5 is a separately-routed API tier that may accept OAuth bearer vs legacy API keys, potentially with different IDOR posture on GET resource methods.
+evidence_needed: a v5 endpoint returning a resource (200) instead of 401/198/1; or a 401 differing between methods to indicate per-method authz
+verify_steps: PASSIVE: GET https://go.events.elringklinger.com/api/v5/{resource} for resource in campaign, prospect, user, visitor, account, list, folder, tag; compare status codes
+impact: If any v5 resource responds without credentials → marketing PII / campaign data exposure. Severity MEDIUM-HIGH.
+testability: PASSIVE
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api/v5/campaign, GET https://go.events.elringklinger.com/api/v5/prospect, GET https://go.events.elringklinger.com/api/v5/user, GET https://go.events.elringklinger.com/api/v5/visitor (compare 401 vs resource response)
+[RISK] elringklinger: 34/100. All 13 dedicated hosts are either backend-down (Smartcard API, 502), auth-gated + redirect-hardcoded (Pardot), or unreachable from external (EDI, CCTV, IMAP, all infra). Production domain elringklinger.de is now timing out. The remaining live surface (Pardot tracking + auth-gated API) exposes no unauthenticated data path after exhaustive enumeration of ~20 API methods, v1-v5 tiers, tracking endpoints, and redirect vectors. Only weak survivor is v5 API tier enumeration (42 confidence). No real logic flaw identified; surface is a dead end until Smartcard backend or EDI hosts come online within reach.
