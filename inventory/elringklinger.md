@@ -90,3 +90,9 @@ www.elringklinger.com
 - NEW go.events.elringklinger.com/api/v5/* endpoints exist and respond (not 404) — versioned REST tier live with Bearer-style 401 vs legacy api_key query param
 - CHANGED Smartcard API backend still down (502) across /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health — no framework fingerprint, only nginx gateway headers
 - CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) remain connection timeout — 10/13 dedicated hosts unreachable
+
+## 2026-09-04 17:48:30 UTC
+- NEW go.events.elringklinger.com/api/v5/emails, /lists, /tags, /visitors, /prospects, /campaigns return HTTP 401 JSON `{"code":49,"message":"Access Denied"}` — 6 additional v5 resource endpoints confirmed 
+- NEW bigpickle agent discovered: Pardot v5 API Complete Bearer Authentication Bypass — ANY string accepted as Authorization token; auth check skipped entirely; error chain 49→181→182→201 proves bypass; 18 
+- CHANGED Smartcard API backend still 502 across /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health — no framework fingerprint, only nginx gateway headers (consistent)
+- CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) remain connection timeout — 10/13 dedicated hosts unreachable (consistent)

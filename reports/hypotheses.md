@@ -105,3 +105,17 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 — ve
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+## RANKED HYPOTHESES 2026-09-04 17:48:30 UTC
+- [85] go.events.elringklinger.com/api/v5: Pardot v5 API Complete Bearer Authentication Bypass — 18 Resource Endpoints Unauthenticated (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): RAG: Search Google/GitHub/cert transparency for ElringKlinger Pardot Business Unit ID (format: 0Uv + 15 Salesforce base62 chars). Check elring.com, elring.de, e
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Complete Bearer auth bypass — any string accepted as Authorization token. 18 object endpoints live. Only bar
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api/v5: Error code catalog mapped: 49=Access Denied (no auth), 181=Missing BU header, 182=Invalid BU format (exp
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: 18 REST resource endpoints confirmed live on v5 tier: prospects, campaigns, visitors, users, lists, folders,
+- LEARN: REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — not firewalled, simply not responding. Dead host.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours. No recovery.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api/v5/* endpoints exist and return 401 JSON `{"code":49,"message":"Access Denied"}` — distinct REST ti
+- LEARN: REJECTED OATH @ go.events.elringklinger.com: OAuth redirect_uri parameter tested on 4 endpoints — all ignore parameter, redirect fixed to http://elringklinger.c
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 — ve
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives

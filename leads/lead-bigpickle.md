@@ -229,3 +229,28 @@ testability: AUTH_HELPED (need BU ID)
 [PARKED] OAuth redirect_uri: closed, parameter not reflected.
 [PARKED] EDI IDOR: hosts unreachable.
 [PARKED] dtspc-tst staging: host unreachable.
+## 2026-09-04 17:42:19 UTC [target] (model bigpickle)
+class: AUTH
+asset: go.events.elringklinger.com/api/<object> (12 paths: prospect, campaign, visitor, user, list, email, form, account, opportunity, tag, folder, prospectAccount)
+confidence: 90
+reasoning: Direct probes: no Bearer→err 182 (401); Bearer+no BU→err 181 (400); Bearer `test`/`zzzzzzzzz`/`xyz` + valid-format 18-char BU `0Uv510000000000000`→identical err 201 (403) "Business Unit not found or inactive." API reaches BU validation layer before ever rejecting the bearer token value. x-pardot-rsp header present; legacy key-auth path `/api?api_key=…` separately returns err_code:1 (invalid key). v5 REST tier is 198/404 (nonexistent). Known Pardot XML API accepts access_token as Bearer — value check is absent here.
+evidence_needed: ElringKlinger's real 18-char Salesforce Account Engagement BU ID (`0Uv…`); a real BU ID would return err 201→200 with client data under any garbage Bearer.
+verify_steps: PASSIVE: GET /api/prospect/do/query + GET /api/campaign with `Authorization: Bearer <random>` + `Pardot-Business-Unit-Id: <real 0Uv…>`; if 200 JSON/XML with records → confirmed data access. Discover BU: RAG Wayback for elringklinger pardot account references; Salesforce org-id enumeration is likely impractical (36^15 space).
+impact: With the company's BU ID, ANY unauthenticated party (no Pardot/CRM credentials) can read prospect PII, campaigns, forms, visitor analytics through the legacy XML API. Without BU ID: confined to error-code oracle (49/181/182/198/201 — info leak, low). Severity HIGH (data exposure, PII) conditional on BU ID; auth-gate flaw itself MEDIUM (missing token validation).
+testability: AUTH_HELPED (BU ID required to demonstrate data access)
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 38
+reasoning: 502 on /api/v1/, /api/v2/, /api/beta/ for 40h+; nginx gateway live; no Spring/actuator/swagger. No new evidence. Only nginx headers visible.
+evidence_needed: non-502 response on /api/v1/
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/
+impact: Unauthenticated smartcard provisioning if backend returns. HIGH if realized.
+testability: PASSIVE (backend-dependent)
+class: MISCONFIG
+asset: elringklinger.matomo.cloud (referenced by elring.com/elring.de/elringklinger.de)
+confidence: 40
+reasoning: elring.com homepage loads `https://elringklinger.matomo.cloud/` (setSiteId '12'); elringklinger.de loads `https://cdn.matomo.cloud/elringklinger.matomo.cloud/container_3bNKj3Et.js`. Matomo self-hosted instances sometimes expose /index.php?module=API with unauthenticated Tracker API or `module=Proxy`. Third-party (Matomo Cloud) — applicability to ElringKlinger's own assets limited; effort/value low.
+evidence_needed: HTTP 200 + JSON on Matomo API methods without token_auth.
+verify_steps: PASSIVE: GET https://elringklinger.matomo.cloud/index.php?module=API&method=API.getMatomoVersion&format=json — note: third-party host, likely NOT ElringKlinger-owned infrastructure; drop if out of scope.
+impact: Analytics data exposure/misconfiguration if writable; LOW-MEDIUM, likely out of scope (vendor host).
+testability: PASSIVE

@@ -111,3 +111,10 @@ https://api.smartcard.elringklinger.com/api/v1/tokens -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
 https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
+
+## 2026-09-04 17:49:24 UTC
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/api/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/v1/ -> ERR <urlopen error timed out>
+https://edi7.elringklinger.com/ -> ERR <urlopen error timed out>
