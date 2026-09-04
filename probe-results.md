@@ -97,3 +97,17 @@ https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
 https://edi2.elringklinger.com/api/ -> ERR <urlopen error timed out>
 https://edi2.elringklinger.com/v1/ -> ERR <urlopen error timed out>
 https://edi2.elringklinger.com/health -> ERR <urlopen error timed out>
+
+## 2026-09-04 14:13:48 UTC
+https://go.events.elringklinger.com/api/v5/emails -> HTTP 401
+https://go.events.elringklinger.com/api/v5/lists -> HTTP 401
+https://go.events.elringklinger.com/api/v5/tags -> HTTP 401
+https://go.events.elringklinger.com/api/v5/visitors -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/auth -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/tokens -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>

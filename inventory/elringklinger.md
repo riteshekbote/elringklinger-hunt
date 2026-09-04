@@ -84,3 +84,9 @@ www.elringklinger.com
 - CHANGED OAuth redirect_uri hypothesis on go.events.elringklinger.com CONFIRMED REJECTED — tested on 4 endpoints, parameter ignored, fixed redirect to HTTP downgrade
 - CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) all connection timeout — 10/13 dedicated hosts unreachable
 - CHANGED Probe coverage: 2/13 hosts with deep testing (go.events Pardot /api, smartcard versioned paths); 10/13 hosts no live HTTP response
+
+## 2026-09-04 14:13:20 UTC
+- NEW go.events.elringklinger.com/api/v5/campaign, /api/v5/prospect, /api/v5/ return HTTP 401 + JSON `{"code":49,"message":"Access Denied"}` — distinct Pardot REST API tier confirmed, auth behavior differs 
+- NEW go.events.elringklinger.com/api/v5/* endpoints exist and respond (not 404) — versioned REST tier live with Bearer-style 401 vs legacy api_key query param
+- CHANGED Smartcard API backend still down (502) across /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health — no framework fingerprint, only nginx gateway headers
+- CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) remain connection timeout — 10/13 dedicated hosts unreachable

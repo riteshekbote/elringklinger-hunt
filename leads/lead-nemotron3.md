@@ -305,3 +305,50 @@ testability: PASSIVE
 [LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unreachable (timeout)
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
 [RISK] elringklinger: 75 — 13 dedicated hosts with 1 confirmed live high-value API (Pardot /api 200 JSON method enumeration + version param) + 1 confirmed versioned auth routing (smartcard 502 nginx gateway) + 10/13 hosts unreachable; active testing 2/13; Pardot v5 REST tier (70) + smartcard versioned enum (50) cover top directive classes (BUSLOGIC, AUTH); OAuth redirect_uri flaw disproven; EDI hosts require network reachability; Pardot v5 tier discovery is immediate next win
+## 2026-09-04 14:13:12 UTC [target] (model nemotron3)
+[NEW] go.events.elringklinger.com/api/v5/campaign, /api/v5/prospect, /api/v5/ return HTTP 401 + JSON `{"code":49,"message":"Access Denied"}` — distinct Pardot REST API tier confirmed, auth behavior differs from legacy /api?method= (which returns 200 + `err_code:1`)
+[NEW] go.events.elringklinger.com/api/v5/* endpoints exist and respond (not 404) — versioned REST tier live with Bearer-style 401 vs legacy api_key query param
+[CHANGED] Smartcard API backend still down (502) across /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health — no framework fingerprint, only nginx gateway headers
+[CHANGED] EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) remain connection timeout — 10/13 dedicated hosts unreachable
+[PRIO] go.events.elringklinger.com,8.15,attack_surface=9,business_value=8,tech_exposure=9,gate_ease=9,cloud_surface=8,freshness=9
+[PRIO] api.smartcard.elringklinger.com,6.95,attack_surface=7,business_value=9,tech_exposure=5,gate_ease=5,cloud_surface=7,freshness=7
+[PRIO] edi2.elringklinger.com,6.80,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=4,cloud_surface=7,freshness=7
+[PRIO] edi7.elringklinger.com,6.80,attack_surface=7,business_value=9,tech_exposure=7,gate_ease=4,cloud_surface=7,freshness=7
+[PRIO] dtspc-tst.elringklinger.com,6.65,attack_surface=8,business_value=5,tech_exposure=8,gate_ease=7,cloud_surface=7,freshness=7
+[HYP] Events Platform — Pardot API v5 REST Tier Auth Boundary + Resource Enumeration
+class: BUSLOGIC
+asset: go.events.elringklinger.com
+confidence: 75
+reasoning: /api/v5/campaign, /api/v5/prospect, /api/v5/ return 401 JSON `{"code":49,"message":"Access Denied"}` — distinct from legacy /api?method= (200 + err_code:1); proves separate auth tier with Bearer-style auth; untested resource paths remain (emails, lists, tags, visitors, prospects query)
+evidence_needed: Full v5 resource map; whether any v5 endpoint leaks data without auth (403 vs 401 vs 200); auth scheme (Bearer token vs api_key vs session); rate limits; version negotiation
+verify_steps: GET https://go.events.elringklinger.com/api/v5/emails && GET https://go.events.elringklinger.com/api/v5/lists && GET https://go.events.elringklinger.com/api/v5/tags && GET https://go.events.elringklinger.com/api/v5/visitors && GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/campaigns (GET only, no auth, capture headers+body)
+impact: Marketing data exposure (campaigns, prospects, emails, lists, visitors) — HIGH; potential auth bypass if v5 has weaker controls than legacy tier
+testability: PASSIVE
+[HYP] Smartcard API — Versioned Endpoint Enumeration Under /api/v1/* + Backend Framework Identification via 502 Bodies
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 48
+reasoning: /api/v1/, /api/v2/, /api/beta/ + /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 from nginx; backend down 30+ hours; "smartcard" naming implies token/card provisioning auth system; 502 HTML bodies may leak framework via error formatting/stack traces
+evidence_needed: Any non-404/502 endpoint under /api/v1/*; 502 response body analysis for framework fingerprints; Server/X-Powered-By headers beyond nginx; backend recovery timing
+verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/ && GET https://api.smartcard.elringklinger.com/api/v1/auth && GET https://api.smartcard.elringklinger.com/api/v1/tokens && GET https://api.smartcard.elringklinger.com/api/v1/cards && GET https://api.smartcard.elringklinger.com/api/v1/health (GET only, no auth, capture full headers+body including 502 HTML)
+impact: Token forgery, session hijacking, unauthorized smartcard provisioning, auth system compromise — CRITICAL
+testability: PASSIVE
+[HYP] EDI B2B Platform — IDOR/BOLA on Document/Partner Endpoints (If Reachable)
+class: IDOR
+asset: edi2.elringklinger.com
+confidence: 42
+reasoning: EDI hosts handle multi-tenant B2B document exchange; documented IDOR/BOLA hotspot class; both edi2/edi7 currently unreachable (timeout 30s); if reachable, predictable ID patterns likely (document_id, partner_id, interchange_id)
+evidence_needed: Live HTTP response confirming service; API structure (REST vs SOAP vs AS2); authentication model; document/partner ID format in endpoints; cross-tenant access control on GET /documents/{id}
+verify_steps: GET https://edi2.elringklinger.com/ --max-time 30 && GET https://edi2.elringklinger.com/api/ --max-time 30 && GET https://edi2.elringklinger.com/v1/ --max-time 30 && GET https://edi7.elringklinger.com/ --max-time 30 (GET/HEAD only, no auth, extended timeout)
+impact: Cross-partner PII/commercial data disclosure (orders, invoices, pricing), supply chain manipulation, financial fraud — HIGH
+testability: PASSIVE
+[PARKED] EDI B2B Platform — IDOR/BOLA on Document/Partner Endpoints (If Reachable): confidence 42 ≥ 40 but hosts unreachable (timeout) — requires network-level reachability before meaningful testing; cannot verify passive steps without live host
+[FINAL] 1. Events Platform — Pardot API v5 REST Tier Auth Boundary + Resource Enumeration (75)
+[FINAL] 2. Smartcard API — Versioned Endpoint Enumeration Under /api/v1/* + Backend Framework Identification via 502 Bodies (48)
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api/v5/emails && GET https://go.events.elringklinger.com/api/v5/lists && GET https://go.events.elringklinger.com/api/v5/tags && GET https://go.events.elringklinger.com/api/v5/visitors && GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/campaigns (GET only, 1 rps, no auth, capture full headers+body)
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api/v5/* endpoints exist and return 401 JSON `{"code":49,"message":"Access Denied"}` — distinct REST tier with Bearer-style auth vs legacy /api?method= (200 + err_code:1)
+[LEARN] REJECTED OATH @ go.events.elringklinger.com: OAuth redirect_uri parameter tested on 4 endpoints — all ignore parameter, redirect fixed to http://elringklinger.com (HTTP downgrade); no open redirect via redirect_uri
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 — versioned routing confirmed, backend down 30+ hours, only nginx gateway headers visible
+[LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unreachable (timeout)
+[LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+[RISK] elringklinger: 76 — 13 dedicated hosts with 1 confirmed live high-value API (Pardot /api/v5 401 JSON + legacy /api 200 method enumeration) + 1 confirmed versioned auth routing (smartcard 502 nginx gateway) + 10/13 hosts unreachable; active testing 2/13; Pardot v5 tier (75) + smartcard versioned enum (48) cover top directive classes (BUSLOGIC, AUTH); OAuth redirect_uri flaw disproven; EDI hosts require network reachability; Pardot v5 resource enumeration is immediate next win
