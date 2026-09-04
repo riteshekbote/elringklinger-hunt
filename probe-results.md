@@ -55,3 +55,17 @@ https://go.events.elringklinger.com/api?api_key=test&method=getVisitors&format=j
 https://go.events.elringklinger.com/api?api_key=test&method=queryProspects&format=json&version=3 -> HTTP 405
 https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://api.smartcard.elringklinger.com/v1/ -> HTTP 404
+
+## 2026-09-04 00:32:39 UTC
+https://go.events.elringklinger.com/login?redirect_uri=https://evil.com -> 200 len=210594
+https://go.events.elringklinger.com/auth?redirect_uri=https://evil.com -> 200 len=210594
+https://go.events.elringklinger.com/oauth/authorize?redirect_uri=https://evil.com&client_id=test&response_type=code -> 200 len=210594
+https://api.smartcard.elringklinger.com/actuator/health -> HTTP 404
+https://api.smartcard.elringklinger.com/actuator/env -> HTTP 404
+https://api.smartcard.elringklinger.com/actuator/mappings -> HTTP 404
+https://api.smartcard.elringklinger.com/auth/login -> HTTP 404
+https://api.smartcard.elringklinger.com/oauth/token -> HTTP 404
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/api/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/v1/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/health -> ERR <urlopen error timed out>

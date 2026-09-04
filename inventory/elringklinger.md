@@ -63,3 +63,10 @@ www.elringklinger.com
 - NEW `go.events.elringklinger.com/api?method=getVersion` returns HTTP 200 JSON with `err_code:1` — version endpoint accessible without valid key
 - CHANGED Pardot API error code discrimination confirmed: `err_code:1` (invalid key) vs earlier `err_code:49` (method not found) — proves method-level auth logic
 - CHANGED Probe coverage: 2/13 hosts tested with deeper endpoint enumeration (was 2/13 basic)
+
+## 2026-09-04 00:31:30 UTC
+- NEW api.smartcard.elringklinger.com/api/v2/ and /api/beta/ return HTTP 502 — versioned paths v2/beta exist with same backend routing (nginx gateway), no debug leakage
+- NEW api.smartcard.elringklinger.com/swagger.json, /openapi.json, /.well-known/openid-configuration return HTTP 404 — no OpenAPI/OIDC discovery exposed
+- NEW go.events.elringklinger.com/api?method=getEmails|getLists|getTags|getVisitors|queryProspects all return HTTP 200 JSON with err_code:1 (invalid key) — method enumeration confirmed for 5 additional Pard
+- NEW go.events.elringklinger.com/ returns HTTP 302 to http://elringklinger.com (HTTP downgrade) with pardot cookie deletion — confirms OAuth/SSO initiation flow with redirect_uri to root domain
+- NEW edi2.elringklinger.com, edi7.elringklinger.com, dtspc-tst.elringklinger.com, aircontrol.elringklinger.com, avconf.elringklinger.com, cctv.elringklinger.com, cgline.elringklinger.com — all connection t

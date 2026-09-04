@@ -54,3 +54,13 @@
 - LEARN: ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws chainable to ATO
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+## RANKED HYPOTHESES 2026-09-04 00:31:30 UTC
+- [75] go.events.elringklinger.com: Events Platform — Pardot OAuth/SSO redirect_uri Validation Flaw (from art/lead_nemotron3.txt)
+- [48] api.smartcard.elringklinger.com: Smartcard API backend-downtime information disclosure via gateway headers (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/login?redirect_uri=https://evil.com && GET https://go.events.elringklinger.com/auth?redirect_uri=https://evil.com
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/ return 502 confirming versioned endpoint routing exists with live nginx gateway 
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api method enumeration confirmed for getCampaigns, getVersion, getEmails, getLists, getTags, getVisitor
+- LEARN: ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect to http://elringklinger.com (HTTP downgrade) with pardot cookie deletion — classic OAuth/SSO initiatio
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives

@@ -122,3 +122,17 @@ testability: AUTH_HELPED
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
 [LEARN] REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
 [RISK] elringklinger: 65/100. Surface is moderate — 13 dedicated hosts, 3 with HTTP responses, 1 API endpoint returning 404 (likely versioned). Program scope is broad ("all company-owned infrastructure") but discoverable attack surface is limited to 3 active targets (Smartcard API, Pardot API, EDI). No high-value APIs accessible without auth. Best bet is versioned endpoint enumeration on Smartcard API or finding unprotected Pardot methods.
+## 2026-09-04 00:25:14 UTC [target] (model bigpickle)
+[HYP] Smartcard API backend-downtime information disclosure via gateway headers
+[HYP] Smartcard API versioned endpoint recovery when backend returns online
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 48
+reasoning: /api/v1/* uniformly 502 (nginx gateway, backend down). Swagger/openapi/docs/health all 404/502. Backend intermittently online would allow auth probe; current state is unreachable backend, not unprotected endpoint.
+evidence_needed: backend transition from 502 to 200/401/403 JSON on /api/v1/ paths
+verify_steps: PASSIVE: re-GET https://api.smartcard.elringklinger.com/api/v1/ at intervals (<=1 rps), check for non-502 status
+impact: unauthenticated access to smartcard provisioning API → credential/identity theft. Severity HIGH if backend live.
+testability: AUTH_HELPED (blocked by backend outage)
+[PARKED] Pardot method enumeration: all methods return err_code:1 invalid key regardless of method name/version — no unauthenticated method exists; requires valid API key (not available). Confidence dropped to <40.
+[PARKED] EDI cross-tenant IDOR: edi2/edi7 time out on external HTTPS — no reachable endpoint to test; requires tenant auth. Confidence <40.
+[PARKED] go.events OAuth redirect_uri: all paths hardcode 302 → http://elringklinger.com, no param reflection. Closed.

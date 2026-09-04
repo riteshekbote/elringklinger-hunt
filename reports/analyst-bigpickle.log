@@ -751,3 +751,254 @@ testability: AUTH_HELPED
 ## STEP 7 — RISK
 
 [RISK] elringklinger: 65/100. Surface is moderate — 13 dedicated hosts, 3 with HTTP responses, 1 API endpoint returning 404 (likely versioned). Program scope is broad ("all company-owned infrastructure") but discoverable attack surface is limited to 3 active targets (Smartcard API, Pardot API, EDI). No high-value APIs accessible without auth. Best bet is versioned endpoint enumeration on Smartcard API or finding unprotected Pardot methods.
+===== ANALYST bigpickle 2026-09-04 00:31:30 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://api.smartcard.elringklinger.com/api/v2/" -o /tmp/opencode/v2.txt -w "%{http_code}\n" 2>&1; echo "---V1---"; curl -sS --max-time 8 "https://api.smartcard.elringklinger.com/api/v1/" -o /tmp/opencode/v1.txt -w "%{http_code}\n" 2>&1
+502
+---V1---
+502
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json" -o /tmp/opencode/camp.txt -w "%{http_code}\n" 2>&1; echo "---"; cat /tmp/opencode/camp.txt 2>/dev/null | head -c 300
+200
+---
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+[0m
+[0m$ [0mfor m in getProspects getEmails getUsers getCampaigns getLists getAccounts getVisitors getTags; do echo "=== $m ==="; curl -sS --max-time 6 "https://go.events.elringklinger.com/api?api_key=test&method=$m&format=json" | head -c 120; echo; done
+=== getProspects ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getEmails ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getUsers ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getCampaigns ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getLists ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getAccounts ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getVisitors ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== getTags ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://api.smartcard.elringklinger.com/swagger" -o /tmp/opencode/sw.txt -w "%{http_code}\n" 2>&1; curl -sS --max-time 8 "https://api.smartcard.elringklinger.com/openapi.json" -o /tmp/opencode/oapi.txt -w "%{http_code}\n" 2>&1; curl -sS --max-time 8 "https://api.smartcard.elringklinger.com/v2/" -w "%{http_code}\n" 2>&1
+404
+404
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+404
+[0m
+[0m$ [0mcurl -sS --max-time 8 -D - "https://go.events.elringklinger.com/" -o /dev/null 2>&1 | head -c 1200
+HTTP/1.1 302 Found
+Date: Fri, 04 Sep 2026 00:23:30 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+location: http://elringklinger.com
+cache-control: max-age=63072000
+expires: Sun, 03 Sep 2028 00:23:30 GMT
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+Now let me probe the OAuth flow on the events platform and version-specific Pardot behavior more deeply.
+[0m$ [0mfor v in 2 3 4; do echo "=== version $v ==="; curl -sS --max-time 6 "https://go.events.elringklinger.com/api?api_key=test&method=getVersion&format=json&version=$v" | head -c 150; echo; done
+=== version 2 ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== version 3 ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+=== version 4 ===
+{"@attributes":{"stat":"fail","version":1,"err_code":1},"err":"Invalid API key or user key"}
+[0m
+Let me check the root redirect target and whether the HTTP downgrade redirect goes to a domain we can control chain on.
+[0m$ [0mcurl -sS --max-time 8 -D - "http://go.events.elringklinger.com/" 2>&1 | head -20; echo "===HTTPS cache-bust==="; curl -sS --max-time 8 -D - "http://go.events.elringklinger.com/?cb=12345" 2>&1 | head -15
+HTTP/1.1 301 Moved Permanently
+Date: Fri, 04 Sep 2026 00:23:33 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+location: https://go.events.elringklinger.com/
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+
+===HTTPS cache-bust===
+HTTP/1.1 301 Moved Permanently
+Date: Fri, 04 Sep 2026 00:23:33 GMT
+Content-Type: text/html; charset=UTF-8
+Content-Length: 0
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+location: https://go.events.elringklinger.com/?cb=12345
+vary: User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+The HTTPS root redirects to `http://elringklinger.com` (downgrade) — noted previously. Let me probe the Smartcard API for OAuth/auth-related paths and check other inventory hosts for anomalies.
+[0m$ [0mfor p in api/oa авторизоваться register login auth token oauth health docs redoc; do code=$(curl -sS --max-time 6 "https://api.smartcard.elringklinger.com/$p/" -w "%{http_code}" -o /dev/null 2>&1); echo "$p -> $code"; done
+api/oa -> 502
+авторизоваться -> 404
+register -> 404
+login -> 404
+auth -> 404
+token -> 404
+oauth -> 404
+health -> 404
+docs -> 404
+redoc -> 404
+[0m
+[0m$ [0mfor h in edi2 edi7; do echo "=== $h ==="; curl -sS --max-time 8 -D - "https://$h.elringklinger.com/" -o /dev/null 2>&1 | head -8; done
+=== edi2 ===
+curl: (28) Connection timed out after 8002 milliseconds
+=== edi7 ===
+curl: (28) Connection timed out after 8002 milliseconds
+[0m
+[0m$ [0mfor p in api/v1/health api/beta/ api/v1.1/ api/v0/ apiV1/ api/v1/users api/v1/cards; do code=$(curl -sS --max-time 6 "https://api.smartcard.elringklinger.com/$p" -w "%{http_code}" -o /dev/null 2>&1); echo "$p -> $code"; done
+api/v1/health -> 502
+api/beta/ -> 502
+api/v1.1/ -> 502
+api/v0/ -> 502
+apiV1/ -> 502
+api/v1/users -> 502
+api/v1/cards -> 502
+[0m
+EDI hosts time out (no HTTP). Let me probe a few more Smartcard API version/path variants and the cctv/unprobed hosts to close out breadth.
+[0m$ [0mfor h in aircontrol avconf cctv cgline dtspc-tst ektrcctv fwasvvideo1 imap; do code=$(curl -sS --max-time 6 "https://$h.elringklinger.com/" -w "%{http_code}" -o /dev/null 2>&1); echo "$h -> ${code:-timeout}"; done
+aircontrol -> curl: (28) Connection timed out after 6002 milliseconds
+000
+avconf -> curl: (28) Connection timed out after 6002 milliseconds
+000
+cctv -> curl: (28) Connection timed out after 6002 milliseconds
+000
+cgline -> curl: (28) Connection timed out after 6002 milliseconds
+000
+dtspc-tst -> curl: (28) Connection timed out after 6002 milliseconds
+000
+ektrcctv -> curl: (28) Connection timed out after 6002 milliseconds
+000
+fwasvvideo1 -> curl: (7) Failed to connect to fwasvvideo1.elringklinger.com port 443 after 139 ms: Couldn't connect to server
+000
+imap -> curl: (28) Connection timed out after 6002 milliseconds
+000
+[0m
+Broad sweep complete. The Smartcard API `/api/v1/*` uniformly returns 502 (backend consistently down, nginx gateway). No swagger/openapi/docs exposed. Pardot API consistently returns err_code:1 (invalid key) for all methods — no unauthenticated method found. EDI and infra hosts time out (no external HTTP). No new diveable anomalies in the full inventory.
+
+Let me synthesize the output blocks.
+
+STEP 1 — DELTA:
+- NO significant new surface; re-confirmed /api/v1/* 502 backend-down, Pardot all methods err_code:1.
+- EDI + infra hosts unreachable externally (timeouts).
+
+Let me write the analysis.
+
+STEP 1 — DELTA:
+- [CHANGED] Smartcard /api/v1/* expanded enumeration (health,beta,v1.1,v0,users,cards) all 502 — nginx gateway down, no debug leak, no swagger/openapi/docs exposed
+- [CHANGED] Pardot API method sweep (getProspects/Emails/Users/Campaigns/Lists/Accounts/Visitors/Tags, versions 2-4) all return err_code:1 invalid key — no unauthenticated method, narrowing BUSLOGIC hypothesis
+- [NEW] edi2/edi7 + all 7 infra hosts time out on HTTPS (no external HTTP surface) — reduces discoverable external attack surface to 2 live targets
+- [CHANGED] go.events root HTTPS → 302 → `http://elringklinger.com` (HTTP downgrade re-confirmed with X-Pardot-Route)
+
+STEP 2 — PRIORITIZE:
+- api.smartcard.elringklinger.com: surface=7(auth/API), value=8(PHI/credentials), tech=7(versioned API), gate=6(requires valid key), cloud=3, freshness=7 → 0.25*7+0.25*8+0.15*7+0.15*6+0.10*3+0.10*7 = 1.75+2.0+1.05+0.9+0.3+0.7 = 6.7
+- go.events.elringklinger.com: surface=6(Pardot+OAuth), value=7(marketing PII), tech=7(OAuth), gate=5(key), cloud=2, freshness=6 → 1.5+1.75+1.05+0.75+0.2+0.6 = 5.85
+
+STEP 3 — HYPOTHESES: All three lead hypotheses (Smartcard versioned enum, Pardot method enum, EDI IDOR) are now largely exhausted/downgraded. Emission new.
+
+[HYP] Smartcard API backend-downtime information disclosure via gateway headers
+The /api/v1/* returns 502 nginx consistently. The 502 is real, no debug leak. This was ALREADY accepted AUTH. Not new.
+
+Let me assess: confidence in existing hypotheses has dropped because verification returned mostly negative/indeterminate results. The Smartcard backend is down (502) — can't test auth. The Pardot method enum returned no accessible method (all err_code 1). The EDI IDOR requires auth we don't have.
+
+The strongest remaining is Pardot OAuth-chain and the events platform. But we've not found a redirect_uri param yet. Let me do one focused probe on the OAuth flow before concluding.
+
+Actually, given the breadth is exhausted and confidence dropped, the honest output is downgrading existing hypotheses. Let me do one more targeted probe on the events platform for OAuth/redirect params.
+[0m$ [0mfor p in "login" "oauth/authorize" "auth" "sso" "o/oauth2" "signin"; do echo "=== $p ==="; curl -sS --max-time 6 -D - "https://go.events.elringklinger.com/$p?redirect_uri=https://evil.com&state=test" -o /dev/null 2>&1 | grep -iE "location|HTTP/"; done
+=== login ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+=== oauth/authorize ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+=== auth ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+=== sso ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+=== o/oauth2 ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+=== signin ===
+HTTP/1.1 302 Found
+location: http://elringklinger.com
+[0m
+All paths on go.events redirect identically to `http://elringklinger.com` regardless of redirect_uri/state params — the redirect target is hardcoded, so no OAuth redirect_uri reflection. This closes the OATH hypothesis chain on this host (the hardcoded redirect goes to the corporate domain, not attacker-controlled).
+
+However — the hardcoded redirect to `http://elringklinger.com` (HTTP, not HTTPS) is itself an interesting chain primitive: if an attacker can MITM/poison the redirect destination as was considered. But `elringklinger.com` is the corporate domain, not attacker-controlled, so no direct flaw. I'll note the downgrade but not over-claim.
+
+Now the synthesis. Existing hypotheses have been materially exhausted:
+- Smartcard versioned enum: /api/v1/* all 502, backend down — can't test further passively. Confidence in "exploitable" dropped; keep as parked.
+- Pardot method enum: all methods err_code:1, no unauth method. Confidence drops.
+- EDI IDOR: hosts time out in HTTPS, no external surface. Confidence drops.
+
+New learnings: the go.events redirect is hardcoded to http://elringklinger.com — this is a fixed redirect, meaning likely no open-redirect there. The HTTP-downgrade redirect to elringklinger.com is worth a chain note but elringklinger.com isn't attacker-controlled.
+
+Emitting final structured output.
+
+---
+
+STEP 1 — DELTA:
+- [CHANGED] Smartcard `/api/v1/*` (health,beta,v1.1,v0,users,cards) all 502 — nginx gateway backend consistently down, no swagger/openapi/docs/debug leak exposed
+- [CHANGED] Pardot method sweep (Prospects/Emails/Users/Campaigns/Lists/Accounts/Visitors/Tags x versions 2-4) all `err_code:1` invalid key — no unauthenticated method, BUSLOGIC hypothesis narrowed to dead-end
+- [NEW] edi2/edi7 + all 7 infra hosts (aircontrol,avconf,cctv,cgline,dtspc-tst,ektrcctv,fwasvvideo1,imap) time out/refuse external HTTPS — no external HTTP attack surface
+- [NEW] go.events all paths (login/auth/sso/oauth/authorize/signin redirect_uri/state) → 302 hardcoded `http://elringklinger.com` — no redirect_uri reflection; redirect target fixed to corporate domain (not attacker-controlled)
+
+STEP 2 — PRIORITIZE:
+- [PRIO] api.smartcard.elringklinger.com, 6.7, surface=7(auth/API), value=8(PHI/credentials), tech=7(versioned API), gate=6(valid key), cloud=3, freshness=7
+- [PRIO] go.events.elringklinger.com, 5.9, surface=6(Pardot+OAuth), value=7(marketing PII), tech=7(OAuth), gate=5(key), cloud=2, freshness=6
+- [PRIO] edi2.elringklinger.com, 3.8, surface=4(EDI), value=8(business docs), tech=4, gate=3(auth+unreachable), cloud=1, freshness=3
+
+STEP 3 — HYPOTHESES:
+[HYP] Smartcard API versioned endpoint recovery when backend returns online
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 48
+reasoning: /api/v1/* uniformly 502 (nginx gateway, backend down). Swagger/openapi/docs/health all 404/502. Backend intermittently online would allow auth probe; current state is unreachable backend, not unprotected endpoint.
+evidence_needed: backend transition from 502 to 200/401/403 JSON on /api/v1/ paths
+verify_steps: PASSIVE: re-GET https://api.smartcard.elringklinger.com/api/v1/ at intervals (<=1 rps), check for non-502 status
+impact: unauthenticated access to smartcard provisioning API → credential/identity theft. Severity HIGH if backend live.
+testability: AUTH_HELPED (blocked by backend outage)
+[PARKED] Pardot method enumeration: all methods return err_code:1 invalid key regardless of method name/version — no unauthenticated method exists; requires valid API key (not available). Confidence dropped to <40.
+[PARKED] EDI cross-tenant IDOR: edi2/edi7 time out on external HTTPS — no reachable endpoint to test; requires tenant auth. Confidence <40.
+[PARKED] go.events OAuth redirect_uri: all paths hardcode 302 → http://elringklinger.com, no param reflection. Closed.
+
+STEP 4 — SELF-CRITIQUE:
+- [FINAL] Smartcard API versioned endpoint recovery: 48 confidence, AUTH_HELPED, HIGH impact if live. Survives as only viable lead (backend currently down).
+- [PARKED] Pardot method enumeration: 38 confidence — all methods err_code:1, no unauth method, requires key.
+- [PARKED] EDI IDOR: 35 — unreachable externally, requires auth.
+- [PARKED] OAuth redirect_uri chain: hardcoded redirect, closed.
+
+STEP 5 — NEXT ACTION:
+- [NEXT] PROBE: monitor Smartcard backend liveness: `curl -s -o /dev/null -w "%{http_code}" https://api.smartcard.elringklinger.com/api/v1/users` periodically (<=1 rps); if status != 502, port-scan-free deep enumeration of auth/versioned paths.
+
+STEP 6 — LEARNING:
+- [LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com: Pardot API all standard methods (Prospects/Emails/Campaigns/Lists/Accounts/Visitors/Tags) return err_code:1 invalid key for versions 2-4 — no unauthenticated method exists; method-enum hypothesis is a dead-end without valid key.
+- [LEARN] REJECTED OATH @ go.events.elringklinger.com: All auth/oauth/sso/signin paths (with redirect_uri & state params) return fixed 302 → http://elringklinger.com — redirect target is hardcoded to corporate domain, no redirect_uri reflection; OAuth chain not viable here.
+- [LEARN] REJECTED IDOR @ edi2/edi7.elringklinger.com: Both EDI hosts time out on external HTTPS (no HTTP listener) — no externally reachable endpoint to test IDOR; requires network access.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/* uniformly 502 (nginx gateway) with NO swagger/openapi/docs/health exposed — backend down, but versioned API structure confirmed; sole viable target, blocked by outage.
+
+STEP 7 — RISK:
+- [RISK] elringklinger: 58/100. External attack surface has narrowed to 2 live targets: Smartcard API (backend down, 502) and Pardot events API (all methods key-gated). EDI + all infra hosts unreachable externally. No unauth data endpoints, no exposed docs, no redirect flaw. Program scope broad but practically inaccessible without valid credentials; best lead blocked by backend outage until it comes online.
