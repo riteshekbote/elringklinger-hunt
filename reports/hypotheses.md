@@ -119,3 +119,26 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 — ve
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive — but hosts currently unr
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+
+## RANKED HYPOTHESES 2026-09-04 20:06:39 UTC
+- [70] go.events.elringklinger.com/api: Pardot Legacy API Method Enumeration — Auth Logic Bypass via Error Discrimination (from art/lead_nemotron3.txt)
+- [70] api.smartcard.elringklinger.com: Smartcard API — Broken Auth/IDOR on Versioned Endpoints (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET https://api.smartcard.elringklinger.com/api/v1/ && GET https://api.smartcard.elringklinger.com/v2/ && GET https://api.smartcard.elringklinger.com/swa
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion&version=3 && GET https://go.events.elringklinger.com/api?method=getCampaigns&version=3 && G
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: 404 at root on API-named host strongly indicates versioned endpoints; auth systems are high-value per directive
+- LEARN: ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws are chainable to ATO
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints are documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 tier has distinct auth behavior (401 vs JSON err_code on v1-v4). Untested resource paths remain.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: 7 Pardot methods confirmed enumerable but all require valid API key (err_code:1). No unauthenticated data path 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Complete Bearer auth bypass — any string accepted as Authorization token. 18 object endpoints live. Only bar
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api/v5: Error code catalog mapped: 49=Access Denied (no auth), 181=Missing BU header, 182=Invalid BU format (exp
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: 18 REST resource endpoints confirmed live on v5 tier: prospects, campaigns, visitors, users, lists, folders,
+- LEARN: REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — not firewalled, simply not responding. Dead host.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours. No recovery.
+- LEARN: REJECTED AUTH @ go.events.elringklinger.com/api/v5: v5 REST tier (18 endpoints) now returns 198 "Endpoint not found" — tier disabled/removed, Bearer bypass no l
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy Pardot /api?method= endpoint returns 200 JSON with err_code:49 (Access Denied) for 7 methods — auth 
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours across all versioned paths — transient outage, nginx gateway live
+- LEARN: REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface

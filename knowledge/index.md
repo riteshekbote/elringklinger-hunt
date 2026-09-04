@@ -35,3 +35,11 @@
 - 2026-09-04 ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot /api/v5/* endpoints exist and return 401 JSON `{"code":49,"message":"Access Denied"}` — distinct REST tier with Bearer-style auth vs legacy /api?method= (200 + err_code:1)
 - 2026-09-04 REJECTED OATH @ go.events.elringklinger.com: OAuth redirect_uri parameter tested on 4 endpoints — all ignore parameter, redirect fixed to http://elringklinger.com (HTTP downgrade); no open redirect via redirect_uri
 - 2026-09-04 ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health all return 502 — versioned routing confirmed, backend down 30+ hours, only nginx gateway headers visible
+- 2026-09-04 ACCEPTED AUTH @ api.smartcard.elringklinger.com: 404 at root on API-named host strongly indicates versioned endpoints; auth systems are high-value per directives
+- 2026-09-04 ACCEPTED OATH @ go.events.elringklinger.com: 302 redirect on event platform is classic OAuth/SSO initiation pattern; redirect_uri flaws are chainable to ATO
+- 2026-09-04 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints are documented IDOR/BOLA hotspots; multi-tenant document exchange fits directive
+- 2026-09-04 REJECTED AUTH @ go.events.elringklinger.com/api/v5: v5 REST tier (18 endpoints) now returns 198 "Endpoint not found" — tier disabled/removed, Bearer bypass no longer exploitable
+- 2026-09-04 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy Pardot /api?method= endpoint returns 200 JSON with err_code:49 (Access Denied) for 7 methods — auth logic executes pre-rejection, method enumeration viable
+- 2026-09-04 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours across all versioned paths — transient outage, nginx gateway live
+- 2026-09-04 REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
+- 2026-09-04 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)

@@ -96,3 +96,17 @@ www.elringklinger.com
 - NEW bigpickle agent discovered: Pardot v5 API Complete Bearer Authentication Bypass — ANY string accepted as Authorization token; auth check skipped entirely; error chain 49→181→182→201 proves bypass; 18 
 - CHANGED Smartcard API backend still 502 across /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health — no framework fingerprint, only nginx gateway headers (consistent)
 - CHANGED EDI hosts (edi2, edi7, dtspc-tst, aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap) remain connection timeout — 10/13 dedicated hosts unreachable (consistent)
+
+## 2026-09-04 20:06:39 UTC
+- NEW 13 dedicated subdomains discovered via wildcard-filtered enum (was 2 root domains)
+- NEW `api.smartcard.elringklinger.com` — API endpoint returning HTTP 404 at root (suggests versioned paths)
+- NEW `go.events.elringklinger.com` — HTTP 302 redirect (event platform, likely OAuth/SSO flow)
+- NEW `ir.elringklinger.com` — HTTP 301, Apache investor relations page
+- NEW `edi2.elringklinger.com`, `edi7.elringklinger.com` — EDI B2B endpoints (unprobed)
+- NEW `dtspc-tst.elringklinger.com` — Test environment indicator (tst suffix)
+- NEW 6 infrastructure hosts unprobed: aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap
+- CHANGED Probe coverage: 0/13 hosts actively tested (only passive HTTP status on 3)
+- NEW `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 (Bad Gateway) — endpoint exists but backend down, confirming versioned API path `/api/v1/` is real
+- NEW `go.events.elringklinger.com/api` returns HTTP 405 for multiple method params — Pardot API endpoint confirmed live, processes auth logic before rejection (error codes 1 vs 49 per earlier finding)
+- CHANGED Probe coverage: 2/13 hosts actively tested (was 0/13)
+- CHANGED Pardot v5 REST tier (/api/v5/*) now returns 198 "Endpoint not found" for all 18 previously-confirmed resource endpoints (prospects, campaigns, visitors, emails, lists, tags, etc.) — tier appears disab

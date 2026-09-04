@@ -118,3 +118,17 @@ https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
 https://edi2.elringklinger.com/api/ -> ERR <urlopen error timed out>
 https://edi2.elringklinger.com/v1/ -> ERR <urlopen error timed out>
 https://edi7.elringklinger.com/ -> ERR <urlopen error timed out>
+
+## 2026-09-04 20:07:30 UTC
+https://go.events.elringklinger.com/api?method=getVersion&version=3 -> HTTP 401
+https://go.events.elringklinger.com/api?method=getCampaigns&version=3 -> HTTP 401
+https://go.events.elringklinger.com/api?method=queryProspects&version=3 -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>
+https://edi2.elringklinger.com/api/ -> ERR <urlopen error timed out>
+https://edi7.elringklinger.com/ -> ERR <urlopen error timed out>
+https://go.events.elringklinger.com/api?method=getEmails&version=3 -> HTTP 401
+https://go.events.elringklinger.com/api?method=getLists&version=3 -> HTTP 401
+https://go.events.elringklinger.com/api?method=getTags&version=3 -> HTTP 401
+https://go.events.elringklinger.com/api?method=getVisitors&version=3 -> HTTP 401
+https://api.smartcard.elringklinger.com/v2/ -> HTTP 404
