@@ -180,3 +180,7 @@ https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
 https://go.events.elringklinger.com/api?method=getVersion&version=1 -> HTTP 401
 https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://go.events.elringklinger.com/api/v5/prospects` -> HTTP 401
+
+## 2026-09-05 12:24:16 UTC
+https://go.events.elringklinger.com/api/v5/prospects` -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502

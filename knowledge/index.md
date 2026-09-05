@@ -62,3 +62,8 @@
 - 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy Pardot /api?method= now returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement shifted to HTTP status layer
 - 2026-09-05 REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted, error chain 49→181→182→201) no longer works — now returns 198 with Bearer header
 - 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 34+ hours — transient outage, nginx gateway live
+- 2026-09-05 REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted → error chain 49→181→182→201) confirmed DEAD — Bearer header now always returns 404/198 regardless of BU header. Auth system patched. Bypass finding retracted.
+- 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Dual-path auth response confirmed — 401/49 without Bearer vs 404/198 with Bearer; BU header does not alter the 198 response. Server distinguishes header-presence at auth layer pre-routing.
+- 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not just app-layer err_code. Seven methods still enumerable (identical 401/49).
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
+- 2026-09-05 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.

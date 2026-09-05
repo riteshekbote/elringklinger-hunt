@@ -585,3 +585,52 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: backend 502 (~57h); robots.txt 200 (Disallow: /), no recovery.
 [LEARN] REJECTED OTHER @ www.elringklinger.com: 301 → elringklinger.de/en — canonical German site, outside API/auth surface.
 [RISK] elringklinger: **30/100** — Downticked (35→30). Today's passive sweep falsified the last live discriminator hypothesis (version-scoped legacy oracle: v1–v5 uniformly 401/49) and generalized the archived Bearer-skip to the whole /api/vN namespace — real, but unchanged severity (MEDIUM reportable, blocked from CRITICAL by un-located 0Uv BU gate + no-customer-data rule). Smartcard 502 (~57h), 10/13 infra hosts timeout across a 6-day span, ir rejected: no live attack surface. The v5 missing-Bearer-validation finding stands on archived evidence (not falsified) but is dormant. Further downgrade deferred; floor of 30 reflects the genuine-but-dormant AUTH finding. Recovery of Pardot vN tier or Smartcard backend is the only new-evidence path.
+## 2026-09-05 12:07:31 UTC [target] (model bigpickle)
+[CHANGED] `go.events.elringklinger.com/api/v5`: REST tier reactivated after ~12h downtime — returns 401/49 (no auth) vs 198 with Bearer header; auth behavior shifted from previous Bearer-skip (any string accepted → error chain 49→181→182→201) to now rejecting Bearer header outright (198).
+[CHANGED] `go.events.elringklinger.com/api`: Legacy `/api?method=` now returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrated to HTTP status layer.
+[CHANGED] `go.events.elringklinger.com/api/v5`: Previous Bearer bypass (any string accepted, error chain 49→181→182→201) no longer works — returns 198 with Bearer header.
+[CHANGED] `api.smartcard.elringklinger.com`: Backend 502 extended to ~34+ hours — no recovery signal.
+[CHANGED] `edi2.elringklinger.com`, `edi7.elringklinger.com`: Still unreachable (timeout), now 6-day span.
+[CHANGED] `go.events.elringklinger.com/api/v5/*`: Bearer bypass DEAD — any `Authorization: Bearer <any>` now returns HTTP 404/`{"code":198,"message":"Endpoint not found"}` (was error chain 49→181→182→201). Auth patched.
+[CHANGED] `go.events.elringklinger.com/api/v5/*`: Tier LIVE — all 11 resource endpoints return HTTP 401/`{"code":49}` without auth (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, visitors, prospect_accounts).
+[CHANGED] `go.events.elringklinger.com/api/vN` (v1–v10): Uniform HTTP 401/`{"code":49}` across all numeric versions — tier is global, auth enforcement consistent.
+[CHANGED] `go.events.elringklinger.com/api?method=`: Legacy endpoint now returns HTTP **401** (was HTTP 200) with err_code:49 — auth enforcement migrated from app-layer to HTTP-status layer.
+[CHANGED] `go.events.elringklinger.com/api/v5/prospects` POST: Same as GET — 401/49 without auth, 404/198 with Bearer. Method not differentiated pre-auth.
+[CHANGED] `go.events.elringklinger.com/api/v5/*` OPTIONS: Returns HTTP 200 (empty body) — CORS preflight succeeds, no restrictive headers observed.
+[CHANGED] `api.smartcard.elringklinger.com`: Backend 502 extended to ~36+ hours. No change.
+[HYP] Pardot v5 REST — Dual-path auth response leak
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/{prospects,campaigns,...}
+confidence: 65
+reasoning: Live today: unauthenticated GET → 401/49. Any `Authorization: Bearer <any>` → 404/198. BU header does NOT change the 198 response. The server has two distinct auth code paths (no-header vs Bearer-present) with different HTTP status codes (401 vs 404) and JSON payloads (49 vs 198). This dual-path response confirms the Bearer validation layer exists and runs pre-routing, but the error for failed Bearer validation is generic 198 (not per-field like old 181/182/201 chain). Previous bypass is dead; the new auth code path may have its own logic flaws (e.g. token format parsing, header injection, version-specific auth behavior).
+evidence_needed: (a) any Bearer token format (JWT, Pardot-specific, base64) that triggers a DIFFERENT error code than 198; (b) header variations (X-Pardot-Key, api_key, Bearer with specific prefix) that change the auth code path.
+verify_steps: PASSIVE 1rps: test header variations on GET /api/v5/prospects — `Authorization: Pardot <any>`, `Authorization: Basic <any>`, `X-Pardot-Key: <any>`, `api_key: <any>`, `Authorization: Bearer <base64>`, `Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.test` — check for response code differentiation (not just 198).
+impact: Auth code path differentiation → potential token format confusion or bypass → CRITICAL if bypass achieved. As-is: information leak about auth architecture = LOW.
+testability: PASSIVE
+[HYP] Pardot v5 CORS — preflight accepts all origins
+class: MISCONFIG
+asset: go.events.elringklinger.com/api/v5/*
+confidence: 45
+reasoning: OPTIONS on /api/v5/prospects returns HTTP 200 with empty body. No Access-Control-Allow-Origin header visible in curl output (need `-v` to confirm). If CORS allows arbitrary origins, authenticated cross-origin requests could be made from attacker-controlled page → data exfiltration. However, Pardot auth requires Bearer+BU headers which are not automatically sent cross-origin unless explicitly configured with `Access-Control-Allow-Credentials`.
+evidence_needed: Full OPTIONS response headers showing Access-Control-Allow-Origin and Access-Control-Allow-Credentials values.
+verify_steps: PASSIVE: `curl -v -X OPTIONS https://go.events.elringklinger.com/api/v5/prospects` — inspect CORS headers in response.
+impact: If CORS allows credentialed cross-origin: CRITICAL (PII exfiltration from authenticated Pardot session). If not: informational only.
+testability: PASSIVE
+[HYP] Smartcard backend recovery
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 25
+reasoning: Still 502 after ~36h. No recovery signal. robots.txt 200 (Disallow: /) unchanged. Lowest priority but only remaining path to HIGH on this host.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (1rps).
+impact: unauthenticated smartcard provisioning / IDOR if backend returns. HIGH if realized.
+testability: PASSIVE
+[FINAL] Pardot v5 dual-path auth (65): Survives — live endpoints, distinct response differentiation between no-auth and Bearer-auth confirmed. Previous bypass finding is DEAD; this is the new active hypothesis. Confidence 65 because the 198 response does not currently indicate exploitable logic, but header-format probing may reveal a different code path.
+[FINAL] CORS preflight (45): Near threshold but survives — the 200 on OPTIONS is real; needs `-v` header inspection to confirm. Worth one probe.
+[PARKED] Smartcard recovery (25): Below 40 threshold. Passive wait only. Parked until recovery observed.
+[LEARN] REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted → error chain 49→181→182→201) confirmed DEAD — Bearer header now always returns 404/198 regardless of BU header. Auth system patched. Bypass finding retracted.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Dual-path auth response confirmed — 401/49 without Bearer vs 404/198 with Bearer; BU header does not alter the 198 response. Server distinguishes header-presence at auth layer pre-routing.
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not just app-layer err_code. Seven methods still enumerable (identical 401/49).
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
+[LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+[RISK] elringklinger: **22/100** — Downticked (30→22). The v5 Bearer bypass (previously the highest-value finding at 85 confidence) is confirmed DEAD — auth system patched, Bearer presence now routes to a generic 198 rejection regardless of BU header content. The archived PoC is falsified. What remains: (1) v5 tier live with 11 endpoints and 401 enforcement — standard Pardot behavior, no bypass; (2) dual-path 401-vs-198 response differentiation is an auth architecture observation, not a vulnerability; (3) legacy /api?method= now returns HTTP 401, tightened; (4) Smartcard 502 (~36h); (5) EDI hosts unreachable 6d. No exploitable finding survives. The CORS probe (OPTIONS 200) is the only remaining low-confidence path to a real finding. Risk floor of 22 reflects one live REST API with 11 authenticated endpoints (genuine attack surface) but zero confirmed vulnerabilities.

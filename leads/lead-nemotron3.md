@@ -625,3 +625,4 @@ testability: PASSIVE
 [LEARN] ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
 [LEARN] REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface
 [RISK] elringklinger: 72 — Primary live attack surface is reactivated Pardot v5 REST API (18 endpoints, distinct error codes per auth layer) + legacy /api with 7 enumerable methods. v5 tier was previously an 85-confidence auth bypass (Bearer validation skipped); now reactivated with changed behavior — high-value target for re-verification. Smartcard API backend down 34+ hours. 10/13 dedicated hosts unreachable. Score reflects two live API tiers with method/enumeration potential and recent behavioral changes.
+## 2026-09-05 12:24:04 UTC [target] (model nemotron3)

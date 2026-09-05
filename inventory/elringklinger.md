@@ -128,3 +128,17 @@ www.elringklinger.com
 - CHANGED No new passive probes executed since last lead (~2 hours ago) — surface state unchanged: Pardot legacy /api (err_code:49 on 7 methods), v5 tier removed (198), EDI/unreachable hosts (10/13), ir.elringk
 
 ## 2026-09-05 08:47:48 UTC
+
+## 2026-09-05 12:24:14 UTC
+- CHANGED `go.events.elringklinger.com/api/v5`: REST tier reactivated after ~12h downtime — returns 401/49 (no auth) vs 198 with Bearer header; auth behavior shifted from previous Bearer-skip (any string accept
+- CHANGED `go.events.elringklinger.com/api`: Legacy `/api?method=` now returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrated to HTTP status layer.
+- CHANGED `go.events.elringklinger.com/api/v5`: Previous Bearer bypass (any string accepted, error chain 49→181→182→201) no longer works — returns 198 with Bearer header.
+- CHANGED `api.smartcard.elringklinger.com`: Backend 502 extended to ~34+ hours — no recovery signal.
+- CHANGED `edi2.elringklinger.com`, `edi7.elringklinger.com`: Still unreachable (timeout), now 6-day span.
+- CHANGED `go.events.elringklinger.com/api/v5/*`: Bearer bypass DEAD — any `Authorization: Bearer <any>` now returns HTTP 404/`{"code":198,"message":"Endpoint not found"}` (was error chain 49→181→182→201). Auth
+- CHANGED `go.events.elringklinger.com/api/v5/*`: Tier LIVE — all 11 resource endpoints return HTTP 401/`{"code":49}` without auth (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, for
+- CHANGED `go.events.elringklinger.com/api/vN` (v1–v10): Uniform HTTP 401/`{"code":49}` across all numeric versions — tier is global, auth enforcement consistent.
+- CHANGED `go.events.elringklinger.com/api?method=`: Legacy endpoint now returns HTTP **401** (was HTTP 200) with err_code:49 — auth enforcement migrated from app-layer to HTTP-status layer.
+- CHANGED `go.events.elringklinger.com/api/v5/prospects` POST: Same as GET — 401/49 without auth, 404/198 with Bearer. Method not differentiated pre-auth.
+- CHANGED `go.events.elringklinger.com/api/v5/*` OPTIONS: Returns HTTP 200 (empty body) — CORS preflight succeeds, no restrictive headers observed.
+- CHANGED `api.smartcard.elringklinger.com`: Backend 502 extended to ~36+ hours. No change.

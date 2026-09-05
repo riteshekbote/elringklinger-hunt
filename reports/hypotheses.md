@@ -198,3 +198,11 @@
 - LEARN: REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
 - LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
 - LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface
+
+## RANKED HYPOTHESES 2026-09-05 12:24:14 UTC
+- [65] go.events.elringklinger.com/api/v5/{prospects,campaigns,...}: Pardot v5 REST — Dual-path auth response leak (from art/lead_bigpickle.txt)
+- LEARN: REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted → error chain 49→181→182→201) confirmed DEAD — Bearer header now
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Dual-path auth response confirmed — 401/49 without Bearer vs 404/198 with Bearer; BU header does not alter t
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
