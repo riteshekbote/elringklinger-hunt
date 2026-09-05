@@ -227,3 +227,16 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-05 19:35:16 UTC
+- [85] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}: Legacy Pardot Bearer-token validation skip — confirmed stable, BU-id is sole auth gate (from art/lead_bigpickle.txt)
+- [75] go.events.elringklinger.com/api/v5: Pardot v5 REST — Dual-Path Auth Response Leak & Endpoint Enumeration (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): HUMAN: OSINT for an ElringKlinger Pardot Business-Unit-Id (`0Uv` prefix, 18 alphanumeric chars) across public marketing/partner/integration/documentation surfac
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" && GET 
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api/v5: Auth-context namespace shadowing falsified — all 12 Bearer-authenticated candidate routes (oauth/token, 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Token validation threshold pinned — Bearer of length≥2 (including `00`, `aaaaaaaaa`) always passes toke
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Dual-path auth response confirmed — 401/49 without Bearer vs 404/198 with Bearer; BU header does not alter t
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: numeric version namespace (v1..v99) uniformly routes to REST tier — Bearer-skip is generic, not v5-specific;
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.

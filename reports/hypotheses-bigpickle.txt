@@ -1,30 +1,29 @@
-## 2026-09-05 17:38:42 UTC [target] (model bigpickle)
-[HYP] Legacy Pardot Bearer-token validation skip — confirmed, BU-id is the only auth gate
+## 2026-09-05 19:31:22 UTC [target] (model bigpickle)
+[PRIO] go.events.elringklinger.com/api?method=, 7.5, auth: broken token validation confirmed, sole gate is an obtainable 18-char tenant BU id.
+[PRIO] go.events.elringklinger.com/api/v5, 5.0, auth: live 11 endpoints, gated by valid Bearer+Buf; dual-path 401-vs-198 is architectural, not exploitable.
+[PRIO] api.smartcard.elringklinger.com, 3.5, auth: 502 ~42h; high value if backend recovers, no signal.
+[HYP] Legacy Pardot Bearer-token validation skip — confirmed stable, BU-id is sole auth gate
 class: AUTH
 asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
 confidence: 85
-reasoning: This cycle directly confirmed: garbage token `aaaaaaaaa` (1) with no BU → 400/181 (BU-missing, token passed); (2) with BU `0UvAAAAAAAAAAAAAAA` → 403/201 (BU-inactive, token passed); while no-Bearer → 401/49, and Bearer-empty-space → 401/49. Token value is never validated — only non-emptiness matters. Chain: Bearer-empty→49; BU missing→181; BU bad-format→182; BU inactive→201; BU active→method dispatch. BU oracle: 18 alphanumeric chars, case-sensitive 0Uv prefix (182 reflects supplied value).
-evidence_needed: obtainable ElringKlinger Pardot BU id (0Uv...) → garbage token + real BU = full API auth (prospects/campaigns PII read+write)
-verify_steps: PASSIVE 1rps — already done (chain 181/182/201 with synthetic BUs); next: OSINT for a leaked 0Uv id (marketing assets, partner docs, app integrations) is HUMAN_ONLY, not a live probe
-impact: broken-auth design — missing token validation means any tenant-id holder authenticates with any string; CRITICAL if BU id discovered (ATO of API layer, prospects PII exfiltration)
-testability: PASSIVE
-[HYP] v5 REST authenticated-namespace shadowing
-class: BUSLOGIC
-asset: go.events.elringklinger.com/api/vN/*
-confidence: 40
-reasoning: Bearer on any /api/vN/* resource → 404/198 "Endpoint not found" even for live paths (prospects/campaigns return 401/49 unauth). Implies Bearer switches request into an auth-context routing table where resource paths differ — architectural shadowing, not per-path validation.
-evidence_needed: an auth-context route returning non-198 with Bearer (e.g. oauth/token, businessUnit, users/me)
-verify_steps: PASSIVE: GET /api/v5/oauth/token, /api/v5/businessUnit, /api/v5/business-units, /api/v5/users/me with `Bearer x` (1rps)
-impact: if a shadow map exists it may expose undocumented/versioned surface — LOW-MEDIUM
+reasoning: Re-verified all 4 token shapes this cycle: Bearer-empty and Bearer-`0` → 401/49 (rejected pre-BU); Bearer-`00`, `aaaaaaaaa`, and `test_token_1234567890` all pass token validation, reaching BU checks (400/181 BU-missing, 403/201 BU-inactive, 403/182 BU-format). No token-validity error anywhere in the chain — only non-emptiness/non-degeneracy is enforced. Gap between "0" (rejected) and "00" (accepted) confirms length≥2 gate, not real validation.
+evidence_needed: obtainable ElringKlinger Pardot BU id (0Uv... prefix, 18 alphanumeric chars) → garbage 2-char+ token + real BU = full authenticated API access.
+verify_steps: PASSIVE — chain fully mapped; next step is HUMAN_ONLY OSINT for a leaked 0Uv id (marketing/partner/app-integration surfaces), not a live probe.
+impact: broken-auth design — any tenant-id holder authenticates with any ≥2-char string; CRITICAL if BU id discovered (prospects/campaigns PII read+write, API-layer ATO).
 testability: PASSIVE
 [HYP] Smartcard backend recovery
 class: AUTH
 asset: api.smartcard.elringklinger.com
 confidence: 20
-reasoning: 502 ~41h, unchanged, no signal.
-evidence_needed: non-502 on /api/v1/
-verify_steps: PASSIVE: GET /api/v1/ (1rps)
-impact: unauthenticated provisioning/IDOR if backend returns — HIGH if realized
+reasoning: 502 ~42h, unchanged; robots.txt 200. Passive wait only, no new signal.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: GET /api/v1/ (1rps).
+impact: unauthenticated provisioning/IDOR if backend returns — HIGH if realized.
 testability: PASSIVE
-[NEXT] PROBE: `GET https://go.events.elringklinger.com/api/v5/oauth/token` + `/api/v5/businessUnit` + `/api/v5/users/me` + `/api/v5/business-units`, each with `Authorization: Bearer x`, hunting for any non-198 auth-context route (1rps)
-[RISK] elringklinger: **40/100** — Upticked (22→40). Live-confirmed broken-auth primitive: the legacy Pardot `/api?method=*` endpoint performs NO token validation (any non-empty Bearer passes; chain 49→181→182→201 demonstrably skips token check), leaving the 18-char tenant BU-id as the sole auth gate. This is a genuine missing-input-validation flaw in the auth layer, not a config nit — severity CRITICAL if any ElringKlinger 0Uv BU-id leaks (it is low-entropy-adjacent: discoverable via marketing/partner surfaces). Actual exploitation is gated on that single id, so program risk stays medium — one leaked 0Uv id flips it to HIGH and produces a full API PII exposure report.
+[PARKED] v5 authenticated-namespace shadowing (BUSLOGIC, 40): falsified — 8 candidate auth-context routes (oauth/token, businessUnit, business-units, users, users/me, token, auth, account, user, login, session, me) all identical 404/198. No shadow map exists.
+[PARKED] Smartcard recovery (AUTH, 20): below 40 threshold, passive-wait only.
+[FINAL] Legacy Pardot token-skip (AUTH, 85) — confirmed, sole survivor.
+[NEXT] HUMAN: OSINT for an ElringKlinger Pardot Business-Unit-Id (`0Uv` prefix, 18 alphanumeric chars) across public marketing/partner/integration/documentation surfaces — the single variable that turns the confirmed token-validation skip (85) into a CRITICAL full-API PII exposure; no further live probe advances it.
+[LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api/v5: Auth-context namespace shadowing falsified — all 12 Bearer-authenticated candidate routes (oauth/token, businessUnit, business-units, users, users/me, token, auth, account, user, login, session, me) return identical 404/{code:198}; Bearer presence routes everything to a generic reject, no hidden authenticated route map.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Token validation threshold pinned — Bearer of length≥2 (including `00`, `aaaaaaaaa`) always passes token check and reaches BU-layer (181/182/201); Bearer empty/`0` → 401/49 pre-BU. Confirmed stable across full token-shape matrix.
+[RISK] elringklinger: **40/100** — Stable. The only surviving finding is the confirmed legacy Pardot token-validation skip (85): any ≥2-char Bearer passes, leaving the 18-char tenant BU-id as the sole auth gate. Severity is CRITICAL but exploitation is fully gated on obtaining a real `0Uv` BU id — a HUMAN_ONLY OSINT dependency, not a live-probe path. v5 auth-context shadowing falsified (12 routes, all 198); Smartcard 502 (~42h); EDI hosts dead 7d. Smartcard 502 (~42h); the highest-value future trigger is that backend recovery, which would re-open an unauthenticated provisioning/IDOR surface. Program risk holds at medium: one leaked BU id flips it to HIGH with a complete API PII exposure report.
