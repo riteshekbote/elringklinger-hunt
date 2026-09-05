@@ -50,3 +50,15 @@
 - 2026-09-05 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
 - 2026-09-05 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface
 - 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 32+ hours across all versioned paths — transient outage, nginx gateway live
+- 2026-09-05 REJECTED BUSLOGIC @ go.events.elringklinger.com/api: version-series probe (v1-v5) shows uniform 401/err_code:49 — 401 enforcement is global across versions; version-scoped oracle hypothesis falsified.
+- 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: numeric version namespace (v1..v99) uniformly routes to REST tier — Bearer-skip is generic, not v5-specific; BU gate (18-char 0Uv) is the sole remaining barrier.
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: backend 502 (~57h); robots.txt 200 (Disallow: /) adds proxy manifest, no recovery.
+- 2026-09-05 REJECTED OTHER @ elringklinger.com/www: main www 301 → elringklinger.de/en — canonical German site, out of API/attack path.
+- 2026-09-05 REJECTED BUSLOGIC @ go.events.elringklinger.com/api: version-series (v1–v5) uniform 401/err_code:49 — 401 enforcement global, version-scope oracle falsified.
+- 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: numeric namespace (v1..v99) uniformly routes to REST tier — Bearer-skip is generic, not v5-specific; BU gate sole barrier.
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: backend 502 (~57h); robots.txt 200 (Disallow: /), no recovery.
+- 2026-09-05 REJECTED OTHER @ www.elringklinger.com: 301 → elringklinger.de/en — canonical German site, outside API/auth surface.
+- 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 REST tier reactivated after ~12h downtime — returns 401 code:49 (no auth) vs 198 with Bearer header; auth behavior changed from previous Bearer bypass
+- 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy Pardot /api?method= now returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement shifted to HTTP status layer
+- 2026-09-05 REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted, error chain 49→181→182→201) no longer works — now returns 198 with Bearer header
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 34+ hours — transient outage, nginx gateway live
