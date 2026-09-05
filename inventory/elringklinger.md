@@ -122,3 +122,7 @@ www.elringklinger.com
 - CHANGED Current timestamp: 2026-09-05 00:11:24 UTC — last lead timestamp was 2026-09-04 22:16:28 UTC (~2 hours ago)
 - CHANGED No new passive probes executed since last lead — state unchanged: Pardot legacy /api (err_code:49 on 7 methods), Smartcard 502 (30+ hrs), v5 tier removed (198), EDI/unreachable hosts (10/13), ir.elrin
 - NEW Time window for Smartcard backend recovery extended to ~32 hours — still passive-only wait
+
+## 2026-09-05 04:42:31 UTC
+- CHANGED Smartcard API backend outage extended to ~32 hours (still 502 across all versioned paths; nginx gateway live)
+- CHANGED No new passive probes executed since last lead (~2 hours ago) — surface state unchanged: Pardot legacy /api (err_code:49 on 7 methods), v5 tier removed (198), EDI/unreachable hosts (10/13), ir.elringk

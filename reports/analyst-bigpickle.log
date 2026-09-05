@@ -4255,3 +4255,125 @@ testability: PASSIVE
 
 ## STEP 7 — RISK
 [RISK] elringklinger: **45/100** — Downticked (55→45). The only substantive finding (Pardot v5 missing-Bearer-validation, architectural AUTH flaw) has now had BOTH its live surfaces closed: v5 tier returns 404/198 and the legacy tier enforces app-layer 401 (verified product-side via `x-pardot-rsp`), eliminating the err_code 1/49 discriminator. The finding is reportable from prior PoC evidence at MEDIUM severity (broken token validation), blocked from CRITICAL by the un-located `0Uv` BU gate and the no-live-customer-data rule. Smartcard (502, 50h+) and all EDI/infra hosts (timeout) add no live surface. No regression in proof quality, but current demonstrable live attack surface is near zero; score reflects dormancy, not falsified findings.
+===== ANALYST bigpickle 2026-09-05 04:42:31 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -sS --max-time 20 -o /tmp/opencode/smartcard_v1.txt -w "HTTP %{http_code} | %{time_total}s\n" "https://api.smartcard.elringklinger.com/api/v1/"
+HTTP 502 | 0.532425s
+[0m
+[0m$ [0mfor v in 1 2 5; do echo "=== version=$v ==="; curl -sS --max-time 20 -o /tmp/opencode/legacy_v$v.txt -w "HTTP %{http_code} | %{time_total}s\n" "https://go.events.elringklinger.com/api?method=getVersion&version=$v"; sleep 1.2; done
+=== version=1 ===
+HTTP 401 | 2.536891s
+=== version=2 ===
+HTTP 401 | 0.207890s
+=== version=5 ===
+HTTP 401 | 0.214585s
+[0m
+[0m→ [0mRead /tmp/opencode/legacy_v1.txt
+[0m→ [0mRead /tmp/opencode/legacy_v2.txt
+[0m→ [0mRead /tmp/opencode/legacy_v5.txt
+[0m→ [0mRead /tmp/opencode/smartcard_v1.txt
+[0m
+[0m$ [0mecho "=== invalid method ==="; curl -sS --max-time 20 -o /tmp/opencode/m_invalid.txt -w "HTTP %{http_code}\n" "https://go.events.elringklinger.com/api?method=doesNotExistXYZ&version=3"; sleep 1.2; echo "=== getVersion no version param ==="; curl -sS --max-time 20 -o /tmp/opencode/m_nover.txt -w "HTTP %{http_code}\n" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1.2; echo "=== getVersion version=2 ==="; curl -sS --max-time 20 -o /tmp/opencode/m_v2.txt -w "HTTP %{http_code}\n" "https://go.events.elringklinger.com/api?method=getVersion&version=2"
+=== invalid method ===
+HTTP 401
+=== getVersion no version param ===
+HTTP 401
+=== getVersion version=2 ===
+HTTP 401
+[0m
+[0m→ [0mRead /tmp/opencode/m_invalid.txt
+[0m→ [0mRead /tmp/opencode/m_nover.txt
+[0m→ [0mRead /tmp/opencode/m_v2.txt
+Let me complete the breadth sweep on previously-unreachable inventory hosts (read-only HEAD to root).
+[0m
+[0m$ [0mfor h in edi2 edi7 dtspc-tst cgline aircontrol avconf cctv ektrcctv fwasvvideo1 imap; do printf "%-14s " "$h"; curl -sS -I --max-time 6 -o /dev/null -w "HTTP %{http_code} | %{time_total}s\n" "http://$h.elringklinger.com/" 2>&1 || echo "FAIL"; sleep 1.1; done
+edi2           curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002695s
+FAIL
+edi7           curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002591s
+FAIL
+dtspc-tst      curl: (28) Connection timed out after 6001 milliseconds
+HTTP 000 | 6.001982s
+FAIL
+cgline         curl: (28) Connection timed out after 6001 milliseconds
+HTTP 000 | 6.001485s
+FAIL
+aircontrol     curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002548s
+FAIL
+avconf         curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002797s
+FAIL
+cctv           curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002638s
+FAIL
+ektrcctv       curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002568s
+FAIL
+fwasvvideo1    curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002845s
+FAIL
+imap           curl: (28) Connection timed out after 6002 milliseconds
+HTTP 000 | 6.002438s
+FAIL
+[0m
+## STEP 1 — DELTA
+- [CHANGED] Legacy Pardot /api fully flat-lined: `version=1|2|5`, valid+invalid methods, and omitted version all return **identical** HTTP 401 `{"@attributes":{"stat":"fail","version":1,"err_code":49}}` — the `version:1` echo is constant regardless of requested version, and invalid method returns the same body as `getVersion` → method-existence AND version-scope oracles both dead; auth wall precedes dispatch.
+- [CHANGED] `api.smartcard.elringklinger.com/api/v1/` still HTTP 502 (~55h) — re-probe negative.
+- [CHANGED] Breadth sweep of all 10 unreachable dedicated hosts (edi2, edi7, dtspc-tst, cgline, aircontrol, avconf, cctv, ektrcctv, fwasvvideo1, imap) re-run: **all** still 6s connection-timeout, days-apart consistency → dead/firewalled, no recovery.
+
+## STEP 2 — PRIORITIZE
+- [PRIO] api.smartcard.elringklinger.com, 5.20 (a5/b8/t6/g3/c4/f2) versioned nginx gateway live, BACKEND the only gate
+- [PRIO] go.events.elringklinger.com, 5.15 (a6/b7/t7/g3/c3/f1) all tiers flatlined, strongest archived PoC
+- [PRIO] edi2.elringklinger.com, 4.15 (a4/b6/t5/g2/c3/f3) IDOR-documented EDI, still unreachable
+
+## STEP 3 — HYPOTHESES
+[HYP] Pardot v5 — Missing Bearer-Token Validation (dormant tier; highest-value archived finding)
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/*
+confidence: 85
+reasoning: Archived PoC: no Authorization→401/49; garbage Bearer passed token check to BU validation (181/182/201/198); identical 201/182 across distinct garbage tokens; 18 endpoints live before revocation. Now dormant (198) and legacy tier flatlined at 401/49 (today's version-series probe).
+evidence_needed: any v5 response ≠198 (401/181/182/201/200) on re-probe → tier re-activated and bypass re-demonstrable.
+verify_steps: PASSIVE 1rps: GET /api/v5/prospects with `Authorization: Bearer x` + `Pardot-Business-Unit-Id: 0Uv510000000000000` — expect 198 while dormant, error-chain flip on re-activation. No live-BU probes.
+impact: BU-id leak → unauthenticated read of all Pardot objects (prospect PII, campaigns, emails, users) = CRITICAL; as-is archived MEDIUM broken-token-validation.
+testability: PASSIVE
+
+[HYP] Smartcard API — Backend Recovery Exposing Versioned Auth/Provisioning Surface
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 30
+reasoning: nginx gateway consistently live; /api/v1|v2|beta/ + /auth|tokens|cards|health all 502 for ~55h; no framework fingerprint. Single remaining path to HIGH.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (1rps).
+impact: unauthenticated smartcard provisioning/IDOR if backend returns. HIGH if realized.
+testability: PASSIVE
+
+[HYP] EDI/infra outage — transient maintenance vs permanent firewall (recovery re-scan)
+class: IDOR
+asset: edi2.elringklinger.com, edi7.elringklinger.com
+confidence: 15
+reasoning: 10 hosts consistently 6s-timeout across 5 days; EDI = documented IDOR/BOLA hotspot. No positive signal.
+evidence_needed: any non-timeout response (even 502/403) on edi2.
+verify_steps: PASSIVE: HEAD/GET http://edi2.elringklinger.com/ (1rps).
+impact: B2B multi-tenant doc exchange if surface returns — HIGH, but currently no surface.
+testability: PASSIVE
+
+## STEP 4 — SELF-CRITIQUE
+- [PARKED] Legacy /api version-param oracle (BUSLOGIC 45): **FALSIFIED** — 401 enforcement is version-agnostic and pre-dispatch; no 200/err_code:1 variant survived on version=1|2|5 or invalid-method path.
+- [PARKED] EDI-recovery HYP dropped below 40 (confidence 15) — parked as monitoring-only line, no probe value this cycle.
+- [FINAL] Pardot v5 dormant reactivation [85] — strongest archived evidence, kept.
+- [FINAL] Smartcard backend recovery [30] — kept (only HIGH path).
+
+## STEP 5 — NEXT ACTION
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api/v5/prospects` with `Authorization: Bearer <garbage>` + `Pardot-Business-Unit-Id: 0Uv510000000000000` (1rps, read-only) — v5 tier re-activation watch; 198 = still dormant, any 401/181/182/201/200 = Bearer-bypass surface restored for re-verification.
+
+## STEP 6 — LEARNING
+- [LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api: version-param scope hypothesis falsified — version=1|2|5, valid+invalid methods, omitted version all return identical 401/err_code:49 with `version:1` echoed; method-existence and version oracles dead.
+- [LEARN] REJECTED OTHER @ edi/edi7/dtspc-tst/cgline/aircontrol/avconf/cctv/ektrcctv/fwasvvideo1/imap: second read-only sweep (multi-day gap) still uniform 6s timeout — persistent dead/firewalled, no recovery signal.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: 502 persists into ~55h including re-probe — nginx gateway live, backend down; recovery-watch remains the only live thread.
+
+## STEP 7 — RISK
+[RISK] elringklinger: **35/100** — Downticked (45→35). Every live discovery line has shut: v5 dormant (198), legacy flatlined at app-layer 401/49 with both discrimination oracles dead (today's version-series + invalid-method probes), Smartcard 502 (~55h), 10/13 hosts dead across a second days-apart sweep, ir rejected. Current demonstrable live attack surface ≈ zero; best reportable artifact remains the archived v5 missing-Bearer-validation PoC at MEDIUM, blocked from CRITICAL by the un-located 0Uv BU gate and the no-live-customer-data rule. Nothing falsified — the v5 finding stands on archived evidence — but no new evidence exists until Smartcard's backend or the Pardot v5 tier returns.

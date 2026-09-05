@@ -492,3 +492,33 @@ impact: if oracle survives on old versions: unauthenticated method/endpoint exis
 testability: PASSIVE
 [NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion&version=1` then `…&version=2` then `…&version=5` (1rps, passive) — determine if 401 enforcement is version-scoped and whether the old err_code 1/49 oracle survives on any version.
 [RISK] elringklinger: **45/100** — Downticked (55→45). The only substantive finding (Pardot v5 missing-Bearer-validation, architectural AUTH flaw) has now had BOTH its live surfaces closed: v5 tier returns 404/198 and the legacy tier enforces app-layer 401 (verified product-side via `x-pardot-rsp`), eliminating the err_code 1/49 discriminator. The finding is reportable from prior PoC evidence at MEDIUM severity (broken token validation), blocked from CRITICAL by the un-located `0Uv` BU gate and the no-live-customer-data rule. Smartcard (502, 50h+) and all EDI/infra hosts (timeout) add no live surface. No regression in proof quality, but current demonstrable live attack surface is near zero; score reflects dormancy, not falsified findings.
+## 2026-09-05 04:42:04 UTC [target] (model bigpickle)
+[HYP] Pardot v5 — Missing Bearer-Token Validation (dormant tier; highest-value archived finding)
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/*
+confidence: 85
+reasoning: Archived PoC: no Authorization→401/49; garbage Bearer passed token check to BU validation (181/182/201/198); identical 201/182 across distinct garbage tokens; 18 endpoints live before revocation. Now dormant (198) and legacy tier flatlined at 401/49 (today's version-series probe).
+evidence_needed: any v5 response ≠198 (401/181/182/201/200) on re-probe → tier re-activated and bypass re-demonstrable.
+verify_steps: PASSIVE 1rps: GET /api/v5/prospects with `Authorization: Bearer x` + `Pardot-Business-Unit-Id: 0Uv510000000000000` — expect 198 while dormant, error-chain flip on re-activation. No live-BU probes.
+impact: BU-id leak → unauthenticated read of all Pardot objects (prospect PII, campaigns, emails, users) = CRITICAL; as-is archived MEDIUM broken-token-validation.
+testability: PASSIVE
+[HYP] Smartcard API — Backend Recovery Exposing Versioned Auth/Provisioning Surface
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 30
+reasoning: nginx gateway consistently live; /api/v1|v2|beta/ + /auth|tokens|cards|health all 502 for ~55h; no framework fingerprint. Single remaining path to HIGH.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (1rps).
+impact: unauthenticated smartcard provisioning/IDOR if backend returns. HIGH if realized.
+testability: PASSIVE
+[HYP] EDI/infra outage — transient maintenance vs permanent firewall (recovery re-scan)
+class: IDOR
+asset: edi2.elringklinger.com, edi7.elringklinger.com
+confidence: 15
+reasoning: 10 hosts consistently 6s-timeout across 5 days; EDI = documented IDOR/BOLA hotspot. No positive signal.
+evidence_needed: any non-timeout response (even 502/403) on edi2.
+verify_steps: PASSIVE: HEAD/GET http://edi2.elringklinger.com/ (1rps).
+impact: B2B multi-tenant doc exchange if surface returns — HIGH, but currently no surface.
+testability: PASSIVE
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api/v5/prospects` with `Authorization: Bearer <garbage>` + `Pardot-Business-Unit-Id: 0Uv510000000000000` (1rps, read-only) — v5 tier re-activation watch; 198 = still dormant, any 401/181/182/201/200 = Bearer-bypass surface restored for re-verification.
+[RISK] elringklinger: **35/100** — Downticked (45→35). Every live discovery line has shut: v5 dormant (198), legacy flatlined at app-layer 401/49 with both discrimination oracles dead (today's version-series + invalid-method probes), Smartcard 502 (~55h), 10/13 hosts dead across a second days-apart sweep, ir rejected. Current demonstrable live attack surface ≈ zero; best reportable artifact remains the archived v5 missing-Bearer-validation PoC at MEDIUM, blocked from CRITICAL by the un-located 0Uv BU gate and the no-live-customer-data rule. Nothing falsified — the v5 finding stands on archived evidence — but no new evidence exists until Smartcard's backend or the Pardot v5 tier returns.

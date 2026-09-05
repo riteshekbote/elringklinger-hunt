@@ -49,3 +49,4 @@
 - 2026-09-05 REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
 - 2026-09-05 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
 - 2026-09-05 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 32+ hours across all versioned paths — transient outage, nginx gateway live
