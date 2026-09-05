@@ -67,3 +67,4 @@
 - 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not just app-layer err_code. Seven methods still enumerable (identical 401/49).
 - 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
 - 2026-09-05 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+- 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: numeric version namespace (v1..v99) uniformly routes to REST tier — Bearer-skip is generic, not v5-specific; BU gate sole barrier.

@@ -149,3 +149,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5: Bearer header now ALWAYS returns 404/198 (was error chain 49→181→182→201); BU header does not alter response; auth check at pre-routing layer
 - CHANGED api.smartcard.elringklinger.com: Backend 502 extended to ~36+ hours; robots.txt 200 (Disallow: /); no recovery
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), now 6-day span
+
+## 2026-09-05 17:41:27 UTC
