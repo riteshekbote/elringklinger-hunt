@@ -634,3 +634,31 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
 [LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
 [RISK] elringklinger: **22/100** — Downticked (30→22). The v5 Bearer bypass (previously the highest-value finding at 85 confidence) is confirmed DEAD — auth system patched, Bearer presence now routes to a generic 198 rejection regardless of BU header content. The archived PoC is falsified. What remains: (1) v5 tier live with 11 endpoints and 401 enforcement — standard Pardot behavior, no bypass; (2) dual-path 401-vs-198 response differentiation is an auth architecture observation, not a vulnerability; (3) legacy /api?method= now returns HTTP 401, tightened; (4) Smartcard 502 (~36h); (5) EDI hosts unreachable 6d. No exploitable finding survives. The CORS probe (OPTIONS 200) is the only remaining low-confidence path to a real finding. Risk floor of 22 reflects one live REST API with 11 authenticated endpoints (genuine attack surface) but zero confirmed vulnerabilities.
+## 2026-09-05 15:24:53 UTC [target] (model bigpickle)
+[HYP] Legacy Pardot Bearer-token verification skip (resurrected) — BU-id is the only auth gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 75
+reasoning: Live this cycle: any alpha/numeric Bearer token ≥2 chars passes token validation entirely (181/182/201 BU errors returned pre-dispatch, XML 400/403); token only rejected when structurally degenerate ("0" single char or whitespace → 49/401). Identical token-skip primitive as the archived v5 bypass (49→181→182→201 chain), now on the legacy endpoint. BU format oracle pinned: case-sensitive 0Uv prefix + alphanumeric 18 chars (0Uv00... and 0Uv51... pass format → 201; 0uv/hex/numeric fail → 182). Validation order: header-present → BU missing(181) → BU format(182) → BU active(201) → method dispatch. No token-validity error appears anywhere in the chain.
+evidence_needed: (a) any Bearer token format/prefix that bypasses BU existence check (201) and reaches method dispatch; (b) obtainable EK Pardot BU id (0Uv...) — then garbage token + valid BU = full API auth.
+verify_steps: PASSIVE 1rps: (1) GET /api?method=getVersion` -H "Authorization: Bearer test" -H "Pardot-Business-Unit-Id: <18ch 0Uv>" — repeat for method enumeration once a non-201 response appears; (2) monitor 49-vs-181 threshold for other token shapes (Bearer \x00, tab, numeric-only "00"); (3) watch for any method param that short-circuits BU check.
+impact: Attacker with any EK Pardot BU id (leak/guess/public doc) gets full authenticated access with a garbage token → prospects/campaigns PII read+write, ATO of API layer. CRITICAL if BU id obtained; as confirmed: token-validation flaw demonstrable, gated by tenant-knowledge.
+testability: PASSIVE
+[HYP] REST-tier Bearer routing artifact — authenticated namespace shadowing
+class: BUSLOGIC
+asset: go.events.elringklinger.com/api/vN/* (v1-v99)
+confidence: 40
+reasoning: Bearer on any /api/vN/* resource returns 404/198 "Endpoint not found" even for verified-live paths (v5 prospects/campaigns returned 401/49 unauth). Content-Negotiation split: v1/v2 → legacy @attributes JSON, v5/v99 → REST {"code":198}. Implies Bearer presence switches request into an auth-context routing table where the resource paths don't exist — architectural shadowing rather than per-path validation.
+evidence_needed: a Bearer-authenticated context resource path that resolves (e.g. /api/v5/oauth/... or /api/v5/authorized endpoints). 
+verify_steps: PASSIVE: GET /api/v5/token, /api/v5/oauth/token, /api/v5/businessUnit, /api/v5/business-units, /api/v5/users/me with Bearer header (1rps) — hunt for a route that returns non-198.
+impact: If an authenticated-namespace shadow map exists, it may expose endpoints/versioning not visible unauth — potential undocumented API surface. LOW-MEDIUM.
+testability: PASSIVE
+[HYP] Smartcard backend recovery
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 20
+reasoning: 502 ~40h, unchanged. robots.txt 200. Passive wait only; no new signal.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (1rps).
+impact: unauthenticated smartcard provisioning/IDOR if backend returns. HIGH if realized.
+testability: PASSIVE

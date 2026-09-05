@@ -142,3 +142,10 @@ www.elringklinger.com
 - CHANGED `go.events.elringklinger.com/api/v5/prospects` POST: Same as GET — 401/49 without auth, 404/198 with Bearer. Method not differentiated pre-auth.
 - CHANGED `go.events.elringklinger.com/api/v5/*` OPTIONS: Returns HTTP 200 (empty body) — CORS preflight succeeds, no restrictive headers observed.
 - CHANGED `api.smartcard.elringklinger.com`: Backend 502 extended to ~36+ hours. No change.
+
+## 2026-09-05 15:25:18 UTC
+- NEW go.events.elringklinger.com/api/v5: REST tier REACTIVATED after ~12h downtime — returns 401/49 (no auth) vs 404/198 (with Bearer); previous Bearer bypass DEAD; 11 resource endpoints live; dual-path au
+- NEW go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 → HTTP 401 with err_code:49 — auth enforcement shifted to HTTP status layer; 7 methods still enumerable
+- CHANGED go.events.elringklinger.com/api/v5: Bearer header now ALWAYS returns 404/198 (was error chain 49→181→182→201); BU header does not alter response; auth check at pre-routing layer
+- CHANGED api.smartcard.elringklinger.com: Backend 502 extended to ~36+ hours; robots.txt 200 (Disallow: /); no recovery
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), now 6-day span

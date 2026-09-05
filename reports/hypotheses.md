@@ -206,3 +206,13 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-05 15:25:18 UTC
+- [75] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}: Legacy Pardot Bearer-token verification skip (resurrected) — BU-id is the only auth gate (from art/lead_bigpickle.txt)
+- [75] go.events.elringklinger.com/api/v5: Pardot v5 REST — Dual-Path Auth Response Leak & Endpoint Enumeration (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" && GET 
+- LEARN: REJECTED AUTH @ go.events.elringklinger.com/api/v5: Previous Bearer bypass (any string accepted → error chain 49→181→182→201) confirmed DEAD — Bearer header now
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: Dual-path auth response confirmed — 401/49 without Bearer vs 404/198 with Bearer; BU header does not alter t
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~36h). No recovery.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
