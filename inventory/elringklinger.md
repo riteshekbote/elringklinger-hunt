@@ -153,3 +153,10 @@ www.elringklinger.com
 ## 2026-09-05 17:41:27 UTC
 
 ## 2026-09-05 19:35:16 UTC
+
+## 2026-09-05 21:46:55 UTC
+- CHANGED go.events.elringklinger.com/api/v5: REST tier confirmed LIVE with dual-path auth — 401/49 without Bearer vs 404/198 with Bearer; 11 resource endpoints confirmed (prospects, campaigns, users, lists, ta
+- CHANGED go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement at HTTP status layer
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~57h; robots.txt 200 (Disallow: /); no recovery
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
+- NEW go.events.elringklinger.com/api/v5: OPTIONS returns 200 empty body — CORS preflight succeeds

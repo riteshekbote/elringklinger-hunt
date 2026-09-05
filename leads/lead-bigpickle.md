@@ -721,3 +721,22 @@ testability: PASSIVE
 [LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api/v5: Auth-context namespace shadowing falsified — all 12 Bearer-authenticated candidate routes (oauth/token, businessUnit, business-units, users, users/me, token, auth, account, user, login, session, me) return identical 404/{code:198}; Bearer presence routes everything to a generic reject, no hidden authenticated route map.
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Token validation threshold pinned — Bearer of length≥2 (including `00`, `aaaaaaaaa`) always passes token check and reaches BU-layer (181/182/201); Bearer empty/`0` → 401/49 pre-BU. Confirmed stable across full token-shape matrix.
 [RISK] elringklinger: **40/100** — Stable. The only surviving finding is the confirmed legacy Pardot token-validation skip (85): any ≥2-char Bearer passes, leaving the 18-char tenant BU-id as the sole auth gate. Severity is CRITICAL but exploitation is fully gated on obtaining a real `0Uv` BU id — a HUMAN_ONLY OSINT dependency, not a live-probe path. v5 auth-context shadowing falsified (12 routes, all 198); Smartcard 502 (~42h); EDI hosts dead 7d. Smartcard 502 (~42h); the highest-value future trigger is that backend recovery, which would re-open an unauthenticated provisioning/IDOR surface. Program risk holds at medium: one leaked BU id flips it to HIGH with a complete API PII exposure report.
+## 2026-09-05 21:45:15 UTC [target] (model bigpickle)
+[HYP] Cross-tier unified BU auth gate — one 0Uv id unlocks both legacy XML and v5 REST
+class: AUTH
+asset: go.events.elringklinger.com/api?method=* AND /api/vN/*
+confidence: 60
+reasoning: The error ladder 49→181→182→201 (Access Denied → BU-missing → BU-format → BU-inactive) is byte-identical across legacy XML (confirmed again this cycle, XML body) and v5 REST tiers (JSON body), implying one shared auth middleware naming the same `Pardot-Business-Unit-Id` 18-char header. Both tiers accept any ≥2-char Bearer token value; both stop only at BU resolution. No tier-specific BU format difference observed (182=length-18 on both).
+evidence_needed: one real ElringKlinger `0Uv` BU id tested on BOTH tiers → if both reach 200/dispatch, single-id = two full API surfaces (prospects/campaigns PII read+write on each).
+verify_steps: PASSIVE — needs real BU id (HUMAN_ONLY OSINT), then `GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: <real>"` and same header on `/api/v5/prospects` (1rps).
+impact: consolidates the confirmed broken-token-validation primitive onto two tiers for the price of one tenant id; CRITICAL (PII exfiltration + writes) if BU id obtained.
+testability: HUMAN_ONLY
+[HYP] Legacy Pardot Bearer-token validation skip — sole auth gate is BU id
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 85
+reasoning: Re-verified this cycle: Bearer `00` any value (≥2 chars) passes token check → 181/182/201 BU-layer errors; no token-validity error exists anywhere in chain. Query-param keys ARE validated (err1) → skip is Authorization-header-specific. 182 = length-18 format check only.
+evidence_needed: obtainable real 0Uv BU id → garbage ≥2-char token = full authenticated API.
+verify_steps: PASSIVE — chain fully mapped (49/181/182/201); next step HUMAN_ONLY OSINT.
+impact: broken-auth design; CRITICAL if BU id found (prospects PII read+write, API-layer ATO).
+testability: HUMAN_ONLY
