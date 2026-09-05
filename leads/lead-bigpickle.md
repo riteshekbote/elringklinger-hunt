@@ -462,3 +462,33 @@ testability: PASSIVE
 ## 2026-09-04 22:14:33 UTC [target] (model bigpickle)
 [NEXT] PROBE: `GET https://api.smartcard.elringklinger.com/api/v1/` (1rps read-only) — backend-recovery check, only remaining path to a HIGH-severity finding; run alongside one baseline `GET https://go.events.elringklinger.com/api/v5/prospects` (Bearer garbage + synthetic 0Uv) to confirm v5 tier stays dormant.
 [RISK] elringklinger: 55/100 — The only substantive finding (Pardot v5 missing-Bearer-validation, ~72) is now architecturally documented but its live surface is disabled (HTTP 404/code:198), and even in its live window full CRITICAL impact was doubly blocked by the un-located 0Uv BU gate and the program's no-live-customer-data rule — reportable severity MEDIUM (broken token validation + error-code oracle). Smartcard stays 502 (50h+); EDI/test/infra hosts unreachable; OAuth redirect closed; BU-id RAG dead-ended. Score down-ticked from 60: no regression evidence, but current live demonstrable surface shrank and the highest-value escalation path (BU id) has no public source.
+## 2026-09-05 00:13:06 UTC [target] (model bigpickle)
+[HYP] Pardot v5 API — Missing Bearer-Token Validation (auth skipped at token layer; dormant tier)
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/*
+confidence: 85
+reasoning: Prior probes (documented in context): no `Authorization`→401/49; `Bearer <garbage>` passed token check to BU validation (missing→400/181, bad format→400/182 expecting 18-char `0Uv`, unknown→403/201, route miss→404/198). Bearer VALUE never validated (identical 201/182 across distinct garbage tokens). Today: tier dormant (`404/code:198`), legacy tier now app-layer 401 — consistent reversal proof that the earlier 200/181/182/201 chain was genuine app behavior, not proxy artifacts.
+evidence_needed: (a) real 18-char `0Uv` BU id → 201→200 flip (PoC only, NEVER against live data); (b) tier re-activation to re-demonstrate token bypass live.
+verify_steps: PASSIVE 1rps: `GET /api/v5/<object>` + `Bearer garbage` + synt 18-char `0Uv…` → expect 198 while dormant; re-run on tier re-activation.
+impact: BU-id leak → any unauthenticated party reads all Pardot objects (prospect PII, campaigns, emails, users) = CRITICAL. As-is, dormant: architectural broken-token-validation + closed error oracle = MEDIUM reportable.
+testability: PASSIVE (context-evidence + dormant re-check)
+[HYP] Smartcard API — Backend Recovery Exposing Versioned Endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 35
+reasoning: nginx 502 on /api/v1|v2|beta/ + /auth|tokens|cards|health for 50h+; no framework/actuator/OIDC fingerprint. No change today.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: `GET https://api.smartcard.elringklinger.com/api/v1/`.
+impact: unauthenticated smartcard provisioning/IDOR if backend returns; HIGH if realized.
+testability: PASSIVE
+[HYP] Legacy /api version-param scope — 401 enforcement may not cover all version= values (oracle partially alive)
+class: BUSLOGIC
+asset: go.events.elringklinger.com/api?method=*
+confidence: 45
+reasoning: 401 enforcement observed only on `version=3` path. Early probes showed version param affects dispatch (v5 tier distinct). If an old version (v1/v2) still returns HTTP 200 + err_code discrimination, method enumeration survives via that path.
+evidence_needed: non-401 (200 + err_code 1/49/…) on version=1/2/4.
+verify_steps: PASSIVE 1rps: `GET /api?method=getVersion&version=1` then `=2` then `=5`; compare status/body.
+impact: if oracle survives on old versions: unauthenticated method/endpoint existence disclosure, LOW-MEDIUM.
+testability: PASSIVE
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion&version=1` then `…&version=2` then `…&version=5` (1rps, passive) — determine if 401 enforcement is version-scoped and whether the old err_code 1/49 oracle survives on any version.
+[RISK] elringklinger: **45/100** — Downticked (55→45). The only substantive finding (Pardot v5 missing-Bearer-validation, architectural AUTH flaw) has now had BOTH its live surfaces closed: v5 tier returns 404/198 and the legacy tier enforces app-layer 401 (verified product-side via `x-pardot-rsp`), eliminating the err_code 1/49 discriminator. The finding is reportable from prior PoC evidence at MEDIUM severity (broken token validation), blocked from CRITICAL by the un-located `0Uv` BU gate and the no-live-customer-data rule. Smartcard (502, 50h+) and all EDI/infra hosts (timeout) add no live surface. No regression in proof quality, but current demonstrable live attack surface is near zero; score reflects dormancy, not falsified findings.

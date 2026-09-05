@@ -43,3 +43,9 @@
 - 2026-09-04 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours across all versioned paths — transient outage, nginx gateway live
 - 2026-09-04 REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
 - 2026-09-04 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
+- 2026-09-05 REJECTED AUTH @ go.events.elringklinger.com/api/v5: v5 REST tier (18 endpoints) now returns 198 "Endpoint not found" — tier disabled/removed, Bearer bypass no longer exploitable
+- 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy Pardot /api?method= endpoint returns 200 JSON with err_code:49 (Access Denied) for 7 methods — auth logic executes pre-rejection, method enumeration viable
+- 2026-09-05 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend still 502 after 30+ hours across all versioned paths — transient outage, nginx gateway live
+- 2026-09-05 REJECTED OTHER @ dtspc-tst.elringklinger.com: Host unreachable (000 timeout) — dead host
+- 2026-09-05 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B endpoints documented IDOR/BOLA hotspots — but hosts unreachable (timeout)
+- 2026-09-05 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface

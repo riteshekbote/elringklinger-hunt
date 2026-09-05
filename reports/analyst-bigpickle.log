@@ -4146,3 +4146,112 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger: 55/100 — The only substantive finding (Pardot v5 missing-Bearer-validation, ~72) is now architecturally documented but its live surface is disabled (HTTP 404/code:198), and even in its live window full CRITICAL impact was doubly blocked by the un-located 0Uv BU gate and the program's no-live-customer-data rule — reportable severity MEDIUM (broken token validation + error-code oracle). Smartcard stays 502 (50h+); EDI/test/infra hosts unreachable; OAuth redirect closed; BU-id RAG dead-ended. Score down-ticked from 60: no regression evidence, but current live demonstrable surface shrank and the highest-value escalation path (BU id) has no public source.
+===== ANALYST bigpickle 2026-09-05 00:13:47 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -s -o /tmp/opencode/sm1.txt -w "HTTP %{http_code} | %{time_total}s | %{size_download}B\n" --max-time 20 "https://api.smartcard.elringklinger.com/api/v1/" ; echo "---BODY---"; head -c 500 /tmp/opencode/sm1.txt
+HTTP 502 | 0.767648s | 150B
+---BODY---
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mcurl -s -o /tmp/opencode/v5.txt -w "HTTP %{http_code} | %{time_total}s\n" --max-time 20 -H "Authorization: Bearer garbage-token-xyz" -H "Pardot-Business-Unit-Id: 0Uv510000000000000" "https://go.events.elringklinger.com/api/v5/prospects" ; echo "---BODY---"; head -c 500 /tmp/opencode/v5.txt
+HTTP 404 | 0.452410s
+---BODY---
+{"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0mcurl -s -o /tmp/opencode/legacy.txt -w "HTTP %{http_code} | %{time_total}s\n" --max-time 20 "https://go.events.elringklinger.com/api?method=getVersion&version=3" ; echo "---BODY---"; head -c 500 /tmp/opencode/legacy.txt
+HTTP 401 | 0.319590s
+---BODY---
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0msleep 1; for m in getCampaigns getVersion; do echo "== $m =="; curl -s -o /tmp/opencode/leg_$m.txt -w "HTTP %{http_code} | " --max-time 20 "https://go.events.elringklinger.com/api?method=$m&version=3"; head -c 300 /tmp/opencode/leg_$m.txt; echo; sleep 1; done
+== getCampaigns ==
+HTTP 401 | {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+== getVersion ==
+HTTP 401 | {"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0mfor h in aircontrol avconf cctv cgline ektrcctv fwasvvideo1 edi7; do printf "%-24s " "$h:"; curl -s -o /dev/null -w "HTTP %{http_code} | %{time_total}s" --max-time 6 "http://$h.elringklinger.com/" 2>&1 || printf "ERR"; echo; sleep 1; done
+aircontrol:              HTTP 000 | 6.002698sERR
+avconf:                  HTTP 000 | 6.002772sERR
+cctv:                    HTTP 000 | 6.001240sERR
+cgline:                  HTTP 000 | 6.002169sERR
+ektrcctv:                HTTP 000 | 6.002087sERR
+fwasvvideo1:             HTTP 000 | 6.002822sERR
+edi7:                    HTTP 000 | 6.001751sERR
+[0m
+[0m$ [0mcurl -s -D - -o /dev/null --max-time 20 "https://go.events.elringklinger.com/api?method=getVersion" | head -25
+HTTP/1.1 401 Unauthorized
+Date: Sat, 05 Sep 2026 00:12:27 GMT
+Content-Type: application/json
+Content-Length: 79
+Connection: keep-alive
+set-cookie: pardot=deleted; expires=Thu, 01 Jan 1970 00:00:01 GMT; Max-Age=0
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+cache-control: no-store, no-cache, must-revalidate
+pragma: no-cache
+x-pardot-rsp: 0/0/1
+vary: Accept-Encoding,User-Agent
+X-Pardot-Route: e8229a0ff18ebffc83a98010d2521dd5
+[0m
+## STEP 1 — DELTA
+- [CHANGED] `go.events.elringklinger.com/api` (legacy Pardot) — all methods now return **HTTP 401** + `err_code:49` uniformly (was HTTP 200 + per-method err_code 1/49 oracle). Fingerprint: `x-pardot-rsp: 0/0/1`, `X-Pardot-Route`, `set-cookie: pardot=deleted` → **product/app-layer** auth enforcement, not edge WAF. Enumeration oracle closed.
+- [CHANGED] Confirmed across `getVersion`/`getCampaigns`; same JSON shape, no discrimination left.
+- NO_DELTA: v5 tier stays `404/code:198`; smartcard stays 502 (50h+); 7 re-probed infra/EDI hosts (aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, edi7) all still timeout.
+
+## STEP 2 — PRIORITIZE
+- [PRIO] go.events.elringklinger.com, 5.3, a6/b7/t5/g2/c4/f6 — hardened both tiers, highest residual business value (Pardot/AC data)
+- [PRIO] api.smartcard.elringklinger.com, 5.0, a4/b6/t5/g4/c3/f7 — only live gate left, 502-bound
+- [PRIO] edi2/edi7.elringklinger.com, 3.6, a3/b6/t4/g1/c2/f4 — classic IDOR class, unreachable
+
+## STEP 3 — HYPOTHESES
+[HYP] Pardot v5 API — Missing Bearer-Token Validation (auth skipped at token layer; dormant tier)
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/*
+confidence: 85
+reasoning: Prior probes (documented in context): no `Authorization`→401/49; `Bearer <garbage>` passed token check to BU validation (missing→400/181, bad format→400/182 expecting 18-char `0Uv`, unknown→403/201, route miss→404/198). Bearer VALUE never validated (identical 201/182 across distinct garbage tokens). Today: tier dormant (`404/code:198`), legacy tier now app-layer 401 — consistent reversal proof that the earlier 200/181/182/201 chain was genuine app behavior, not proxy artifacts.
+evidence_needed: (a) real 18-char `0Uv` BU id → 201→200 flip (PoC only, NEVER against live data); (b) tier re-activation to re-demonstrate token bypass live.
+verify_steps: PASSIVE 1rps: `GET /api/v5/<object>` + `Bearer garbage` + synt 18-char `0Uv…` → expect 198 while dormant; re-run on tier re-activation.
+impact: BU-id leak → any unauthenticated party reads all Pardot objects (prospect PII, campaigns, emails, users) = CRITICAL. As-is, dormant: architectural broken-token-validation + closed error oracle = MEDIUM reportable.
+testability: PASSIVE (context-evidence + dormant re-check)
+[HYP] Smartcard API — Backend Recovery Exposing Versioned Endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 35
+reasoning: nginx 502 on /api/v1|v2|beta/ + /auth|tokens|cards|health for 50h+; no framework/actuator/OIDC fingerprint. No change today.
+evidence_needed: non-502 on /api/v1/.
+verify_steps: PASSIVE: `GET https://api.smartcard.elringklinger.com/api/v1/`.
+impact: unauthenticated smartcard provisioning/IDOR if backend returns; HIGH if realized.
+testability: PASSIVE
+[HYP] Legacy /api version-param scope — 401 enforcement may not cover all version= values (oracle partially alive)
+class: BUSLOGIC
+asset: go.events.elringklinger.com/api?method=*
+confidence: 45
+reasoning: 401 enforcement observed only on `version=3` path. Early probes showed version param affects dispatch (v5 tier distinct). If an old version (v1/v2) still returns HTTP 200 + err_code discrimination, method enumeration survives via that path.
+evidence_needed: non-401 (200 + err_code 1/49/…) on version=1/2/4.
+verify_steps: PASSIVE 1rps: `GET /api?method=getVersion&version=1` then `=2` then `=5`; compare status/body.
+impact: if oracle survives on old versions: unauthenticated method/endpoint existence disclosure, LOW-MEDIUM.
+testability: PASSIVE
+
+## STEP 4 — SELF-CRITIQUE
+- [PARKED] Smartcard recovery: 50h+ 502, no trend, PASSIVE-blocked; re-evaluate only on non-502.
+- [PARKED] BU-id RAG (OTHER): dead-ended earlier; PoC-support only, keep shelved.
+- [FINAL] Pardot v5 missing-Bearer-validation (85) — only reportable finding; strongest contextual evidence; live-tier dormant.
+- [FINAL] Legacy /api version-param scope check (45) — cheap, directly testable.
+
+## STEP 5 — NEXT ACTION
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion&version=1` then `…&version=2` then `…&version=5` (1rps, passive) — determine if 401 enforcement is version-scoped and whether the old err_code 1/49 oracle survives on any version.
+
+## STEP 6 — LEARNING
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api: legacy tier now enforces app-layer HTTP 401 `err_code:49` for all methods (`x-pardot-rsp` header confirms product-side, not edge WAF) — detection oracle definitionally closed; same hardening wave that disabled v5.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: still 502 after 50h+ across all versioned paths; nginx gateway headers only.
+- [LEARN] ACCEPTED OTHER @ elringklinger.com infra hosts (aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, edi7): all still connection-timeout, consistent with 10/13 dead.
+
+## STEP 7 — RISK
+[RISK] elringklinger: **45/100** — Downticked (55→45). The only substantive finding (Pardot v5 missing-Bearer-validation, architectural AUTH flaw) has now had BOTH its live surfaces closed: v5 tier returns 404/198 and the legacy tier enforces app-layer 401 (verified product-side via `x-pardot-rsp`), eliminating the err_code 1/49 discriminator. The finding is reportable from prior PoC evidence at MEDIUM severity (broken token validation), blocked from CRITICAL by the un-located `0Uv` BU gate and the no-live-customer-data rule. Smartcard (502, 50h+) and all EDI/infra hosts (timeout) add no live surface. No regression in proof quality, but current demonstrable live attack surface is near zero; score reflects dormancy, not falsified findings.

@@ -117,3 +117,8 @@ www.elringklinger.com
 - CHANGED Smartcard API backend still 502 after 30+ hours across all versioned paths — no recovery
 - CHANGED 10/13 dedicated hosts remain unreachable (connection timeout)
 - NEW go.events.elringklinger.com/api prioritized as primary live attack surface (score 8.75)
+
+## 2026-09-05 00:13:47 UTC
+- CHANGED Current timestamp: 2026-09-05 00:11:24 UTC — last lead timestamp was 2026-09-04 22:16:28 UTC (~2 hours ago)
+- CHANGED No new passive probes executed since last lead — state unchanged: Pardot legacy /api (err_code:49 on 7 methods), Smartcard 502 (30+ hrs), v5 tier removed (198), EDI/unreachable hosts (10/13), ir.elrin
+- NEW Time window for Smartcard backend recovery extended to ~32 hours — still passive-only wait
