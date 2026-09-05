@@ -740,3 +740,22 @@ evidence_needed: obtainable real 0Uv BU id → garbage ≥2-char token = full au
 verify_steps: PASSIVE — chain fully mapped (49/181/182/201); next step HUMAN_ONLY OSINT.
 impact: broken-auth design; CRITICAL if BU id found (prospects PII read+write, API-layer ATO).
 testability: HUMAN_ONLY
+## 2026-09-05 23:38:54 UTC [target] (model bigpickle)
+[HYP] Legacy Pardot Bearer-token skip — valid but public-OSINT gate closed
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 85
+reasoning: All 7 methods still return 401/err49 with arbitrary Bearer; ≥2-char token always reaches BU-layer (181/182/201), never a token-validity error. This cycle: OSINT across marketing/partner/integration/doc surfaces found zero ElringKlinger 0Uv ids — official Pardot/AppFlow/Cvent docs confirm BU id is retrievable only via Salesforce Setup (MFA-gated).
+evidence_needed: real 0Uv BU id (not publicly indexed — needs authenticated Salesforce/Pardot access, out of program reach).
+verify_steps: BLOCKED passively — no public source of BU id exists; live probe with any fabricated 0Uv id only re-confirms 201/182 ladder.
+impact: full prospects/campaigns PII read+write if id ever obtained; CRITICAL severity, LOW current likelihood.
+testability: HUMAN_ONLY
+[HYP] Cross-tier unified BU gate — one id unlocks both legacy XML and v5 REST
+class: AUTH
+asset: go.events.elringklinger.com/api?method=* AND /api/vN/*
+confidence: 50
+reasoning: Identical 49→181→182→201 ladder on both tiers implies shared auth middleware; but exploit and evidence depend on the same non-public BU id — adds surface breadth, not a new primitive.
+evidence_needed: one real 0Uv id → 200 on both tiers.
+verify_steps: BLOCKED — same BU-id dependency as above.
+impact: two API surfaces for one tenant id; CRITICAL if id obtained.
+testability: HUMAN_ONLY

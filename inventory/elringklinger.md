@@ -160,3 +160,11 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~57h; robots.txt 200 (Disallow: /); no recovery
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
 - NEW go.events.elringklinger.com/api/v5: OPTIONS returns 200 empty body — CORS preflight succeeds
+
+## 2026-09-05 23:40:37 UTC
+- NEW go.events.elringklinger.com/api/v1-v4: Legacy XML-format tier confirmed distinct from v5+ JSON tier — v1-v4 return `@attributes` format with `err_code`, v5+ return `{"code":49,"message":"Access Denied
+- NEW go.events.elringklinger.com/api/v1-v4: Bearer header triggers `err_code:198` ("Endpoint not found") in legacy format — dual-path auth response leak spans ALL versions (v1-v99), not just v5
+- NEW go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+- CHANGED go.events.elringklinger.com/api/vN: "Uniform v1..v99 namespace" hypothesis FALSIFIED — two distinct tiers with different response formats and error schemas
+- CHANGED api.smartcard.elringklinger.com: Backend 502 confirmed ~57h; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span

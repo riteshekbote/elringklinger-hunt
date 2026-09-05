@@ -250,3 +250,15 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 — auth enforcement now at HTTP status layer, not jus
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~57h). No recovery.
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-05 23:40:37 UTC
+- [85] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}: Legacy Pardot Bearer-token skip — valid but public-OSINT gate closed (from art/lead_bigpickle.txt)
+- [80] go.events.elringklinger.com/api/v1-v99: Pardot Dual-Tier Auth Response Leak & Cross-Version Endpoint Enumeration (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" && GET 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns `@attributes` format with `err_code:49` (no auth) vs `err_code:198` (with Bearer) — d
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON `{"code":49}` (no auth) vs `{"code":198}` (with Bearer) — dual-path auth response lea
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: Two distinct API tiers confirmed — version boundary at v5 (legacy XML vs JSON response format); "uniform v1.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrat
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~57h). No recovery.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
