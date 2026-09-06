@@ -759,3 +759,31 @@ evidence_needed: one real 0Uv id → 200 on both tiers.
 verify_steps: BLOCKED — same BU-id dependency as above.
 impact: two API surfaces for one tenant id; CRITICAL if id obtained.
 testability: HUMAN_ONLY
+## 2026-09-06 01:21:35 UTC [target] (model bigpickle)
+[HYP] Legacy root Pardot token-validation skip re-activated (root-only)
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 85
+reasoning: Live probes this cycle: Bearer `00` → 181; +short BU → 182 (leaks actual value); +18-char fabric→ed 0Uv → 201. No token-validity error exists — any ≥2-char Bearer passes, BU resolution is the only gate. Versioned /api/v1|v2 +same Bearer → 198, proving skip is unversioned-root-specific middleware state, distinct from v5.
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read on prospects/campaigns.
+verify_steps: PASSIVE per-cycle drift check `GET /api?method=getVersion -H "Authorization: Bearer 00"` watching 181/182/201→200 (live) or →198 (revert). BU-id itself HUMAN_ONLY OSINT (closed surface last cycle).
+impact: full prospects/campaigns PII read+write + API-layer ATO for any tenant-id holder — CRITICAL if BU id obtained.
+testability: HUMAN_ONLY (token-side already fully confirmed live)
+[HYP] v5 tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 65
+reasoning: 401/49 (no auth) vs 404/198 (Bearer) consistent across cycles; BU header does not alter 198. Dual-path leak is informative but no dispatch path exists without auth the tier accepts.
+evidence_needed: any Bearer that does not yield 198 (would indicate auth-state flip).
+verify_steps: PASSIVE `GET /api/v5/prospects` and `GET /api/v5/prospects -H "Authorization: Bearer 00"` per cycle (1rps).
+impact: none currently; medium if tier drifts to dispatch.
+testability: PASSIVE
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 20
+reasoning: 502 ~60h, unchanged; nginx gateway live, no fingerprint ever obtained.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
+testability: PASSIVE

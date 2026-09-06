@@ -1,8 +1,7 @@
-## 2026-09-05 23:40:27 UTC [target] (model nemotron3)
-[NEW] go.events.elringklinger.com/api/v1-v4: Legacy XML-format tier confirmed distinct from v5+ JSON tier — v1-v4 return `@attributes` format with `err_code`, v5+ return `{"code":49,"message":"Access Denied"}`; version boundary at v5
-[NEW] go.events.elringklinger.com/api/v1-v4: Bearer header triggers `err_code:198` ("Endpoint not found") in legacy format — dual-path auth response leak spans ALL versions (v1-v99), not just v5
-[NEW] go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
-[CHANGED] go.events.elringklinger.com/api/vN: "Uniform v1..v99 namespace" hypothesis FALSIFIED — two distinct tiers with different response formats and error schemas
+## 2026-09-06 01:22:32 UTC [target] (model nemotron3)
+[CHANGED] go.events.elringklinger.com/api/v5: Reactivated tier confirmed live with 11 endpoints (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content), dual-path auth response: 401/{"code":49} without Bearer vs 404/{"code":198} with Bearer; BU header does not alter 198 response
+[CHANGED] go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed distinct format (@attributes with err_code), same dual-path leak: err_code:49 without Bearer vs err_code:198 with Bearer — leak spans ALL versions v1-v99
+[CHANGED] go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement shifted to HTTP status layer
 [CHANGED] api.smartcard.elringklinger.com: Backend 502 confirmed ~57h; robots.txt 200 (Disallow: /); no recovery signal
 [CHANGED] edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
 [PRIO] go.events.elringklinger.com/api/v5,9.25,attack_surface=10,business_value=9,tech_exposure=10,gate_ease=8,cloud_surface=8,freshness=10
@@ -12,8 +11,8 @@
 [HYP] Pardot Dual-Tier Auth Response Leak & Cross-Version Endpoint Enumeration
 class: AUTH
 asset: go.events.elringklinger.com/api/v1-v99
-confidence: 80
-reasoning: Two distinct API tiers confirmed — v1-v4 (legacy XML `@attributes` format) and v5+ (JSON `code/message` format). Both tiers exhibit dual-path auth response: 401/49 without Bearer vs 404/198 with Bearer header. 11 resource endpoints confirmed live on v5 (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content). Legacy tier has 7 enumerable methods (getVersion, getCampaigns, getEmails, getLists, getTags, getVisitors, queryProspects). Bearer header presence routes to pre-routing reject layer (198) regardless of BU header. Server distinguishes auth header at layer before BU validation.
+confidence: 85
+reasoning: Two distinct API tiers confirmed — v1-v4 (legacy XML @attributes format) and v5+ (JSON code/message format). Both tiers exhibit dual-path auth response: 401/49 without Bearer vs 404/198 with Bearer header. 11 resource endpoints confirmed live on v5 (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content). Legacy tier has 7 enumerable methods (getVersion, getCampaigns, getEmails, getLists, getTags, getVisitors, queryProspects). Bearer header presence routes to pre-routing reject layer (198) regardless of BU header. Server distinguishes auth header at layer before BU validation.
 evidence_needed: Any endpoint returning data (code:0 / err_code:0) or different error code without valid BU across both tiers; error code chain mapping with/without Bearer and with/without Pardot-Business-Unit-Id across all 11 v5 endpoints and 7 legacy methods; test if v5+ endpoints accept version param like legacy tier
 verify_steps: GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" && GET https://go.events.elringklinger.com/api/v5/prospects -H "Pardot-Business-Unit-Id: 0Uv510000000000000" && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" -H "Pardot-Business-Unit-Id: 0Uv510000000000000" && repeat for campaigns, emails, lists, visitors, tags, users, forms, landing_pages, dynamic_content, accounts, opportunities (1 rps, capture full JSON, headers, status); GET https://go.events.elringklinger.com/api?method=getVersion&version=1 && GET https://go.events.elringklinger.com/api?method=getVersion&version=2 && GET https://go.events.elringklinger.com/api?method=getVersion&version=4 && GET https://go.events.elringklinger.com/api?method=getVersion&version=5 && same for getCampaigns, queryProspects, getEmails, getLists, getTags, getVisitors (1 rps, capture status + JSON)
 impact: If any endpoint leaks data without valid BU — prospect PII, campaign configs, email content, visitor analytics, account data, opportunity pipeline, form submissions, landing page content. Severity HIGH (cross-tenant marketing data exposure).
@@ -37,8 +36,7 @@ verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (chec
 impact: Unauthenticated smartcard API access → credential cloning, identity fraud. HIGH severity.
 testability: PASSIVE
 [PARKED] Smartcard API Versioned Auth Endpoint Exposure on Backend Recovery: confidence 40 but testability backend-dependent (PASSIVE only) — only passive wait-for-recovery; no actionable probe until backend comes online
-[PARKED] EDI B2B Platform — IDOR/BOLA: confidence 42 but hosts unreachable (timeout) — requires network-level reachability before meaningful testing
-[FINAL] 1. Pardot Dual-Tier Auth Response Leak & Cross-Version Endpoint Enumeration (80)
+[FINAL] 1. Pardot Dual-Tier Auth Response Leak & Cross-Version Endpoint Enumeration (85)
 [FINAL] 2. Pardot Legacy API Version Parameter Oracle — Auth Logic Execution Pre-Rejection (70)
 [NEXT] PROBE: GET https://go.events.elringklinger.com/api/v5/prospects && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" && GET https://go.events.elringklinger.com/api/v5/prospects -H "Pardot-Business-Unit-Id: 0Uv510000000000000" && GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer x" -H "Pardot-Business-Unit-Id: 0Uv510000000000000" && repeat for campaigns, emails, lists, visitors, tags, users, forms, landing_pages, dynamic_content, accounts, opportunities (1 rps, capture full JSON response bodies, headers, status codes)
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns `@attributes` format with `err_code:49` (no auth) vs `err_code:198` (with Bearer) — dual-path auth response leak spans v1-v4

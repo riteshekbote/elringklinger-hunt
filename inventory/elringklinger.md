@@ -168,3 +168,10 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/vN: "Uniform v1..v99 namespace" hypothesis FALSIFIED — two distinct tiers with different response formats and error schemas
 - CHANGED api.smartcard.elringklinger.com: Backend 502 confirmed ~57h; robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
+
+## 2026-09-06 01:22:41 UTC
+- CHANGED go.events.elringklinger.com/api/v5: Reactivated tier confirmed live with 11 endpoints (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content)
+- CHANGED go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed distinct format (@attributes with err_code), same dual-path leak: err_code:49 without Bearer vs err_code:198 with Bearer — leak spans A
+- CHANGED go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement shifted to HTTP status layer
+- CHANGED api.smartcard.elringklinger.com: Backend 502 confirmed ~57h; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span

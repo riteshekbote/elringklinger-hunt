@@ -6083,3 +6083,112 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 - [RISK] elringklinger: **40/100** — Hold. Sole survivor (legacy Bearer token-skip, 85) re-verified live, but this cycle's OSINT proves its one gate (0Uv BU id) is Salesforce-Setup-only and not in any public index — realized likelihood drops toward the passive tail. Smartcard 502 (~60h, HIGH if it ever recovers), v5 dual-path stable, EDI dead 6d. No new probeable surface; medium program risk unchanged.
+===== ANALYST bigpickle 2026-09-06 01:22:41 UTC =====
+[0m
+> build · big-pickle
+[0m
+I'll establish current surface state with a few read-only probes before writing the delta.
+[0m$ [0mcurl -sS -o /dev/null -w "%{http_code}|%{time_total}s" --max-time 15 "https://api.smartcard.elringklinger.com/api/v1/" 2>&1; echo " <- smartcard /api/v1/"; sleep 1; curl -sS -o /dev/null -w "%{http_code}|%{time_total}s" --max-time 15 "https://go.events.elringklinger.com/api?method=getVersion" 2>&1; echo " <- pardot legacy ?method=getVersion"; sleep 1; curl -sS -o /dev/null -w "%{http_code}|%{time_total}s" --max-time 15 "https://go.events.elringklinger.com/api/v5/prospects" 2>&1; echo " <- pardot v5 /prospects"
+502|0.463650s <- smartcard /api/v1/
+401|0.299735s <- pardot legacy ?method=getVersion
+401|0.112085s <- pardot v5 /prospects
+[0m
+State confirmed unchanged on 3 axes. Let me verify the dual-path Bearer leak is still present (facts for delta).
+[0m$ [0mcurl -sS --max-time 15 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v5/prospects" 2>&1 | head -c 200; echo " <- v5+Bearer"; sleep 1; curl -sS --max-time 15 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api?method=getVersion" 2>&1 | head -c 300; echo " <- legacy+Bearer"
+{"code":198,"message":"Endpoint not found"} <- v5+Bearer
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+ <- legacy+Bearer
+[0m
+Legacy tier behavior just changed — Bearer `00` now reaches the BU-layer (err 181, was 198 last cycle). Mapping the full ladder across both tiers:
+[0m$ [0mcurl -sS --max-time 15 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv" "https://go.events.elringklinger.com/api?method=getVersion" | head -c 300; echo " <- legacy+Bearer+BU(short-3ch)"; sleep 1; curl -sS --max-time 15 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv12345678901234" "https://go.events.elringklinger.com/api?method=getVersion" | head -c 300; echo " <- legacy+Bearer+BU(18ch)"
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv</err>
+</rsp>
+ <- legacy+Bearer+BU(short-3ch)
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv12345678901234</err>
+</rsp>
+ <- legacy+Bearer+BU(18ch)
+[0m
+The ladder is live again (my 18-char test was actually 17). Confirming the 201 step with a proper 18-char id:
+[0m$ [0mcurl -sS --max-time 15 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0UvAAAAAAAAAAAAAAA" "https://go.events.elringklinger.com/api?method=getVersion" | head -c 300; echo; echo " <- legacy+Bearer+BU(0Uv+15 A's = 18 chars)"
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+
+ <- legacy+Bearer+BU(0Uv+15 A's = 18 chars)
+[0m
+Full ladder re-confirmed live on legacy tier. One more discriminating probe — is the skip back across legacy versions (v1-v4) or only root /api?
+[0m$ [0mcurl -sS --max-time 15 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v1?method=getVersion" | head -c 200; echo " <- /api/v1+Bearer"; sleep 1; curl -sS --max-time 15 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v2?method=getVersion" | head -c 200; echo " <- /api/v2+Bearer"
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"} <- /api/v1+Bearer
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"} <- /api/v2+Bearer
+[0m
+Root-only reactivation — `/api?method=` skips the token check while versioned `/api/v1|v2` still hard-198 under Bearer. Delta established. Output:
+
+---
+
+**STEP 1 — DELTA**
+- [CHANGED] go.events.elringklinger.com `/api?method=getVersion` + Bearer `00` → err 181 "Pardot-Business-Unit-Id header not found" (was err 198 at 23:40 UTC) — legacy root token-validation skip REACTIVATED
+- [CHANGED] Legacy root ladder 49→181→182→201 fully live: short BU → 182 (expected 18-char id, leaks `actual:` value), fabricated 18-char `0UvAAAAAAAAAAAAAAA` → 201 (not found/inactive)
+- [NEW] Auth middleware differs by path: versioned `/api/v1`, `/api/v2` + Bearer `00` → err 198 (unchanged, generic reject) while unversioned `/api` + Bearer reaches BU-gate — root-only skip, not tier-wide
+- [UNCHANGED] `/api/v5/prospects`: 401/49 no-auth, 404/198 + Bearer — dual-path intact
+- [UNCHANGED] api.smartcard `/api/v1/` → 502 (~60h), robots.txt 200 — no recovery
+
+**STEP 2 — PRIORITIZE**
+- [PRIO] go.events `/api?method=*`, 7.5, freshly-reactivated broken-auth primitive, sole gate = 18-char BU id
+- [PRIO] go.events `/api/v5/*`, 6.5, dual-path leak but Bearer is dead-ended at 198, no new primitive
+- [PRIO] api.smartcard `/api/v1/`, 6.0, high-value auth API, gate_ease 0 (502), passive-wait only
+
+**STEP 3 — HYPOTHESES**
+[HYP] Legacy root Pardot token-validation skip re-activated (root-only)
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 85
+reasoning: Live probes this cycle: Bearer `00` → 181; +short BU → 182 (leaks actual value); +18-char fabric→ed 0Uv → 201. No token-validity error exists — any ≥2-char Bearer passes, BU resolution is the only gate. Versioned /api/v1|v2 +same Bearer → 198, proving skip is unversioned-root-specific middleware state, distinct from v5.
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read on prospects/campaigns.
+verify_steps: PASSIVE per-cycle drift check `GET /api?method=getVersion -H "Authorization: Bearer 00"` watching 181/182/201→200 (live) or →198 (revert). BU-id itself HUMAN_ONLY OSINT (closed surface last cycle).
+impact: full prospects/campaigns PII read+write + API-layer ATO for any tenant-id holder — CRITICAL if BU id obtained.
+testability: HUMAN_ONLY (token-side already fully confirmed live)
+
+[HYP] v5 tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 65
+reasoning: 401/49 (no auth) vs 404/198 (Bearer) consistent across cycles; BU header does not alter 198. Dual-path leak is informative but no dispatch path exists without auth the tier accepts.
+evidence_needed: any Bearer that does not yield 198 (would indicate auth-state flip).
+verify_steps: PASSIVE `GET /api/v5/prospects` and `GET /api/v5/prospects -H "Authorization: Bearer 00"` per cycle (1rps).
+impact: none currently; medium if tier drifts to dispatch.
+testability: PASSIVE
+
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 20
+reasoning: 502 ~60h, unchanged; nginx gateway live, no fingerprint ever obtained.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
+testability: PASSIVE
+
+**STEP 4 — SELF-CRITIQUE**
+- [FINAL] Legacy root token-skip (85) — REACTIVATED this cycle, ladder 49→181→182→201 empirically re-verified root-only; strongest live finding, survives.
+- [PARKED] v5 dual-path (65): informative leak, no exploitable dispatch path; monitor-only.
+- [PARKED] Smartcard recovery (20): below threshold, passive-wait per cycle.
+- Dropped: cross-tier unified-gate (subsumed — root-only narrowing means v-fixed tiers do NOT share the skip); BU-id OSINT (declared closed last cycle, no public source).
+
+**STEP 5 — NEXT ACTION**
+- [NEXT] PROBE: `GET /api?method=getVersion -H "Authorization: Bearer 00"` — per-cycle drift sentinel on the reactivated token-skip; flag transition 181/182/201→200 (dispatch surface re-opened) or →198 (skip reverted again); live surface flapped within ~2h between cycles so drift is the single live signal. (1rps)
+
+**STEP 6 — LEARNING**
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api: Legacy root token-validation skip REACTIVATED — Bearer `00` → 181 (was 198); full ladder 49→181→182→201 live again; any ≥2-char token passes, only 18-char BU id gates.
+- [LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Auth middleware is path-scoped — unversioned `/api?method=` skips token check (181) while `/api/v1` & `/api/v2` same-Bearer hard-reject (198): root-only skip confirmed, prior "tier-wide 198" model refined.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: 502 (~60h) across versioned paths — backend still down, recovery probe remains passive-only.
+
+**STEP 7 — RISK**
+- [RISK] elringklinger: **45/100** — The strongest finding (legacy root Pardot token-skip, 85) is live again after flapping to 198 for several cycles; severity CRITICAL but fully gated on the 18-char 0Uv BU id (HUMAN_ONLY OSINT, previously declared blocked — no public source, MFA-gated in Salesforce). Path-scoping narrows exposed surface to the unversioned root only. Smartcard 502 (~60h) and EDI-host darkness unchanged. One leaked/obtainable BU id flips this to HIGH with a complete API PII exposure chain (token-skip + BU gate = full authenticated dispatch on prospects/campaigns).

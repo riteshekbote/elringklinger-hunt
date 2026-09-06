@@ -76,3 +76,10 @@
 - 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: Two distinct API tiers confirmed — version boundary at v5 (legacy XML vs JSON response format); "uniform v1..v99 namespace" hypothesis falsified
 - 2026-09-05 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
 - 2026-09-05 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrated to HTTP status layer
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns `@attributes` format with `err_code:49` (no auth) vs `err_code:198` (with Bearer) — dual-path auth response leak spans v1-v4
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON `{"code":49}` (no auth) vs `{"code":198}` (with Bearer) — dual-path auth response leak spans v5+
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: Two distinct API tiers confirmed — version boundary at v5 (legacy XML vs JSON response format); "uniform v1..v99 namespace" hypothesis falsified
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+- 2026-09-06 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrated to HTTP status layer
+- 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~57h). No recovery.
+- 2026-09-06 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
