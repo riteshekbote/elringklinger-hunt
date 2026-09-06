@@ -175,3 +175,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement shifted to HTTP status layer
 - CHANGED api.smartcard.elringklinger.com: Backend 502 confirmed ~57h; robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
+
+## 2026-09-06 06:13:52 UTC

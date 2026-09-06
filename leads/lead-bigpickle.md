@@ -787,3 +787,33 @@ evidence_needed: non-502 on any versioned path.
 verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
 impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
 testability: PASSIVE
+## 2026-09-06 06:10:20 UTC [target] (model bigpickle)
+[HYP] Smartcard origin nginx hosts additional unexposed vhosts/apps behind 128.140.36.59
+class: MISCONFIG
+asset: 128.140.36.59 / *.smartcard.elringklinger.com
+confidence: 45
+reasoning: api/www/apex all resolve to 128.140.36.59 yet exhibit three distinct nginx behaviors (502 reverse-proxy, 301, static placeholder) — multiple server blocks on one box; co-hosted apps reachable via Host-header/path. CloudFront on apex does not hide the origin (IP directly reachable).
+evidence_needed: alternate Host header returning a non-placeholder/non-502 app.
+verify_steps: GET https://128.140.36.59/ -H "Host: smartcard.elringklinger.com"; GET -H "Host: api.smartcard.elringklinger.com"; GET -H "Host: smartcard.elringklinger.com" on https://www.smartcard.elringklinger.com (1rps).
+impact: unknown lateral surface inside smartcard estate (ID-card provisioning product); medium if an unexposed app answers.
+testability: PASSIVE
+[HYP] Legacy root Pardot token-validation skip — intact; BU id remains the sole gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,...}
+confidence: 85
+reasoning: Re-verified this cycle: Bearer `00` → 400/181 (missing BU), fabricated 18-char 0Uv BU → 403/201 (BU not found). No token-validity error exists in the chain; ≥2-char Bearer always passes token layer. Query-param keys still validated (err 1) → skip is Authorization-header-specific.
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read-write.
+verify_steps: PASSIVE drift only: GET /api?method=getVersion -H "Authorization: Bearer 00" watch 181/182/201→200 (dispatch) or →198/401 (revert). BU id acquisition HUMAN_ONLY (closed OSINT surface).
+impact: full prospects/campaigns PII read+write + API-layer ATO for a single tenant id — CRITICAL if obtained.
+testability: HUMAN_ONLY (token-side fully confirmed live)
+[HYP] v5 REST tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 70
+reasoning: Stable across many cycles: 401/49 no-auth vs 404/198 with Bearer; BU header does not alter 198. Dual-path leak informative, no dispatch path without an accepted credential.
+evidence_needed: any Bearer not yielding 198 (auth-state flip).
+verify_steps: PASSIVE GET /api/v5/prospects ± Authorization: Bearer 00 per cycle (1rps).
+impact: none currently; medium on auth drift.
+testability: PASSIVE
+[NEXT] PROBE: GET https://www.smartcard.elringklinger.com/ -H "Host: smartcard.elringklinger.com" (direct-origin vhost check at 1rps); if 200 non-placeholder, escalate to path enumeration on 128.140.36.59
+[RISK] elringklinger: 45 — two strong auth primitives (token-skip, dual-path leak) but BU-id gate is non-public (HUMAN_ONLY), flagship smartcard API 502 ~60h with no nginx fingerprint, and 10/13 inventory hosts unreachable; fresh origin-vhost lead on smartcard box is the only new upside.
