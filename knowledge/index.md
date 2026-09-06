@@ -97,3 +97,6 @@
 - 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate
 - 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
 - 2026-09-06 REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors co-located, no alternate co-hosted app reachable; vhost hypothesis exhausted.
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns @attributes format with err_code:49 (no auth) vs err_code:181 (Bearer, no BU) vs err_code:201 (Bearer + valid-format BU) — dual-path auth response leak spans v1-v4; BU validation reachable without valid token
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON {"code":49} (no auth) vs {"code":198} (with Bearer) — dual-path auth response leak spans v5+; Bearer presence routes to pre-routing reject regardless of BU header
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer 00→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate

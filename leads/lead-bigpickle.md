@@ -935,3 +935,33 @@ testability: PASSIVE
 [RISK] elringklinger: 42 — One confirmed AUTH primitive (legacy root token-skip, 87) with CRITICAL impact IF a 0Uv BU id is obtained, but gated behind HUMAN_ONLY OSINT (closed surface). Default-BU fallback hypothesis falsified this cycle. v5 dual-path leak (70) is informative but dead-end under Bearer. Smartcard API 502 ~74h, no recovery; 10/13 inventory hosts unreachable. Score flat-to-slightly-down from 43: the falsified BU-fallback hypothesis removes one speculative escalation path but does not affect the core finding. Remaining upside is (a) OSINT for a 0Uv BU id (HUMAN_ONLY) and (b) Smartcard backend recovery (passive wait).
 ## 2026-09-06 19:17:55 UTC [target] (model bigpickle)
 ## 2026-09-06 21:28:10 UTC [target] (model bigpickle)
+## 2026-09-06 23:10:10 UTC [target] (model bigpickle)
+[HYP] Legacy root Pardot token-skip intact — BU-id remains the sole gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 87
+reasoning: Live re-verify this cycle: Bearer `00`→400/181 (missing BU header), fabricated 0Uv→403/201 (BU not found/inactive). Any ≥2-char Bearer passes token layer; BU presence/format/existence checks (181/182/201) all execute. No real-token path published to `/api` in ~76h of drift checks.
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read on prospects/campaigns.
+verify_steps: PASSIVE drift `GET /api?method=getVersion -H "Authorization: Bearer 00"` ± `-H "Pardot-Business-Unit-Id: 0Uv000000000000000"` per cycle (1rps); watch 181/201→200 (dispatch) or →401/198 (revert). BU acquisition HUMAN_ONLY.
+impact: full prospects/campaigns PII read+write and API-layer ATO for a found tenant — CRITICAL.
+testability: HUMAN_ONLY
+[HYP] v5 REST tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 70
+reasoning: Stable across cycles: 401/49 no-auth vs 404/198 with Bearer; BU header does not alter 198. Dual-path leak informative only; no dispatch without an accepted credential.
+evidence_needed: any Bearer not yielding 198 (auth-state flip).
+verify_steps: PASSIVE `GET /api/v5/prospects` ± `Authorization: Bearer 00` per cycle (1rps).
+impact: none currently; medium on auth drift.
+testability: PASSIVE
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 22
+reasoning: 502 now ~76h across all versioned paths; nginx gateway unfingerprinted; robots.txt 200 (Disallow: /). Direct-origin vhost probes dead.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
+testability: PASSIVE
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 403/201; watch 201→200 (dispatch, CRITICAL) or →401/198 (patch). Secondary same-cycle: `GET /api/v5/prospects -H "Authorization: Bearer 00"` (expect 404/198) and `GET https://api.smartcard.elringklinger.com/api/v1/` (expect 502). All 1rps per host.
+[RISK] elringklinger: 42 — Two stable, well-characterized AUTH primitives (legacy root token-skip 87, v5 dual-path leak 70) both remain gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY, closed OSINT surface); default-BU and version-oracle escalation paths already falsified; smartcard API 502 ~76h with unfingerprinted nginx; 10/13 inventory hosts unreachable; vhost lead exhausted. Flip risk (201→200 dispatch or smartcard recovery) would jump score materially, but is not observable from this cycle. Flat at 42.
