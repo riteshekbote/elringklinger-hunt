@@ -275,3 +275,7 @@ https://go.events.elringklinger.com/api/v5/forms -> HTTP 401
 https://go.events.elringklinger.com/api/v5/landing_pages -> HTTP 401
 https://go.events.elringklinger.com/api/v5/dynamic_content -> HTTP 401
 https://go.events.elringklinger.com/api?method=queryProspects&version=1 -> HTTP 401
+
+## 2026-09-06 19:33:28 UTC
+https://go.events.elringklinger.com/api?method=queryProspects&version=1 -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502

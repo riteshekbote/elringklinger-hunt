@@ -208,3 +208,10 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com: Backend 502 now ~75h+; robots.txt 200 (Disallow: /); no recovery signal across any versioned path
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (6-day span); passive wait
 - CHANGED 10/13 dedicated hosts remain unreachable (connection timeout)
+
+## 2026-09-06 19:33:25 UTC
+- CHANGED go.events.elringklinger.com/api/v5+: Default-BU fallback hypothesis FALSIFIED — Bearer `00` without BU header returns 404/`{"code":198}` on all 11 endpoints; no endpoint returns success/data
+- CHANGED go.events.elringklinger.com/api/v1-v4: Version-scoped error oracle FALSIFIED — v1..v4 uniform `err_code:49` (no auth) vs `err_code:181` (Bearer, no BU) vs `err_code:201` (Bearer + valid-format BU); ve
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (6-day span); passive wait
+- CHANGED 10/13 dedicated hosts remain unreachable (connection timeout)

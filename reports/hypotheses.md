@@ -339,3 +339,15 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h, unchanged; no recovery.
 - LEARN: REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-06 19:33:25 UTC
+- [82] go.events.elringklinger.com/api/v1-v4: Pardot Cross-Version BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=queryProspects&version=1 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api/v5+: Default-BU fallback hypothesis FALSIFIED — Bearer `00` without BU header returns 404/code:198 on all 11
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api/v1-v4: Version-scoped error oracle hypothesis FALSIFIED — v1..v4 uniform err_code:49 (no auth) vs err_code:1
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns `@attributes` format with `err_code:49` (no auth) vs `err_code:181` (Bearer, no BU) v
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON `{"code":49}` (no auth) vs `{"code":198}` (with Bearer) — dual-path auth response lea
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); t
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
+- LEARN: REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors co-locate
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
