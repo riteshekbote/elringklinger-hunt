@@ -934,3 +934,4 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~74h, unchanged; no recovery.
 [RISK] elringklinger: 42 — One confirmed AUTH primitive (legacy root token-skip, 87) with CRITICAL impact IF a 0Uv BU id is obtained, but gated behind HUMAN_ONLY OSINT (closed surface). Default-BU fallback hypothesis falsified this cycle. v5 dual-path leak (70) is informative but dead-end under Bearer. Smartcard API 502 ~74h, no recovery; 10/13 inventory hosts unreachable. Score flat-to-slightly-down from 43: the falsified BU-fallback hypothesis removes one speculative escalation path but does not affect the core finding. Remaining upside is (a) OSINT for a 0Uv BU id (HUMAN_ONLY) and (b) Smartcard backend recovery (passive wait).
 ## 2026-09-06 19:17:55 UTC [target] (model bigpickle)
+## 2026-09-06 21:28:10 UTC [target] (model bigpickle)
