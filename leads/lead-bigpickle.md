@@ -858,3 +858,45 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~72h, unchanged; no recovery.
 [LEARN] REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/static) co-located, but no alternate co-hosted app reachable; vhost hypothesis exhausted.
 [RISK] elringklinger: 43 — two stable auth primitives (root token-skip with PII-read impact, dual-path leak) but both gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY, closed OSINT surface); flagship smartcard API 502 ~72h with un-fingerprinted nginx; 10/13 inventory hosts unreachable; smartcard origin-vhost lead now exhausted. Only realistic CPU-remaining path is weak default-BU probing and passive drift; standing risk is flat to slightly down.
+## 2026-09-06 14:15:07 UTC [target] (model bigpickle)
+[CHANGED] `api.smartcard.elringklinger.com`: Backend 502 now ~72h+; no recovery signal across any versioned path.
+[CHANGED] `go.events.elringklinger.com/api/v5`: Auth state stable — 401/49 (no auth) vs 404/198 (with Bearer); no drift.
+[CHANGED] Smartcard origin vhost (128.140.36.59): Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors co-located, no alternate vhost answers; hypothesis exhausted.
+[NEW] `go.events.elringklinger.com/api?method=queryProspects`: Default-BU fallback path hypothesis queued for next probe cycle.
+[PRIO] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}, 8.7, AUTH (token-skip intact, BU-id sole gate)
+[PRIO] go.events.elringklinger.com/api/v5/prospects, 6.1, AUTH (dual-path leak, dead-end under Bearer)
+[PRIO] api.smartcard.elringklinger.com, 3.9, AUTH (502 ~72h, nginx gateway live, backend down)
+[HYP] Legacy root Pardot token-skip intact — BU-id remains the sole gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 87
+reasoning: Cycles verify stable chain: Bearer `00` → 400/181 (missing BU header); fabricated 0Uv 18-char BU → 403/201 (BU not found/inactive). No token-validity error exists anywhere in chain — any ≥2-char Bearer passes the token layer unconditionally. Query-param `user_key`/`api_key` still validated (err 1), confirming skip is Authorization-header-specific on the unversioned root.
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read on prospects/campaigns.
+verify_steps: PASSIVE drift check `GET /api?method=getVersion -H "Authorization: Bearer 00"` (± BU header), watch 181/182/201→200 (dispatch) or →198/401 (revert). BU acquisition HUMAN_ONLY.
+impact: full prospects/campaigns PII read+write and API-layer ATO for a single found tenant id — CRITICAL.
+testability: HUMAN_ONLY
+[HYP] v5 REST tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 70
+reasoning: Stable across cycles: 401/49 no-auth vs 404/198 with Bearer; BU header does not alter 198. Dual-path leak informative, no dispatch path without an accepted credential.
+evidence_needed: any Bearer not yielding 198 (auth-state flip).
+verify_steps: PASSIVE `GET /api/v5/prospects` ± `Authorization: Bearer 00` per cycle (1rps).
+impact: none currently; medium on auth drift.
+testability: PASSIVE
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 22
+reasoning: 502 now ~72h, unchanged; direct-origin vhost probe dead (HTTP 000); nginx gateway live but never fingerprinted.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
+testability: PASSIVE
+[PARKED] Smartcard origin vhost (45→22): direct-origin `Host:` probes against www.smartcard and origin 128.140.36.59 all return HTTP 000/dead — no alternate vhost answers; strong evidence hypothesis is exhausted, dropping below confidence floor.
+[FINAL] survivors ranked:
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=queryProspects -H "Authorization: Bearer 00"` — watch for 181→200 transition (would indicate a default BU fallback path) at 1rps; otherwise the only remaining upside is HUMAN_ONLY OSINT for a real ElringKlinger `0Uv` BU id.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact this cycle — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~72h, unchanged; no recovery.
+[LEARN] REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/static) co-located, but no alternate co-hosted app reachable; vhost hypothesis exhausted.
+[RISK] elringklinger: 43 — two stable auth primitives (root token-skip with PII-read impact, dual-path leak) but both gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY, closed OSINT surface); flagship smartcard API 502 ~72h with un-fingerprinted nginx; 10/13 inventory hosts unreachable; smartcard origin-vhost lead now exhausted. Only realistic CPU-remaining path is weak default-BU probing and passive drift; standing risk is flat to slightly down.

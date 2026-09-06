@@ -186,3 +186,17 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed — same 11 resource paths return @attributes format with err_code:49 (no auth) vs err_code:198 (with Bearer) — dual-path leak spans ALL 
 - CHANGED go.events.elringklinger.com/api (legacy): Migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement now at HTTP status layer
 - CHANGED go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+
+## 2026-09-06 14:18:43 UTC
+- CHANGED `api.smartcard.elringklinger.com`: Backend 502 now ~72h+; no recovery signal across any versioned path.
+- CHANGED `go.events.elringklinger.com/api/v5`: Auth state stable — 401/49 (no auth) vs 404/198 (with Bearer); no drift.
+- CHANGED Smartcard origin vhost (128.140.36.59): Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors co-located, no alternate vhost answers; hypothesis exhausted.
+- NEW `go.events.elringklinger.com/api?method=queryProspects`: Default-BU fallback path hypothesis queued for next probe cycle.
+- NEW go.events.elringklinger.com/api/v5+: 11 resource endpoints confirmed live (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content) — dual-path
+- NEW go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed — same 11 resource paths return @attributes format with err_code:49 (no auth) vs err_code:198 (with Bearer) — dual-path leak spans ALL 
+- NEW go.events.elringklinger.com/api: Legacy /api?method= migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement now at HTTP status layer
+- NEW go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+- NEW go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole 
+- CHANGED api.smartcard.elringklinger.com: Backend 502 now ~72h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (6-day span), passive wait
+- CHANGED 10/13 dedicated hosts remain unreachable (connection timeout)
