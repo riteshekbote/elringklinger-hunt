@@ -1,4 +1,8 @@
-## 2026-09-06 06:13:45 UTC [target] (model nemotron3)
+## 2026-09-06 11:13:13 UTC [target] (model nemotron3)
+[CHANGED] go.events.elringklinger.com/api/v5+: Confirmed 11 resource endpoints live (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content) — all return 401/49 without auth, 404/198 with Bearer
+[CHANGED] go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed — same 11 resource paths return @attributes format with err_code:49 (no auth) vs err_code:198 (with Bearer) — dual-path leak spans ALL versions
+[CHANGED] go.events.elringklinger.com/api (legacy): Migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement now at HTTP status layer
+[CHANGED] go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
 [PRIO] go.events.elringklinger.com/api/v5+,9.25,attack_surface=10,business_value=9,tech_exposure=10,gate_ease=8,cloud_surface=8,freshness=10
 [PRIO] go.events.elringklinger.com/api/v1-v4,8.50,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=8,cloud_surface=7,freshness=9
 [PRIO] go.events.elringklinger.com/api,7.60,attack_surface=8,business_value=8,tech_exposure=7,gate_ease=7,cloud_surface=7,freshness=8

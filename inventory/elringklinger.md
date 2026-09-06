@@ -177,3 +177,12 @@ www.elringklinger.com
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (timeout), 6-day span
 
 ## 2026-09-06 06:13:52 UTC
+
+## 2026-09-06 11:13:25 UTC
+- CHANGED `api.smartcard.elringklinger.com`: Backend 502 now ~72h+; no recovery signal across any versioned path.
+- CHANGED `go.events.elringklinger.com/api/v5`: Auth state stable — 401/49 (no auth) vs 404/198 (with Bearer); no drift.
+- NEW Smartcard origin vhost hypothesis (128.140.36.59) from last cycle — probe was queued but not executed.
+- CHANGED go.events.elringklinger.com/api/v5+: Confirmed 11 resource endpoints live (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content) — all retur
+- CHANGED go.events.elringklinger.com/api/v1-v4: Legacy XML tier confirmed — same 11 resource paths return @attributes format with err_code:49 (no auth) vs err_code:198 (with Bearer) — dual-path leak spans ALL 
+- CHANGED go.events.elringklinger.com/api (legacy): Migrated from HTTP 200 to HTTP 401 with err_code:49 for all 7 methods — auth enforcement now at HTTP status layer
+- CHANGED go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier

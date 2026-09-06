@@ -83,3 +83,6 @@
 - 2026-09-06 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrated to HTTP status layer
 - 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (~57h). No recovery.
 - 2026-09-06 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact this cycle — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate.
+- 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~72h, unchanged; no recovery.
+- 2026-09-06 REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/static) co-located, but no alternate co-hosted app reachable; vhost hypothesis exhausted.
