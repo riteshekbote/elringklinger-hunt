@@ -321,3 +321,21 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~72h, unchanged; no recovery.
 - LEARN: REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-06 17:15:23 UTC
+- [87] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}: Legacy root Pardot token-skip intact — BU-id remains the sole gate (from art/lead_bigpickle.txt)
+- [78] go.events.elringklinger.com/api/v5/prospects: Pardot v5+ Default Business Unit Fallback Under Minimal Bearer (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00"` — watch for 181→200 transition (auth state drift) at 1rps; 
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api/v5/campaigns -H "Au
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=queryProspects: Default-BU fallback hypothesis FALSIFIED — Bearer `00` without BU header returns 400/
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); B
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~74h, unchanged; no recovery.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON `{"code":49}` (no auth) vs `{"code":198}` (with Bearer) — dual-path auth response lea
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns `@attributes` format with `err_code:49` (no auth) vs `err_code:198` (with Bearer) — d
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/vN: Two distinct API tiers confirmed — version boundary at v5 (legacy XML vs JSON response format); "uniform v1.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1: OPTIONS returns 200 empty body — CORS preflight succeeds on legacy tier
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: Legacy /api?method= returns HTTP 401 (was 200) with err_code:49 for all 7 methods — auth enforcement migrat
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact this cycle — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU no
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h, unchanged; no recovery.
+- LEARN: REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.

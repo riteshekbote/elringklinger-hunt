@@ -6520,3 +6520,122 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger: 43 — two stable auth primitives (root token-skip with PII-read impact, dual-path leak) but both gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY, closed OSINT surface); flagship smartcard API 502 ~72h with un-fingerprinted nginx; 10/13 inventory hosts unreachable; smartcard origin-vhost lead now exhausted. Only realistic CPU-remaining path is weak default-BU probing and passive drift; standing risk is flat to slightly down.
+===== ANALYST bigpickle 2026-09-06 17:15:23 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m✱ [0mGlob "*"[90m 71 matches[0m
+[0m→ [0mRead state_bigpickle.json
+[0m→ [0mRead leads/lead-bigpickle.md
+[0m→ [0mRead reports/hypotheses-bigpickle.txt
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /dev/null -w "%{http_code}" "https://go.events.elringklinger.com/api?method=queryProspects" -H "Authorization: Bearer 00"
+400
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api?method=queryProspects" -H "Authorization: Bearer 00" 2>&1 | head -c 500
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /dev/null -w "%{http_code}" "https://api.smartcard.elringklinger.com/api/v1/"
+502
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api?method=queryProspects" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000" 2>&1 | head -c 500
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api/v5/prospects" 2>&1 | head -c 500
+{"code":49,"message":"Access Denied"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api/v5/prospects" -H "Authorization: Bearer 00" 2>&1 | head -c 500
+{"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 "https://go.events.elringklinger.com/api?method=getVersion" -H "Authorization: Bearer 00" 2>&1 | head -c 500
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /dev/null -w "%{http_code}" "https://go.events.elringklinger.com/api/v5/prospects"
+401
+[0m
+[0m← [0mWrite reports/hypotheses-bigpickle.txt
+Wrote file successfully.
+[0m
+[0m→ [0mRead leads/lead-bigpickle.md[90m [offset=400][0m
+[0m→ [0mRead triage/run-2026-09-06-14-14.md
+Now let me read the latest triage run to understand the current state precisely:
+[0m→ [0mRead leads/lead-bigpickle.md[90m [offset=811][0m
+Now I have the full picture. Let me compile the structured analysis:
+**STEP 1 — DELTA**
+- [CHANGED] `go.events.elringklinger.com/api?method=queryProspects`: Default-BU fallback hypothesis TESTED and FAILED — Bearer `00` without BU header returns 181 (missing BU), NOT 200. No default BU fallback path exists.
+- [CHANGED] `api.smartcard.elringklinger.com`: Backend 502 now ~74h+; no recovery signal.
+- [NO_DELTA] v5 tier: stable 401/49 (no auth) vs 404/198 (with Bearer).
+- [NO_DELTA] Legacy root token-skip: stable chain Bearer `00`→181, fabricated 0Uv→201.
+
+**STEP 2 — PRIORITIZE**
+- [PRIO] go.events.elringklinger.com/api?method={getVersion,getCampaigns,...}, 8.7, AUTH (token-skip intact, BU-id sole gate, CRITICAL impact if id found)
+- [PRIO] go.events.elringklinger.com/api/v5/prospects, 6.1, AUTH (dual-path leak, dead-end under Bearer, passive drift watch)
+- [PRIO] api.smartcard.elringklinger.com, 3.9, AUTH (502 ~74h, nginx gateway live, backend down)
+
+**STEP 3 — HYPOTHESES**
+```
+[HYP] Legacy root Pardot token-skip intact — BU-id remains the sole gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}
+confidence: 87
+reasoning: Default-BU fallback hypothesis FALSIFIED this cycle — Bearer `00` without BU header returns 400/181 (missing BU), NOT 200. The BU header is strictly required; no default fallback exists. Chain remains stable: any ≥2-char Bearer passes token layer → BU checks (181→182→201). No token-validity error anywhere. Query-param keys still validated (err 1).
+evidence_needed: real ElringKlinger 0Uv BU id → 200 dispatch / PII read on prospects/campaigns.
+verify_steps: PASSIVE drift check `GET /api?method=getVersion -H "Authorization: Bearer 00"` (± BU header), watch 181/182/201→200 (dispatch) or →198/401 (revert). BU acquisition HUMAN_ONLY.
+impact: full prospects/campaigns PII read+write and API-layer ATO for a single found tenant id — CRITICAL.
+testability: HUMAN_ONLY
+```
+```
+[HYP] v5 REST tier remains a dead-end under Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 70
+reasoning: Stable across cycles: 401/49 no-auth vs 404/198 with Bearer; BU header does not alter 198. Dual-path leak informative, no dispatch path without an accepted credential.
+evidence_needed: any Bearer not yielding 198 (auth-state flip).
+verify_steps: PASSIVE `GET /api/v5/prospects` ± `Authorization: Bearer 00` per cycle (1rps).
+impact: none currently; medium on auth drift.
+testability: PASSIVE
+```
+```
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 22
+reasoning: 502 now ~74h, unchanged; direct-origin vhost probe dead (HTTP 000); nginx gateway live but never fingerprinted.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if a live handler appears — HIGH if realized.
+testability: PASSIVE
+```
+
+**STEP 4 — SELF-CRITIQUE**
+- Smartcard recovery: 22 < 40 threshold. [PARKED] — below confidence floor, passive wait only.
+- v5 dead-end: 70 ≥ 40, class AUTH not rejected, verify_steps concrete — KEPT.
+- Legacy token-skip: 87 ≥ 40 — KEPT as primary finding.
+- Default-BU fallback hypothesis: REJECTED — falsified by this cycle's probe (returns 181, not 200).
+- [FINAL] survivors ranked: (1) Legacy Pardot token-skip (87), (2) v5 REST dead-end drift (70), (3) Smartcard recovery (22, parked).
+
+**STEP 5 — NEXT ACTION**
+```
+[NEXT] PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00"` — watch for 181→200 transition (auth state drift) at 1rps; otherwise the only remaining upside is HUMAN_ONLY OSINT for a real ElringKlinger `0Uv` BU id. Parallel: `GET https://api.smartcard.elringklinger.com/api/v1/` (passive recovery check).
+```
+
+**STEP 6 — LEARNING**
+```
+[LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=queryProspects: Default-BU fallback hypothesis FALSIFIED — Bearer `00` without BU header returns 400/181 (missing BU), not 200. BU header is strictly required; no default fallback path exists.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); BU-id remains sole gate.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~74h, unchanged; no recovery.
+```
+
+**STEP 7 — RISK**
+```
+[RISK] elringklinger: 42 — One confirmed AUTH primitive (legacy root token-skip, 87) with CRITICAL impact IF a 0Uv BU id is obtained, but gated behind HUMAN_ONLY OSINT (closed surface). Default-BU fallback hypothesis falsified this cycle. v5 dual-path leak (70) is informative but dead-end under Bearer. Smartcard API 502 ~74h, no recovery; 10/13 inventory hosts unreachable. Score flat-to-slightly-down from 43: the falsified BU-fallback hypothesis removes one speculative escalation path but does not affect the core finding. Remaining upside is (a) OSINT for a 0Uv BU id (HUMAN_ONLY) and (b) Smartcard backend recovery (passive wait).
+```

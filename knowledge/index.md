@@ -86,3 +86,7 @@
 - 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact this cycle — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate.
 - 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~72h, unchanged; no recovery.
 - 2026-09-06 REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors (502/301/static) co-located, but no alternate co-hosted app reachable; vhost hypothesis exhausted.
+- 2026-09-06 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=queryProspects: Default-BU fallback hypothesis FALSIFIED — Bearer `00` without BU header returns 400/181 (missing BU), not 200. BU header is strictly required; no default fallback path exists.
+- 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); BU-id remains sole gate.
+- 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~74h, unchanged; no recovery.
+- 2026-09-06 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h, unchanged; no recovery.
