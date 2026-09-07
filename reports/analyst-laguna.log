@@ -254,3 +254,11 @@
     "ref": "err_70aa4bbc"
   }
 }
+===== ANALYST laguna 2026-09-07 23:50:53 UTC =====
+[91m[1mError: [0m{
+  "name": "UnknownError",
+  "data": {
+    "message": "Unexpected server error. Check server logs for details.",
+    "ref": "err_3d3e305b"
+  }
+}
