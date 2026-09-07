@@ -294,3 +294,12 @@ https://go.events.elringklinger.com/api/v5/users -> HTTP 401
 https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
 https://api.smartcard.elringklinger.com/api/v1/` -> HTTP 502
+
+## 2026-09-07 01:10:44 UTC
+https://go.events.elringklinger.com/api?method=queryProspects&version=1 -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://go.events.elringklinger.com/api/v5/users -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/` -> HTTP 502

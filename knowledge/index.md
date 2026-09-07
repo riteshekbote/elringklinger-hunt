@@ -100,3 +100,10 @@
 - 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Legacy tier returns @attributes format with err_code:49 (no auth) vs err_code:181 (Bearer, no BU) vs err_code:201 (Bearer + valid-format BU) — dual-path auth response leak spans v1-v4; BU validation reachable without valid token
 - 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: v5+ tier returns JSON {"code":49} (no auth) vs {"code":198} (with Bearer) — dual-path auth response leak spans v5+; Bearer presence routes to pre-routing reject regardless of BU header
 - 2026-09-06 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer 00→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate
+- 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); token layer unconditionally bypassed, BU-id remains sole gate.
+- 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~76h+, unchanged; no recovery.
+- 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 tier still 404/198 under Bearer — dual-path leak stable, dispatch blocked.
+- 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer shifted — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201 (was 200 across all). Error code discrimination chain 49→181→201 intact.
+- 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+- 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
+- 2026-09-07 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.

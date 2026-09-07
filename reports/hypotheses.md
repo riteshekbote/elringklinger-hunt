@@ -375,3 +375,16 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
 - LEARN: REJECTED OTHER @ 128.140.36.59/www.smartcard.elringklinger.com: Direct-origin Host-header vhost probe returns HTTP 000 — all three smartcard behaviors co-locate
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-07 01:10:34 UTC
+- [87] go.events.elringklinger.com/api?method={getVersion,getCampaigns,queryProspects,...}: Legacy root Pardot token-skip intact — BU-id remains the sole gate (from art/lead_bigpickle.txt)
+- [87] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 4
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=queryProspects&version=1 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Root token-skip re-verified intact — Bearer `00`→181 (missing BU), fabricated 0Uv→201 (BU not found); t
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~76h+, unchanged; no recovery.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5: v5 tier still 404/198 under Bearer — dual-path leak stable, dispatch blocked.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer shifted — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
