@@ -229,3 +229,10 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~75h+, no recovery; robots.txt 200 (Disallow: /).
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (6-day span), passive wait.
+
+## 2026-09-07 06:14:14 UTC
+- CHANGED go.events.elringklinger.com/api?method=: HTTP status layer shifted — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201 (was 200 across all). Error code discriminatio
+- NEW go.events.elringklinger.com/api?method=: HTTP status layer shifted — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201 (was 200 across all). Error code discriminatio
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~76h+, no recovery; robots.txt 200 (Disallow: /).
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (6-day span), passive wait.
