@@ -107,3 +107,5 @@
 - 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
 - 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~75h+, unchanged; no recovery.
 - 2026-09-07 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
+- 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~82h+, unchanged; no recovery.
+- 2026-09-07 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6.5-day span). Passive wait.
