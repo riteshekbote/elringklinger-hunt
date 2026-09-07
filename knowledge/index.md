@@ -109,3 +109,5 @@
 - 2026-09-07 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6-day span). Passive wait.
 - 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~82h+, unchanged; no recovery.
 - 2026-09-07 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6.5-day span). Passive wait.
+- 2026-09-07 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer shift (401/400/403 differentiation) confirmed stable over 6.5h — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201. Token-skip and BU-id gate intact.
+- 2026-09-07 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~85h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.

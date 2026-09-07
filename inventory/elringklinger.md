@@ -243,3 +243,9 @@ www.elringklinger.com
 - NEW api.smartcard.elringklinger.com: Backend 502 ~82h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
 - NEW edi2/edi7.elringklinger.com: Still unreachable (timeout, 6.5-day span); passive wait
 - CHANGED Verification timestamp advanced from 2026-09-07 06:14 UTC to 2026-09-07 12:48 UTC — all prior findings re-confirmed live
+
+## 2026-09-07 18:17:13 UTC
+- CHANGED go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201 (was 200 across all)
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~82h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (timeout, 6.5-day span); passive wait
