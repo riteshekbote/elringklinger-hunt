@@ -424,3 +424,12 @@
 - LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~82h+, unchanged; no recovery.
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6.5-day span). Passive wait.
+
+## RANKED HYPOTHESES 2026-09-07 21:38:03 UTC
+- [87] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- [72] go.events.elringklinger.com/api?method=: Legacy Pardot BU-id oracle is non-discriminative (fabricated and real BU-ids both 201) (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000" && GET https
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer shift (401/400/403 differentiation) confirmed stable over 6.5h — no auth: 401/err_cod
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~85h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (6.5-day span). Passive wait
