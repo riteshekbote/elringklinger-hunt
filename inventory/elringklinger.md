@@ -272,3 +272,9 @@ www.elringklinger.com
 ## 2026-09-08 08:47:24 UTC
 
 ## 2026-09-08 13:29:53 UTC
+
+## 2026-09-08 17:34:52 UTC
+- NEW go.events.elringklinger.com/api?method=: HTTP status layer differentiation (401/400/403) confirmed stable over 12h+ — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:2
+- NEW go.events.elringklinger.com/api/v5+: Stable dual-path auth leak — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 resource endpoints live; no drift since reactivation
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~90h+ across all versioned paths (/api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health); nginx gateway live with rob
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (7-day timeout span); passive wait
