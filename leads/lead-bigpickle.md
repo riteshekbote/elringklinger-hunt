@@ -1304,3 +1304,4 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~90h+, unchanged; no recovery signal.
 [LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
 [RISK] elringklinger: 42 — Core finding (legacy root token-skip, 87) is CRITICAL-IF-triggered but gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY acquisition); HTTP status layer shift (401/400/403) stable, no bypass observed; default-BU and version-oracle escalations falsified; smartcard 502 ~90h with unfingerprinted nginx; 10/13 inventory hosts unreachable; vhost lead exhausted. Flip risk (201→200 dispatch or smartcard recovery) not observable this cycle. Flat at 42.
+## 2026-09-08 20:17:14 UTC [target] (model bigpickle)

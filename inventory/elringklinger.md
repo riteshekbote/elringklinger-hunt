@@ -278,3 +278,5 @@ www.elringklinger.com
 - NEW go.events.elringklinger.com/api/v5+: Stable dual-path auth leak — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 resource endpoints live; no drift since reactivation
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~90h+ across all versioned paths (/api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health); nginx gateway live with rob
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (7-day timeout span); passive wait
+
+## 2026-09-08 20:24:31 UTC
