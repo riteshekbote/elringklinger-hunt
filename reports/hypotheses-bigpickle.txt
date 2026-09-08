@@ -1,4 +1,4 @@
-## 2026-09-07 23:48:15 UTC [target] (model bigpickle)
+## 2026-09-08 03:44:55 UTC [target] (model bigpickle)
 [PRIO] go.events.elringklinger.com/api?method=,6.1,legacy token-skip (a7 b8 t6 g6 c5 f7) — still the only reachable pre-auth logic chain; BU-id gate (201) sole barrier.
 [PRIO] go.events.elringklinger.com/api/v5/*,4.9,dead-end under Bearer (a5 b8 t6 g3 c5 f7)
 [PRIO] api.smartcard.elringklinger.com/api/v1/,4.2,recovery monitor (a6 b7 t5 g3 c6 f5)
