@@ -1,4 +1,4 @@
-## 2026-09-08 08:43:59 UTC [target] (model bigpickle)
+## 2026-09-08 13:24:42 UTC [target] (model bigpickle)
 [PRIO] go.events.elringklinger.com/api?method=,6.1,legacy token-skip (a7 b8 t6 g6 c5 f7) — BU-id gate sole barrier.
 [PRIO] go.events.elringklinger.com/api/v5/*,4.9,dead-end under Bearer (a5 b8 t6 g3 c5 f7)
 [PRIO] api.smartcard.elringklinger.com/api/v1/,4.2,recovery monitor (a6 b7 t5 g3 c6 f5)
@@ -32,9 +32,7 @@ testability: PASSIVE
 [PARKED] Smartcard backend recovery: confidence 22 < 40, passive wait only, no active probe possible. Keep as background monitor.
 [FINAL] Legacy Pardot BU-id oracle non-discriminative: 72, active finding, PASSIVE verify.
 [FINAL] v5 REST tier remains dead-end: 72, stable, PASSIVE verify.
-[NEXT] PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 403/err_code:201; watch 201→200 (dispatch, CRITICAL). Same-cycle watch: `GET /api/v5/prospects -H "Authorization: Bearer 00"` (expect 404/198) and `GET https://api.smartcard.elringklinger.com/api/v1/` (expect 502). All 1rps per host — no new probes warranted this cycle.
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201. HTTP-status differentiation and token-skip intact; no drift.
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~90h+, unchanged; no recovery signal.
 [LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
-[RISK] elringklinger: 42 — Core finding (legacy root token-skip, 87) is CRITICAL-IF-triggered but gated behind a NON-PUBLIC 0Uv BU id (HUMAN_ONLY acquisition); HTTP status layer shift (401/400/403) stable, no bypass observed; default-BU and version-oracle escalations falsified; smartcard 502 ~90h with unfingerprinted nginx; 10/13 inventory hosts unreachable; vhost lead exhausted. Flip risk (201→200 dispatch or smartcard recovery) not observable this cycle. Flat at 42.
