@@ -314,3 +314,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5+: 12 endpoints live (added completion_formats, prospectAccounts, scoreIONAttributes); POST returns same 404/198; no drift
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~93h+ on /api/v1/; no recovery signal
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
+
+## 2026-09-09 23:34:20 UTC

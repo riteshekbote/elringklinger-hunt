@@ -436,3 +436,7 @@ https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
 https://go.events.elringklinger.com/api/v5/users -> HTTP 401
 https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v1/` -> HTTP 502
+
+## 2026-09-09 23:34:22 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/` -> HTTP 502
