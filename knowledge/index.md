@@ -137,3 +137,8 @@
 - 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift
 - 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~90h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
 - 2026-09-09 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — Bearer only: 400/err_code:181 (missing BU); Bearer+BU: 403/err_code:201 (fabricated 0Uv, "not found or inactive"); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~92h+ on /api/v1/; no recovery signal.
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation).
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+- 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.

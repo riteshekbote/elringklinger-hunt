@@ -536,3 +536,17 @@
 - LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~90h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
+
+## RANKED HYPOTHESES 2026-09-09 06:14:14 UTC
+- [75] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- [74] go.events.elringklinger.com/api?method=getVersion: Legacy Pardot BU-id oracle is non-discriminative (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — 
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000001" && GET https
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — Bearer only: 400/err_code:181 (missing BU); Bearer+BU: 403/err_code:201 (fabricated 0Uv, 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198} on /api/v5/prospects; dual-path leak stable; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~92h+ on /api/v1/; no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Beare
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
