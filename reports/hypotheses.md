@@ -598,3 +598,18 @@
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+
+## RANKED HYPOTHESES 2026-09-09 21:34:28 UTC
+- [75] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- [74] go.events.elringklinger.com/api?method=getVersion: Legacy Pardot BU-id oracle non-discriminative — 201→200 dispatch never triggered (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — 
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000003" && GET https
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — Bearer `00` + fabricated 0Uv → 403/err_code:201 (XML), x-pardot-rsp 0/0/1; token-skip + H
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198} on /api/v5/prospects; dual-path leak stable; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~94h+ on /api/v1/; no recovery signal.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Beare
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~93h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
