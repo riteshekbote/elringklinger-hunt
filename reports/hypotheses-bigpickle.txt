@@ -1,7 +1,4 @@
-## 2026-09-09 15:26:42 UTC [target] (model bigpickle)
-[PRIO] go.events.elringklinger.com/api,9.0,auth_surface=9,business_value=8,tech_exposure=8,gate_ease=7,cloud_surface=2,freshness=10
-[PRIO] api.smartcard.elringklinger.com/api/v1,8.0,auth_surface=8,business_value=9,tech_exposure=5,gate_ease=0,cloud_surface=2,freshness=9
-[PRIO] go.events.elringklinger.com/api/v5/prospects,7.5,auth_surface=7,business_value=8,tech_exposure=7,gate_ease=3,cloud_surface=2,freshness=10
+## 2026-09-09 18:43:18 UTC [target] (model bigpickle)
 [HYP] Legacy Pardot BU-id oracle non-discriminative — 201→200 dispatch never triggered
 class: AUTH
 asset: go.events.elringklinger.com/api?method=getVersion
@@ -29,7 +26,10 @@ evidence_needed: non-502 on any versioned path.
 verify_steps: PASSIVE `GET /api/v1/` and `GET /api/v2/` per cycle (1rps).
 impact: unauthenticated provisioning/IDOR if live handler appears — HIGH if realized.
 testability: PASSIVE
-[NEXT] PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 403/err_code:201; watch 201→200 (dispatch, CRITICAL). Same-cycle: `GET /api/v5/prospects -H "Authorization: Bearer 00"` (expect 404/198) and `GET https://api.smartcard.elringklinger.com/api/v1/` (expect 502). All 1rps per host. No new probes warranted — surface is stable and fully mapped.
+[FINAL] Legacy Pardot BU-id oracle non-discriminative — confidence 73, ACTIVE, PASSIVE
+[FINAL] v5 REST tier Bearer bypass dead-end — confidence 73, ACTIVE, PASSIVE
+[PARKED] Smartcard backend recovery — confidence 22, PASSIVE wait only, no new signal
+[NEXT] PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 403/err_code:201; watch 201→200 (dispatch, CRITICAL). Same-cycle: `GET /api/v5/prospects -H "Authorization: Bearer 00"` (expect 404/198) and `GET https://api.smartcard.elringklinger.com/api/v1/` (expect 502). All 1rps per host.
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). x-pardot-rsp: 0/0/1 constant across all paths/auth states (static routing fingerprint, no oracle value).
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live (added completion_formats, prospectAccounts, scoreIONAttributes); POST returns same 404/198; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~93h+ on /api/v1/; no recovery signal.

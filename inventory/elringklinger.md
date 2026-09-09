@@ -297,3 +297,11 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
 - CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+
+## 2026-09-09 18:43:43 UTC
+- CHANGED go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
+- CHANGED go.events.elringklinger.com/api/v5+: 12 endpoints live (added completion_formats, prospectAccounts, scoreIONAttributes); POST returns same 404/198; no drift
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~93h+ on /api/v1/; no recovery signal
+- NEW go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path; all formats return identical err_code:201 with fabricated BU-id
+- NEW go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de; X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant a

@@ -1489,3 +1489,42 @@ testability: PASSIVE
 [LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
 [LEARN] REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
 [RISK] elringklinger: 42 — Core finding (legacy root token-skip, 87) CRITICAL-IF-triggered but gated behind NON-PUBLIC 0Uv BU id (HUMAN_ONLY acquisition); oracle re-confirmed non-discriminative across 6 distinct fabricated BU-ids this cycle; v5 Bearer dead-end and smartcard 502 stable (~93h); 10/13 inventory hosts unreachable; no fresh attack surface. x-pardot-rsp constant (no oracle). format=json/xml is response toggle, not code path. Flip risk (201→200 dispatch or smartcard recovery) not observable this cycle. Flat at 42.
+## 2026-09-09 18:43:18 UTC [target] (model bigpickle)
+[HYP] Legacy Pardot BU-id oracle non-discriminative — 201→200 dispatch never triggered
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 73
+reasoning: Bearer `00` + 6 distinct fabricated BU-ids (0Uv000...000, 0Uv111...111, 0UvAAA...AAA, 0UvZZZ...ZZZ, 0Uv000...001, 0Uv123...456) all return identical 403/err_code:201 + `x-pardot-rsp: 0/0/1`. Multi-cycle stable: 401/49 (no auth) → 400/181 (Bearer only) → 403/201 (BU present). 201→200 dispatch never observed across 10+ days of monitoring. Oracle returns uniform "not found or inactive" for all fabricated IDs.
+evidence_needed: any BU-id returning non-201 (200 success or distinct error code like 200/OK).
+verify_steps: PASSIVE `GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` per cycle (1rps); watch 201→200.
+impact: real BU id under token-skip → unauthenticated Pardot data read (prospects/campaigns = customer PII) — CRITICAL, gated behind non-public BU id.
+testability: PASSIVE
+[HYP] v5 REST tier Bearer bypass dead-end — pre-routing reject on any Bearer
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 73
+reasoning: Bearer `00` → 404/{"code":198} on all 12 tested endpoints (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content, completion_formats). POST returns same 404/198. BU header not tested (irrelevant to pre-routing reject). Dual-path leak (401/49 vs 404/198) stable over multiple days. Auth state flipped from previous bypass to uniform reject.
+evidence_needed: any Bearer/credential yielding non-198 (data response or different error).
+verify_steps: PASSIVE `GET /api/v5/prospects -H "Authorization: Bearer 00"` per cycle (1rps).
+impact: none currently; monitor for auth regression.
+testability: PASSIVE
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 22
+reasoning: 502 nginx this cycle (~92h+ continuous); robots.txt 200 (Disallow: /); no framework fingerprint; vhost probe dead. No recovery signal across 92+ hours of monitoring.
+evidence_needed: non-502 on any versioned path.
+verify_steps: PASSIVE `GET /api/v1/` and `GET /api/v2/` per cycle (1rps).
+impact: unauthenticated provisioning/IDOR if live handler appears — HIGH if realized.
+testability: PASSIVE
+[FINAL] Legacy Pardot BU-id oracle non-discriminative — confidence 73, ACTIVE, PASSIVE
+[FINAL] v5 REST tier Bearer bypass dead-end — confidence 73, ACTIVE, PASSIVE
+[PARKED] Smartcard backend recovery — confidence 22, PASSIVE wait only, no new signal
+[NEXT] PROBE: PASSIVE `GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000"` — expect 403/err_code:201; watch 201→200 (dispatch, CRITICAL). Same-cycle: `GET /api/v5/prospects -H "Authorization: Bearer 00"` (expect 404/198) and `GET https://api.smartcard.elringklinger.com/api/v1/` (expect 502). All 1rps per host.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). x-pardot-rsp: 0/0/1 constant across all paths/auth states (static routing fingerprint, no oracle value).
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live (added completion_formats, prospectAccounts, scoreIONAttributes); POST returns same 404/198; no drift.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~93h+ on /api/v1/; no recovery signal.
+[LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
+[LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+[LEARN] REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
+[RISK] elringklinger: 42 — Core finding (legacy root token-skip, 87) CRITICAL-IF-triggered but gated behind NON-PUBLIC 0Uv BU id (HUMAN_ONLY acquisition); oracle re-confirmed non-discriminative across 6 distinct fabricated BU-ids this cycle; v5 Bearer dead-end and smartcard 502 stable (~93h); 10/13 inventory hosts unreachable; no fresh attack surface. x-pardot-rsp constant (no oracle). format=json/xml is response toggle, not code path. Flip risk (201→200 dispatch or smartcard recovery) not observable this cycle. Flat at 42.
