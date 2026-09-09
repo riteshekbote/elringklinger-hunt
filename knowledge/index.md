@@ -129,3 +129,11 @@
 - 2026-09-08 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no auth: 401/err_code:49; Bearer `00`: 403/err_code:201 (fabricated 0Uv, "not found or inactive"); token-skip + HTTP-status differentiation intact; no drift.
 - 2026-09-08 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198} on /api/v5/prospects; dual-path leak stable; no drift.
 - 2026-09-08 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~90h+ on /api/v1/; no recovery signal.
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no auth: 401/err_code:49; Bearer `00`: 403/err_code:201 (fabricated 0Uv, "not found or inactive"); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198} on /api/v5/prospects; dual-path leak stable; no drift.
+- 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~91h+ on /api/v1/; no recovery signal.
+- 2026-09-09 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable over 12h+ — no auth: 401/err_code:49; Bearer only: 400/err_code:181; Bearer+BU: 403/err_code:201 (both zero and fabricated BU-ID return err_code:201)
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift
+- 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~90h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- 2026-09-09 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait

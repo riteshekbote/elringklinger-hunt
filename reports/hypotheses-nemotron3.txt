@@ -1,4 +1,4 @@
-## 2026-09-08 22:47:26 UTC [target] (model nemotron3)
+## 2026-09-09 01:20:15 UTC [target] (model nemotron3)
 [PRIO] go.events.elringklinger.com/api?method=,8.75,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=8,cloud_surface=7,freshness=10
 [PRIO] go.events.elringklinger.com/api/v5+,8.60,attack_surface=10,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=8,freshness=8
 [PRIO] go.events.elringklinger.com/api/v1-v4,8.10,attack_surface=8,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=7,freshness=9
