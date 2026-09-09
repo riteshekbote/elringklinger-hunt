@@ -1,6 +1,7 @@
-## 2026-09-09 11:37:54 UTC [target] (model nemotron3)
+## 2026-09-09 15:21:02 UTC [target] (model nemotron3)
 [CHANGED] go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
 [CHANGED] go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
+[CHANGED] api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
 [PRIO] go.events.elringklinger.com/api?method=,8.50,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=8,cloud_surface=7,freshness=9
 [PRIO] go.events.elringklinger.com/api/v5+,8.20,attack_surface=10,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=8,freshness=7
 [PRIO] go.events.elringklinger.com/api/v1-v4,7.80,attack_surface=8,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=7,freshness=8

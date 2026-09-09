@@ -1868,3 +1868,47 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
 [LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
 [RISK] elringklinger: 76 — Primary live attack surface is Pardot dual-tier API (legacy /api?method= XML + v5+ JSON, 11 v5 endpoints + 7 legacy methods, dual-path auth response leak across ALL versions). Legacy root token-skip intact (Bearer≥2 chars bypasses token validation, BU-id sole gate). Error code chain 49→181→201 with HTTP status differentiation (401/400/403) enables BU-ID enumeration without valid token. Oracle currently non-discriminative (all tested BU-IDs return 201). Smartcard API backend down 91+ hours. 10/13 dedicated hosts unreachable. Score reflects two live API tiers with enumeration potential, confirmed dual-path auth leak, root token-skip, and BU-ID enumeration path.
+## 2026-09-09 15:21:02 UTC [target] (model nemotron3)
+[CHANGED] go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
+[CHANGED] go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
+[CHANGED] api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+[PRIO] go.events.elringklinger.com/api?method=,8.50,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=8,cloud_surface=7,freshness=9
+[PRIO] go.events.elringklinger.com/api/v5+,8.20,attack_surface=10,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=8,freshness=7
+[PRIO] go.events.elringklinger.com/api/v1-v4,7.80,attack_surface=8,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=7,freshness=8
+[PRIO] api.smartcard.elringklinger.com,5.20,attack_surface=6,business_value=10,tech_exposure=4,gate_ease=2,cloud_surface=4,freshness=1
+[HYP] Pardot Legacy BU-ID Enumeration via Error Code Discrimination
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 75
+reasoning: Legacy tier returns 401/err_code:49 (no auth) vs 400/err_code:181 (Bearer≥2, no BU) vs 403/err_code:201 (Bearer+valid-format BU). Root token-skip intact: Bearer≥2 chars bypasses token validation; BU-id layer reachable without valid token. Error chain 49→181→201 with HTTP status diff (401/400/403) enables blind BU-ID enumeration. 7 methods enumerable. Live probe: both 0Uv000000000000000 and 0Uv111111111111111 return err_code:201 — oracle currently non-discriminative for valid vs invalid BU.
+evidence_needed: Any 18-char 0Uv-prefixed BU-ID returning err_code≠201 (i.e., err_code:0 success or err_code:1 invalid key) on legacy tier
+verify_steps: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000001" (1 rps, capture err_code: 181=missing BU, 201=invalid BU, 0/1=valid BU — systematic BU-ID space walk starting from low suffixes)
+impact: Valid BU-ID + minimal Bearer → full Pardot API access (prospects, campaigns, emails, visitors, lists, tags, accounts, opportunities, forms, landing_pages, dynamic_content) across tenant — marketing PII, campaign configs, visitor analytics. Severity HIGH.
+testability: PASSIVE
+[HYP] Pardot v5+ Hidden Authenticated Endpoint / Auth Drift
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 55
+reasoning: v5+ tier returns 401/{"code":49} no auth vs 404/{"code":198} with Bearer. Bearer presence routes to pre-routing reject regardless of BU header. Previous Bearer bypass (error chain 49→181→182→201) dead. 11 resource endpoints confirmed live (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, forms, landing_pages, dynamic_content). OPTIONS returns 200 on all. Dual-path auth leak spans v5+.
+evidence_needed: Any v5+ endpoint returning code≠198 with Bearer header (indicating BU validation or success); or discovery of hidden authenticated endpoints not in the 11 known resources
+verify_steps: GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api/v5/campaigns -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api/v5/users -H "Authorization: Bearer 00" (1 rps, capture full JSON, status, headers) — monitor for behavior drift
+impact: If v5+ tier has hidden BU validation or different auth logic, could enable data access without valid BU-ID. Severity MEDIUM-HIGH.
+testability: PASSIVE
+[HYP] Smartcard API Auth Surface Exposure on Backend Recovery
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 35
+reasoning: Backend 502 uniformly for 91+ hours across /api/v1/, /api/v2/, /api/beta/, /api/v1/auth, /api/v1/tokens, /api/v1/cards, /api/v1/health; nginx gateway live with robots.txt 200 (Disallow: /); no Spring Boot actuator, no common auth endpoints, framework unidentified; versioned routing confirmed. Outage is transient.
+evidence_needed: Any non-502 response (200/401/403/404) on /api/v1/ or /api/v2/ with auth-relevant paths
+verify_steps: PASSIVE: GET https://api.smartcard.elringklinger.com/api/v1/ (check for non-502) at intervals (≤1 rps)
+impact: Unauthenticated smartcard API access → credential cloning, identity fraud. HIGH severity.
+testability: PASSIVE
+[PARKED] Smartcard API Auth Surface Exposure on Backend Recovery: confidence 35 < 40 threshold; testability backend-dependent (PASSIVE only) — only passive wait-for-recovery; no actionable probe until backend comes online
+[PARKED] Pardot v5+ Hidden Authenticated Endpoint / Auth Drift: confidence 55 but no drift observed over 72h+; verify_steps are passive monitoring only with low yield probability
+[FINAL] 1. Pardot Legacy BU-ID Enumeration via Error Code Discrimination (75)
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000001" && GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000002" (1 rps, capture err_code — systematic BU-ID space walk starting from low suffixes to find valid BU via err_code discrimination)
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation).
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+[LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait.
+[RISK] elringklinger: 76 — Primary live attack surface is Pardot dual-tier API (legacy /api?method= XML + v5+ JSON, 11 v5 endpoints + 7 legacy methods, dual-path auth response leak across ALL versions). Legacy root token-skip intact (Bearer≥2 chars bypasses token validation, BU-id sole gate). Error code chain 49→181→201 with HTTP status differentiation (401/400/403) enables BU-ID enumeration without valid token. Oracle currently non-discriminative (all tested BU-IDs return 201). Smartcard API backend down 91+ hours. 10/13 dedicated hosts unreachable. Score reflects two live API tiers with enumeration potential, confirmed dual-path auth leak, root token-skip, and BU-ID enumeration path.
