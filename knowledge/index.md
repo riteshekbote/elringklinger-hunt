@@ -142,3 +142,5 @@
 - 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation).
 - 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 11 endpoints live; no drift.
 - 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status differentiation confirmed stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation).
+- 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~91h+; robots.txt 200 (Disallow: /); no recovery signal.

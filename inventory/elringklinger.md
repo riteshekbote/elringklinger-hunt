@@ -288,3 +288,7 @@ www.elringklinger.com
 ## 2026-09-09 06:14:14 UTC
 - CHANGED go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
 - CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
+
+## 2026-09-09 11:38:19 UTC
+- CHANGED go.events.elringklinger.com/api?method=: HTTP status layer now returns JSON @attributes format for no-auth (401/err_code:49) vs XML for Bearer paths (400/181, 403/201); previously uniform XML
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — both 0Uv000000000000000 and 0Uv111111111111111 return identical err_code:201 (BU not found/inactive)
