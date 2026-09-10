@@ -342,3 +342,9 @@ www.elringklinger.com
 - CHANGED go.events/api?method=: re-verified this cycle — Bearer `00` + fabricated 0Uv → 403/err_code:201 (XML); token-skip + HTTP-status differentiation stable, no drift.
 - CHANGED go.events/api/v5/prospects: Bearer `00` → 404/{"code":198}; dual-path leak stable, no drift.
 - CHANGED api.smartcard/api/v1/: 502 (nginx) ~100h+; no recovery signal.
+
+## 2026-09-10 23:53:16 UTC
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1B/10B/100B suffixes — 0Uv000001000000000, 0Uv000010000000000, 0Uv000100000000000 all return identical HTTP 403/er
+- CHANGED go.events.elringklinger.com/api/v5+: Re-verified stable — Bearer `00` → 404/{"code":198} on /api/v5/prospects; 12 endpoints live; dual-path leak (401/49 no-auth vs 404/198 with Bearer) unchanged
+- CHANGED api.smartcard.elringklinger.com: Backend 502 persists at ~100h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (7-day timeout span); passive wait

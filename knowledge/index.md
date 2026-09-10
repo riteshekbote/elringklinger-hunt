@@ -168,3 +168,5 @@
 - 2026-09-10 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~98h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
 - 2026-09-10 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~100h+ on /api/v1/; no recovery signal.
 - 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — 0Uv000000000000003 through 0Uv000000100000000 all return identical err_code:201
+- 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — 0Uv000000000000000 through 0Uv000100000000000 all return identical err_code:201
+- 2026-09-10 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~100h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
