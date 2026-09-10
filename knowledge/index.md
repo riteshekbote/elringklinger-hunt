@@ -153,3 +153,12 @@
 - 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~93h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-09 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — Bearer `00` + fabricated 0Uv → 403/err_code:201 (XML), x-pardot-rsp 0/0/1; token-skip + HTTP-status differentiation intact; no drift.
 - 2026-09-09 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~94h+ on /api/v1/; no recovery signal.
+- 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — Bearer `00` + fabricated 0Uv → 403/err_code:201 (XML), token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198} on /api/v5/prospects; dual-path leak stable; no drift.
+- 2026-09-10 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~96h+ on /api/v1/; no recovery signal.
+- 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — 0Uv000000000000003 through 0Uv000000000001000 all return identical err_code:201
+- 2026-09-10 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- 2026-09-10 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~94h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- 2026-09-10 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
+- 2026-09-10 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+- 2026-09-10 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
