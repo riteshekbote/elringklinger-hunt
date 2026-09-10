@@ -331,3 +331,9 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com: Backend 502 persists at ~98h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
+
+## 2026-09-10 19:11:27 UTC
+- NEW go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M suffixes — 0Uv000000000010000 and 0Uv000000000100000 return identical HTTP 403/err_code:201
+- NEW go.events.elringklinger.com/api/v5+: Stable at 12 endpoints — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; no drift over 98h+
+- NEW api.smartcard.elringklinger.com: Backend 502 persists at ~98h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- NEW edi2/edi7.elringklinger.com: Still unreachable (7-day span). Passive wait
