@@ -318,3 +318,8 @@ www.elringklinger.com
 ## 2026-09-09 23:34:20 UTC
 
 ## 2026-09-10 01:30:52 UTC
+
+## 2026-09-10 06:51:22 UTC
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle remains non-discriminative at higher suffixes — 0Uv000000000010000 and 0Uv000000000100000 both return HTTP 403/err_code:201 (identical to all prio
+- CHANGED api.smartcard.elringklinger.com: Backend 502 persists at ~96h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
