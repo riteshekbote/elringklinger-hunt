@@ -181,3 +181,4 @@
 - 2026-09-11 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
 - 2026-09-11 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~104h+ on /api/v1/; no recovery signal.
 - 2026-09-11 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- 2026-09-11 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — 0Uv000000001000000 through 0Uv000100000000000 all return identical err_code:201

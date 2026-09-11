@@ -362,3 +362,9 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-id
 - CHANGED go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant a
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait.
+
+## 2026-09-11 19:53:48 UTC
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle remains non-discriminative at 1M/10M/100M suffixes — 0Uv000000001000000, 0Uv000000010000000, 0Uv000000100000000 all return HTTP 403/err_code:201 (
+- CHANGED api.smartcard.elringklinger.com: Backend 502 now ~104h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait

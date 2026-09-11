@@ -2020,3 +2020,31 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~104h+ on /api/v1/; no recovery signal.
 [LEARN] REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 [RISK] elringklinger: 42 — Static risk profile; primary attack path (legacy token-skip → BU-id oracle → Pardot data) gated behind non-public BU-id acquisition (HUMAN_ONLY); oracle re-confirmed non-discriminative across 10+ fabricated IDs over 6+ days spanning 7 orders of magnitude; v5 Bearer dead-end and smartcard 502 stable (~104h); 10/13 inventory hosts unreachable. Flip risk (201→200 or smartcard recovery) not observed. Flat at 42.
+## 2026-09-11 19:51:06 UTC [target] (model bigpickle)
+[HYP] Legacy Pardot BU-id oracle remains non-discriminative — 201→200 dispatch not observed
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 74
+reasoning: This-cycle probe: Bearer `00` + `0Uv000000000000000` → HTTP 403, XML `err_code:201` "Business Unit … not found or inactive" (re-confirmed live). Oracle non-discriminative across 10+ fabricated IDs spanning 7 orders of magnitude over 6+ days. Token-skip (Bearer≥2 chars bypasses token validation) intact.
+evidence_needed: any BU-id returning non-201 (200 data, or 181/182/other distinct error)
+verify_steps: PASSIVE `GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv<id>"` (1rps); watch 201→200. Only meaningful with a real/leaked BU-id.
+impact: real BU-id under token-skip → unauthenticated Pardot prospect/campaign read (prospect + form-submission PII) — CRITICAL if realized
+testability: HUMAN_ONLY
+[HYP] v5 REST tier Bearer pre-routing reject is a dead-end
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 74
+reasoning: This-cycle probe: Bearer `00` → HTTP 404 `{"code":198,"message":"Endpoint not found"}` (live). 12 endpoints enumerated; POST identical; prior Bearer bypass patched 2026-09-05; BU header does not alter 198.
+evidence_needed: any Bearer/credential yielding non-198
+verify_steps: PASSIVE `GET /api/v5/prospects -H "Authorization: Bearer 00"` per cycle (1rps)
+impact: none currently; monitor for auth regression (dispatch re-enabling)
+testability: PASSIVE
+[HYP] Smartcard backend recovery re-opens provisioning surface
+class: AUTH
+asset: api.smartcard.elringklinger.com/api/v1/
+confidence: 22
+reasoning: This-cycle probe: HTTP 502 nginx (live, ~105h continuous). robots.txt 200 (Disallow: /); no framework fingerprint; vhost probe exhausted; no recovery signal across 4+ days.
+evidence_needed: non-502 on any versioned path
+verify_steps: PASSIVE `GET /api/v1/` per cycle (1rps)
+impact: unauthenticated provisioning/IDOR if live handler appears — HIGH if realized
+testability: PASSIVE
