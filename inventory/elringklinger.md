@@ -348,3 +348,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5+: Re-verified stable — Bearer `00` → 404/{"code":198} on /api/v5/prospects; 12 endpoints live; dual-path leak (401/49 no-auth vs 404/198 with Bearer) unchanged
 - CHANGED api.smartcard.elringklinger.com: Backend 502 persists at ~100h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (7-day timeout span); passive wait
+
+## 2026-09-11 03:49:15 UTC
