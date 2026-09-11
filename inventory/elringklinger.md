@@ -354,3 +354,11 @@ www.elringklinger.com
 ## 2026-09-11 08:51:48 UTC
 
 ## 2026-09-11 13:35:51 UTC
+
+## 2026-09-11 17:15:33 UTC
+- CHANGED api.smartcard.elringklinger.com: Backend 502 now ~104h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED go.events.elringklinger.com/api?method=: HTTP status layer stable — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live (prospects, campaigns, users, lists, tags, accounts, opportunities, emails, for
+- CHANGED go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-id
+- CHANGED go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant a
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait.
