@@ -1,4 +1,4 @@
-## 2026-09-11 08:51:38 UTC [target] (model nemotron3)
+## 2026-09-11 13:35:42 UTC [target] (model nemotron3)
 [PRIO] go.events.elringklinger.com/api?method=,8.65,attack_surface=9,business_value=9,tech_exposure=9,gate_ease=8,cloud_surface=7,freshness=9
 [PRIO] go.events.elringklinger.com/api/v5+,8.50,attack_surface=10,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=8,freshness=7
 [PRIO] go.events.elringklinger.com/api/v1-v4,8.00,attack_surface=8,business_value=9,tech_exposure=8,gate_ease=7,cloud_surface=7,freshness=8
@@ -30,8 +30,6 @@ evidence_needed: Any v5+ endpoint returning code≠198 with Bearer header (indic
 verify_steps: GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api/v5/campaigns -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api/v5/users -H "Authorization: Bearer 00" (1 rps, capture full JSON, status, headers) — monitor for behavior drift; OPTIONS https://go.events.elringklinger.com/api/v5/admin && OPTIONS https://go.events.elringklinger.com/api/v5/internal && OPTIONS https://go.events.elringklinger.com/api/v5/config (probe for hidden endpoints)
 impact: If v5+ tier has hidden BU validation or different auth logic, could enable data access without valid BU-ID. Severity MEDIUM-HIGH.
 testability: PASSIVE
-[PARKED] Smartcard API Auth Surface Exposure on Backend Recovery: confidence 35 < 40 threshold; testability backend-dependent (PASSIVE only) — only passive wait-for-recovery; no actionable probe until backend comes online
-[PARKED] Pardot v5+ Hidden Authenticated Endpoint / Auth Drift: confidence 55 but no drift observed over 100h+; verify_steps are passive monitoring only with low yield probability
 [FINAL] 1. Pardot Legacy BU-ID Enumeration via Error Code Discrimination (75)
 [FINAL] 2. Pardot Legacy REST Tier (v1-v4) BU-ID Enumeration via Error Code Discrimination (70)
 [FINAL] 3. Pardot v5+ Hidden Authenticated Endpoint Discovery (55)
