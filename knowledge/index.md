@@ -182,3 +182,11 @@
 - 2026-09-11 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~104h+ on /api/v1/; no recovery signal.
 - 2026-09-11 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - 2026-09-11 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative — 0Uv000000001000000 through 0Uv000100000000000 all return identical err_code:201
+- 2026-09-11 ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot API error code discrimination (1 vs 49) confirms API processes auth logic before rejection. Method enumeration may reveal which endpoints exist.
+- 2026-09-11 REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+- 2026-09-11 ACCEPTED MISCONFIG @ go.events.elringklinger.com: HTTP downgrade redirect is real but low-severity. Worth tracking as chain primitive (e.g. combined with phishing).
+- 2026-09-11 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Versioned endpoints likely exist based on 404 at root. Auth systems are high-value targets per directives.
+- 2026-09-11 ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot API error discrimination confirms method-level authorization logic. Enumeration may reveal accessible endpoints.
+- 2026-09-11 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
+- 2026-09-11 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
+- 2026-09-11 REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.

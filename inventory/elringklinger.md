@@ -368,3 +368,7 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com: Backend 502 now ~104h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+
+## 2026-09-11 22:23:18 UTC
+- NEW `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 — live backend, versioned path confirmed
+- NEW `go.events.elringklinger.com/api` returns HTTP 405 with method-specific error codes (1 vs 49) — Pardot API live

@@ -565,3 +565,17 @@ https://go.events.elringklinger.com/api/v5/users -> HTTP 401
 https://go.events.elringklinger.com/api/v5/admin -> HTTP 401
 https://go.events.elringklinger.com/api/v5/internal -> HTTP 401
 https://go.events.elringklinger.com/api/v5/config -> HTTP 401
+
+## 2026-09-11 22:23:36 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://go.events.elringklinger.com/api/v5/users -> HTTP 401
+https://go.events.elringklinger.com/api/v5/admin -> HTTP 401
+https://go.events.elringklinger.com/api/v5/internal -> HTTP 401
+https://go.events.elringklinger.com/api/v5/config -> HTTP 401
+https://go.events.elringklinger.com/api?api_key=test&format=json&version=2` -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getProspects` -> HTTP 405
+https://go.events.elringklinger.com/api?user_key=test&api_key=test` -> HTTP 405
+https://go.events.elringklinger.com/?pi_campaign=testcampaign` -> 200 len=210503
