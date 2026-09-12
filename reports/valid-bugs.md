@@ -19,3 +19,7 @@
   - | Q6 Not always-rejected? | **Yes** — broken token validation is a valid auth flaw class |
   - **Verdict: VALID**
   - | 1 | Pardot legacy token-skip | **VALID** | 8.1 | bugs.olivermaicher.eu |
+
+- 2 lead(s) marked VALID at 2026-09-12 11:16:34 UTC
+  - **VERDICT: VALID**
+  - | Pardot v5 Bearer Auth Bypass | VALID | 8.6 | May be patched (404 current) |
