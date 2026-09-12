@@ -2365,3 +2365,33 @@ impact: Distinct authenticated handler → enumeration for weaker second-order a
 testability: PASSIVE
 [NEXT] PROBE: `curl -sS --max-time 8 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv<br/>x" "https://go.events.elringklinger.com/api?method=getVersion"` — test XML metacharacter handling in the reflected "actual: <input>" from err_code 182 (single probe, read-only; only if no injection → confirms 182 reflection is inert, closes last formatting angle).
 [RISK] elringklinger: 68/100 — Primary live surface (Pardot dual-tier) accepts the already-filed legacy token-skip; the sole remaining HIGH path (BU-id gate) is computationally infeasible with a non-discriminative DB-layer oracle and now-confirmed 62^15 keyspace — worse than previously modeled. v1-v4 BU-walk angle closed. Smartcard backend degraded 108h+ (recovery is the highest-ceiling remaining trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection (Pardot auth matrix re-shifting, smartcard backend) rather than new attack surface discovery. No new reportable finding this cycle.
+## 2026-09-12 21:19:19 UTC [target] (model bigpickle)
+[HYP] v5+ credential-presence router may expose authenticated non-resource handlers (version/limits/jobs/alerts)
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: All 12 resource paths return 404/198 under any credential form (Bearer, api_key, Pardot-scheme Authorization) and 401/49 with none. Non-resource v5 endpoints (version, limits, jobs, alerts, auditTrail) were enumerated but never probed under credential presence; credential-presence pre-routing reject is verified on resources only. Distinct handler behavior on a non-resource path would indicate the reject is route-scoped, not global.
+evidence_needed: Any credential-present v5 non-resource path returning HTTP != 404/198.
+verify_steps: GET /api/v5/version?api_key=0 && /api/v5/limits?api_key=0 && /api/v5/jobs?api_key=0 && /api/v5/alerts?api_key=0 (1 rps, read-only, no auth bypass).
+impact: Distinct authenticated handler → enumeration for second-order auth weakness. LOW-MED.
+testability: PASSIVE
+[HYP] Root legacy tier token-skip remains the sole surviving pre-auth flaw and hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Non-root tiers (v1-v4, v5+) pre-routing-reject Bearer (404/198). Root is the last holdout where Bearer≥2 chars bypasses token validation and reaches BU-layer (181/182/201). Re-verified this cycle; format layer validates only case-sensitive `0Uv` prefix + 18-char length (base62 suffixes and `<br/>x` reach 182/201 paths); DB lookup non-discriminative (62^15 keyspace → enumeration infeasible).
+evidence_needed: Real 18-char `0Uv` BU-id returning err_code 0/200 under Bearer `00`; or matrix shifting to 404/198 with Bearer (consolidation completes).
+verify_steps: Passive matrix re-check each cycle (401/49 no-auth; 400/181 Bearer-no-BU; 400/182 Bearer+bad-format; 403/201 Bearer+valid-format).
+impact: With a real BU-id: full read of prospects/campaigns/emails/visitors PII across tenant. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned smartcard auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 ~108h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200, Disallow: /); no framework fingerprint recoverable; recovery probe passive and cheap; duration now suggests infra/deprovisioning, not transient.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/health && /api/v1/cards && /api/v1/auth once per cycle (1 rps); status change alone is the trigger.
+impact: token/card auth endpoints testable for broken auth/IDOR → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[NEXT] PROBE: `curl -sS --max-time 8 -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v5/version?api_key=0"` then `/api/v5/limits?api_key=0`, `/api/v5/jobs?api_key=0`, `/api/v5/alerts?api_key=0` (1 rps, read-only) — test for a distinct authenticated handler on non-resource v5 paths.
+[RISK] elringklinger: 68/100 — Pardot dual-tier accepts the already-filed legacy token-skip; sole remaining HIGH path (BU-id gate) infeasible with non-discriminative oracle and 62^15 keyspace; smartcard backend degraded ~108h (recovery remains the highest real trigger); 10/13 hosts firewalled. Residual value is drift/recovery change-detection. No new reportable finding this cycle.
