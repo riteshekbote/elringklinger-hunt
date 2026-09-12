@@ -892,3 +892,15 @@
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+
+## RANKED HYPOTHESES 2026-09-12 18:49:28 UTC
+- [75] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- [55] go.events.elringklinger.com/api?method=: Root legacy tier BU-id gate is the sole barrier; prefix-only format validation confirmed loose (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: `curl -sS --max-time 8 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv<br/>x" "https://go.events.elringklinger.com/api?method=getVersion"`
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" && GET https
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_c
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~106h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R

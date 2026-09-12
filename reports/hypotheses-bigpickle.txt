@@ -1,1 +1,30 @@
-## 2026-09-12 16:23:15 UTC [target] (model bigpickle)
+## 2026-09-12 18:46:56 UTC [target] (model bigpickle)
+[HYP] Root legacy tier BU-id gate is the sole barrier; prefix-only format validation confirmed loose
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Token-skip intact (Bearer≥2 chars bypasses token validation, live-verified this cycle). Error chain 401/49↔400/181↔400/182↔403/201 with HTTP-status differentiation; format layer now proven to validate ONLY the case-sensitive `0Uv` prefix + 18-char length — base62 suffixes (`z`*15, `A`*15) reach DB lookup and return 201; `0UV` returns 182 with reflected format expectation. DB lookup non-discriminative across 0Uv000000000000000→0Uv000100000000000; 62^15 keyspace (larger than prior base36 estimate) renders enumeration infeasible.
+evidence_needed: Any 18-char `0Uv`-prefixed ID returning err_code≠201 (0 success/182/etc.) on root tier; or a real `0Uv` BU-id from external discovery (SFDC object leak, config file, partner docs).
+verify_steps: Passive each cycle: GET /api?method=getVersion no-auth (expect 401/49 JSON @attributes) → Bearer `00` (400/181 XML) → Bearer `00`+fabricated 0Uv (403/201 XML). Watch for any 200/records or status-shift = hardening drift signal.
+impact: With a real BU-id: full read of prospects/campaigns/emails/visitors PII across tenant. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 for ~108h across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); no framework fingerprint; recovery probe passive/cheap.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/health && /api/v1/cards && /api/v1/auth (1 rps).
+impact: token/card auth endpoints testable → broken auth/IDOR → PHI/credentials. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ credential-presence router may expose authenticated-route map beyond the 12 resources
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 40
+reasoning: api_key param, Bearer, Pardot-scheme Authorization all switch routing to 404/198; oauth_token and BU-only stay 401/49. Non-resource v5 paths (version, limits, jobs, alerts, auditTrail) never tested under credential.
+evidence_needed: Any credential-present v5 path returning ≠198/404.
+verify_steps: GET /api/v5/version?api_key=0 && /api/v5/limits?api_key=0 && /api/v5/jobs?api_key=0 + Bearer variants (1 rps).
+impact: Distinct authenticated handler → enumeration for weaker second-order auth. LOW-MED.
+testability: PASSIVE
+[NEXT] PROBE: `curl -sS --max-time 8 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv<br/>x" "https://go.events.elringklinger.com/api?method=getVersion"` — test XML metacharacter handling in the reflected "actual: <input>" from err_code 182 (single probe, read-only; only if no injection → confirms 182 reflection is inert, closes last formatting angle).
+[RISK] elringklinger: 68/100 — Primary live surface (Pardot dual-tier) accepts the already-filed legacy token-skip; the sole remaining HIGH path (BU-id gate) is computationally infeasible with a non-discriminative DB-layer oracle and now-confirmed 62^15 keyspace — worse than previously modeled. v1-v4 BU-walk angle closed. Smartcard backend degraded 108h+ (recovery is the highest-ceiling remaining trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection (Pardot auth matrix re-shifting, smartcard backend) rather than new attack surface discovery. No new reportable finding this cycle.

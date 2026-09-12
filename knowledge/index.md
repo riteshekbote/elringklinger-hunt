@@ -202,3 +202,4 @@
 - 2026-09-12 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
 - 2026-09-12 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
 - 2026-09-12 REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+- 2026-09-12 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201 (XML)
