@@ -2197,3 +2197,22 @@ impact: On recovery, token/card auth endpoints become testable for broken auth/I
 testability: PASSIVE
 [NEXT] PROBE: `curl -sS --max-time 8 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uvzzzzzzzzzzzzzzz" "https://go.events.elringklinger.com/api/v1/prospects?format=json"` and `-H "Pardot-Business-Unit-Id: 0Uv000000001000000"` (base62-valid vs digit-only; 1 rps) — falsify/conclusively confirm format-layer looseness on legacy REST tier; then full-cycle drift re-verify of /api?method= matrix.
 [RISK] elringklinger: 68/100 — Primary live surface (Pardot dual-tier) accepts the already-filed legacy token-skip; the one remaining HIGH-severity path (BU-id gate) is computationally infeasible with a non-discriminative oracle; smartcard backend degraded 108h+; 10/13 hosts firewalled; CMS hardened and behind htaccess. Residual value is drift/recovery change-detection (Pardot auth matrix re-shifting, smartcard backend) rather than new attack surface discovery. No new reportable finding this cycle.
+## 2026-09-12 09:30:37 UTC [target] (model bigpickle)
+[HYP] Root legacy tier token-skip is the sole surviving pre-auth flaw and a live hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: All non-root tiers (v1-v4, v5+) now pre-routing-reject Bearer (404/198); root tier is the last holdout where Bearer>=2 chars bypasses token validation and reaches BU-layer (400/181 no BU, 400/182 bad format, 403/201 valid-format BU). Re-verified live this cycle. Format oracle now strictly base36-18 (`0Uv`+15), 36^15 keyspace, non-discriminative 201 — enumeration infeasible.
+evidence_needed: A real `0Uv` BU-id (external discovery only) returning err_code 0/200 under Bearer `00`; or root-tier matrix shifting to 404/198 with Bearer (consolidation completes → hypothesis dead).
+verify_steps: GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: <real 0Uv…>" — expect 200/records → full tenant data. Passive monitor matrix each cycle: no-auth 401/49, Bearer-no-BU 400/181, Bearer+bad-format 400/182, Bearer+valid 403/201.
+impact: With a real BU id: full read of prospects/campaigns/emails/visitors PII across tenant. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 for ~108h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); no framework fingerprint; recovery probe passive and cheap.
+evidence_needed: any non-502 status (200/401/403/JSON body) on /api/v1/health or /api/v1/cards
+verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/health && /api/v1/cards && /api/v1/auth (1 rps every cycle)
+impact: token/card auth endpoints testable → broken auth/IDOR → PHI/credentials. HIGH if live.
+testability: PASSIVE

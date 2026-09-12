@@ -11541,3 +11541,204 @@ testability: PASSIVE
 
 ## STEP 7 — RISK
 [RISK] elringklinger: 68/100 — Primary live surface (Pardot dual-tier) accepts the already-filed legacy token-skip; the one remaining HIGH-severity path (BU-id gate) is computationally infeasible with a non-discriminative oracle; smartcard backend degraded 108h+; 10/13 hosts firewalled; CMS hardened and behind htaccess. Residual value is drift/recovery change-detection (Pardot auth matrix re-shifting, smartcard backend) rather than new attack surface discovery. No new reportable finding this cycle.
+===== ANALYST bigpickle 2026-09-12 09:30:46 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m→ [0mRead .
+[0m✱ [0mGlob "art/**/*"[90m in . · 0 matches[0m
+[0m✱ [0mGlob "**/*.md"[90m in . · 82 matches[0m
+[0m→ [0mRead leads/lead-bigpickle.md
+[0m→ [0mRead triage/run-2026-09-12-06-29.md
+[0m→ [0mRead state_bigpickle.json
+[0m→ [0mRead probe-results.md
+[0m→ [0mRead triage/run-2026-09-12-01-31.md
+State is static since 09-03; no deltas in knowledge. My queued probe (base62 vs digit BU-ID) was never actually executed with headers — probe-results.md shows it ran headerless (returned bare 401). Closing that gap now with read-only GETs.
+[0m
+[0m$ [0mfor i in 1 2 3 4 5 6 7 8 9 10; do :; done
+probe() {
+  local url="$1"; shift
+  echo "=== GET $url $*"
+  curl -sS --max-time 12 -w '\n[HTTP %{http_code}] [%{time_total}s]\n' -H "Authorization: Bearer 00" -H "$1" "$url" 2>&1 | head -c 700
+  echo
+  sleep 1
+}
+probe "https://go.events.elringklinger.com/api/v1/prospects" "Pardot-Business-Unit-Id: 0Uvzzzzzzzzzzzzzzz"
+probe "https://go.events.elringklinger.com/api/v1/prospects" "Pardot-Business-Unit-Id: 0Uv000000001000000"
+=== GET https://go.events.elringklinger.com/api/v1/prospects Pardot-Business-Unit-Id: 0Uvzzzzzzzzzzzzzzz
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404] [0.358922s]
+
+=== GET https://go.events.elringklinger.com/api/v1/prospects Pardot-Business-Unit-Id: 0Uv000000001000000
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404] [0.204039s]
+[0m
+v1 tier drifted — Bearer+BU now yields 404/198 (was 181/201 on 09-06). Disambiguating across tiers.
+[0m$ [0mprobe() {
+  local url="$1"; local desc="$2"; shift 2
+  echo "=== [$desc] GET $url"
+  curl -sS --max-time 12 -w '\n[HTTP %{http_code}] [%{time_total}s]\n' "$@" "$url" 2>&1 | head -c 600
+  echo
+  sleep 1
+}
+probe "https://go.events.elringklinger.com/api/v1/prospects" "no auth" 
+probe "https://go.events.elringklinger.com/api/v2/prospects" "Bearer+BU v2" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000"
+probe "https://go.events.elringklinger.com/api?method=getVersion" "root Bearer+BU" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000"
+probe "https://go.events.elringklinger.com/api/v5/prospects" "v5 Bearer" -H "Authorization: Bearer 00"
+=== [no auth] GET https://go.events.elringklinger.com/api/v1/prospects
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[HTTP 401] [0.191333s]
+
+=== [Bearer+BU v2] GET https://go.events.elringklinger.com/api/v2/prospects
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404] [0.216099s]
+
+=== [root Bearer+BU] GET https://go.events.elringklinger.com/api?method=getVersion
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+
+[HTTP 403] [0.289702s]
+
+=== [v5 Bearer] GET https://go.events.elringklinger.com/api/v5/prospects
+{"code":198,"message":"Endpoint not found"}
+[HTTP 404] [0.266293s]
+[0m
+Clean data. Root `/api?method=` tier retains the BU-gate oracle (403/201); but v1–v4 resource tier now rejects Bearer with 404/198 — consolidating with v5+ pre-routing behavior. One more probe to settle the format-layer looseness question on the root tier.
+[0m$ [0mprobe() {
+  local url="$1"; local desc="$2"; local bu="$3"
+  echo "=== [$desc] BU=$bu"
+  curl -sS --max-time 12 -w '\n[HTTP %{http_code}]\n' -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: $bu" "$url" 2>&1 | head -c 400
+  echo
+  sleep 1
+}
+u="https://go.events.elringklinger.com/api?method=getVersion"
+probe "$u" "punctuation chars (18)" "0Uv0000000000000!"
+probe "$u" "lowercase letters (18)" "0Uv000000000000aa"
+probe "$u" "wrong length 17" "0Uv00000000000001"
+=== [punctuation chars (18)] BU=0Uv0000000000000!
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv0000000000000!</err>
+</rsp>
+
+[HTTP 400]
+
+=== [lowercase letters (18)] BU=0Uv000000000000aa
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv000000000000aa</err>
+</rsp>
+
+[HTTP 400]
+
+=== [wrong length 17] BU=0Uv00000000000001
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv00000000000001</err>
+</rsp>
+
+[HTTP 400]
+[0m
+Format-layer looseness **FALSIFIED** — root tier strictly validates charset (400/182 for lowercase/punctuation/wrong-length). Completing the v1–v4 namespace check.
+[0m$ [0mprobe() {
+  local url="$1"; local desc="$2"; shift 2
+  echo "=== [$desc]"
+  curl -sS --max-time 12 -w '\n[HTTP %{http_code}]\n' "$@" "$url" 2>&1 | head -c 400
+  echo
+  sleep 1
+}
+probe "https://go.events.elringklinger.com/api/v1/prospects" "v1 Bearer, NO BU" -H "Authorization: Bearer 00"
+probe "https://go.events.elringklinger.com/api/v3/prospects" "v3 Bearer+BU" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000"
+probe "https://go.events.elringklinger.com/api/v4/prospects" "v4 Bearer+BU" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000"
+=== [v1 Bearer, NO BU]
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404]
+
+=== [v3 Bearer+BU]
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404]
+
+=== [v4 Bearer+BU]
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+[HTTP 404]
+[0m
+v1–v4 tier FULLY consolidated with v5+ (any Bearer → 404/198). Quick smartcard recovery check then wrap up.
+[0m$ [0msleep 1
+echo "=== smartcard /api/v1/health"
+curl -sS --max-time 10 -w '\n[HTTP %{http_code}]\n' "https://api.smartcard.elringklinger.com/api/v1/health" 2>&1 | head -c 300
+echo
+sleep 1
+echo "=== smartcard robots.txt"
+curl -sS --max-time 10 -w '\n[HTTP %{http_code}]\n' "https://api.smartcard.elringklinger.com/robots.txt" 2>&1 | head -c 300
+=== smartcard /api/v1/health
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+[HTTP 502]
+
+=== smartcard robots.txt
+User-agent: *
+Disallow: /
+
+[HTTP 200]
+[0m
+Probes complete — all read-only, ≤1 rps. Now the analysis.
+
+---
+
+STEP 1 — DELTA
+- [CHANGED] `/api/v1-v4` resource tier: any Bearer (even missing/invalid BU) now returns 404/err_code:198 — was 400/181 + 403/201 on 09-06. Tier consolidated into the v5+ pre-routing Bearer-reject. BU-validation reachability narrowed to the root `/api?method=` tier only.
+- [CHANGED] Root-tier format validation now strictly characterized: 18-char, `0Uv` prefix, charset {0-9A-Z} only — lowercase, punctuation, wrong length all → 400/182 "not valid". Prior "charset-loose format" claim FALSIFIED.
+- NO_CHANGE: root `/api?method=` token-skip + BU-gate (Bearer `00`+valid-format BU → 403/201 XML); v5+ (401/49 vs 404/198); smartcard still 502 (~108h+); edi2/edi7 unreachable (8d).
+
+STEP 2 — PRIORITIZE
+- [PRIO] go.events/api?method=,6.8,surface=7(auth oracle only),value=8(Pardot tenant),tech=7(legacy dual-format),gate=6(token-skip,BU gate),cloud=2,freshness=9(drift observed)
+- [PRIO] api.smartcard,6.5,surface=8,value=9,tech=8,gate=2(502),cloud=5,freshness=3
+- [PRIO] go.events/api/v1-v4,6.3,surface=6(demoted: Bearer-reject),value=8,tech=6,gate=6,cloud=2,freshness=8
+
+STEP 3 — HYPOTHESES
+[HYP] Root legacy tier token-skip is the sole surviving pre-auth flaw and a live hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: All non-root tiers (v1-v4, v5+) now pre-routing-reject Bearer (404/198); root tier is the last holdout where Bearer>=2 chars bypasses token validation and reaches BU-layer (400/181 no BU, 400/182 bad format, 403/201 valid-format BU). Re-verified live this cycle. Format oracle now strictly base36-18 (`0Uv`+15), 36^15 keyspace, non-discriminative 201 — enumeration infeasible.
+evidence_needed: A real `0Uv` BU-id (external discovery only) returning err_code 0/200 under Bearer `00`; or root-tier matrix shifting to 404/198 with Bearer (consolidation completes → hypothesis dead).
+verify_steps: GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: <real 0Uv…>" — expect 200/records → full tenant data. Passive monitor matrix each cycle: no-auth 401/49, Bearer-no-BU 400/181, Bearer+bad-format 400/182, Bearer+valid 403/201.
+impact: With a real BU id: full read of prospects/campaigns/emails/visitors PII across tenant. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 for ~108h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); no framework fingerprint; recovery probe passive and cheap.
+evidence_needed: any non-502 status (200/401/403/JSON body) on /api/v1/health or /api/v1/cards
+verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/health && /api/v1/cards && /api/v1/auth (1 rps every cycle)
+impact: token/card auth endpoints testable → broken auth/IDOR → PHI/credentials. HIGH if live.
+testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+- [PARKED] Pardot Legacy REST Tier (v1-v4) BU-ID Enumeration: tier now Bearer-rejects (404/198) uniformly — BU-validation oracle removed; confidence collapses below gate. Its enumeration value is dead this cycle.
+- [PARKED] "Format layer is loose" subset: FALSIFIED today (400/182 on lowercase/punctuation/short) — rejected as factually wrong.
+- [FINAL] 1. Root tier token-skip + BU gate (55) — live, last holdout, drift-sentinel.
+- [FINAL] 2. Smartcard recovery watch (45) — passive, high-leverage on recovery.
+- Note: today's probes add NO new exploitable path; they narrow surface. Do not fabricate.
+
+STEP 5 — NEXT ACTION
+- [NEXT] PROBE: `curl -sS --max-time 12 "https://go.events.elringklinger.com/api?method=getVersion"` (expect 401/49) `-H "Authorization: Bearer 00"` (400/181) `-H "Pardot-Business-Unit-Id: 0Uv0000000000000!"` (400/182) `-H "Pardot-Business-Unit-Id: 0Uv000000001000000"` (403/201) + `curl -sS "https://api.smartcard.elringklinger.com/api/v1/health"` — full root matrix drift re-verify + smartcard recovery, 1 rps each, GET only.
+
+STEP 6 — LEARNING
+- [LEARN] ACCEPTED AUTH @ go.events/api/v1-v4: resource tier consolidated to pre-routing Bearer-reject (404/198, JSON @attributes) across v1-v4; BU-validation reachability now root-tier only.
+- [LEARN] REJECTED BUSLOGIC @ go.events/api?method=: format-layer looseness FALSIFIED — 400/182 for lowercase (`...aa`), punctuation (`...!`), and wrong length (17) BU-ids; strict base36-18 charset, not prefix+length-only.
+- [LEARN] ACCEPTED AUTH @ go.events/api?method=: root token-skip re-verified — Bearer `00` + 18-char valid-format BU → 403/err_code:201 (XML); untouched by today's consolidation.
+- [LEARN] ACCEPTED AUTH @ go.events/api/v5+: stable 401/49 vs 404/198; no drift.
+- [LEARN] ACCEPTED AUTH @ api.smartcard: backend 502 ~108h+, unchanged; no recovery.
+
+STEP 7 — RISK
+- [RISK] elringklinger: 58/100 — Live surface shrank this cycle: v1-v4 BU-validation oracle consolidated away, leaving the root `/api?method=` token-skip (known, re-verified, gated by an infeasible 36^15 non-discriminative BU-id oracle) as the sole pre-auth flaw; v5+ fully blocked; smartcard still down 108h+; 10/13 hosts unreachable. Residual value is drift/recovery change-detection (root-tier hardening watch, smartcard backend) — no new reportable finding this cycle.
