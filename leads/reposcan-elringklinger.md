@@ -189,3 +189,12 @@ TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
 TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
 ## REPOSCAN 2026-09-12 11:14:12 UTC
 TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
+## REPOSCAN 2026-09-12 14:14:04 UTC
+[HYP] <title>
+class: SECRET|MISCONFIG|IDOR|SSRF|OTHER
+asset: <repo/path>
+confidence: <0-100>
+reasoning: <facts>
+impact: <severity>
+verify_steps: <how to confirm it is live/in-scope, passive>
+TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
