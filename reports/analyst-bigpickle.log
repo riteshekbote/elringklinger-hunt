@@ -12078,3 +12078,20 @@ R "https://go.events.elringklinger.com/api/v5/prospects"; sleep 1.2
 R -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v5/prospects" failed
 [91m[1mError: [0mThe user rejected permission to use this specific tool call.
 Status codes confirm no drift (401/403/401/404/502). Re-running to capture bodies for err_code verification.
+===== ANALYST bigpickle 2026-09-12 16:24:46 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mdate -u +"%Y-%m-%d %H:%M:%S UTC"
+2026-09-12 16:22:54 UTC
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/sc_health.txt -w "SC health: %{http_code}\n" "https://api.smartcard.elringklinger.com/api/v1/health"; sleep 1; curl -sS --max-time 8 -o /tmp/pd_legacy_base62.txt -w "Pardot legacy base62 BU: %{http_code}\n" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uvzzzzzzzzzzzzzzz" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1; curl -sS --max-time 8 -o /tmp/pd_legacy_noauth.txt -w "Pardot legacy no-auth: %{http_code}\n" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1; curl -sS --max-time 8 -o /tmp/pd_v1_base62.txt -w "Pardot v1 base62 BU: %{http_code}\n" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uvzzzzzzzzzzzzzzz" "https://go.events.elringklinger.com/api/v1/prospects"; sleep 1; curl -sS --max-time 8 -o /tmp/pd_v5.txt -w "Pardot v5 Bearer: %{http_code}\n" -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v5/prospects"
+SC health: 502
+Pardot legacy base62 BU: 403
+Pardot legacy no-auth: 401
+Pardot v1 base62 BU: 404
+Pardot v5 Bearer: 404
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mecho "=== SC health ==="; cat /tmp/sc_health.txt; echo; echo "=== legacy base62 BU ==="; cat /tmp/pd_legacy_base62.txt; echo; echo "=== legacy no-auth ==="; cat /tmp/pd_legacy_noauth.txt; echo; echo "=== v1 base62 BU ==="; cat /tmp/pd_v1_base62.txt; echo; echo "=== v5 Bearer ==="; cat /tmp/pd_v5.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

@@ -2334,3 +2334,4 @@ evidence_needed: any non-502 status (200/401/403/JSON body) on /api/v1/health or
 verify_steps: GET https://api.smartcard.elringklinger.com/api/v1/health && /api/v1/cards && /api/v1/auth (1 rps every cycle)
 impact: token/card auth endpoints testable → broken auth/IDOR → PHI/credentials. HIGH if live.
 testability: PASSIVE
+## 2026-09-12 16:23:15 UTC [target] (model bigpickle)

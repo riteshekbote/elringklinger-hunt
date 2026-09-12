@@ -399,3 +399,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON @attributes (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth state
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~106h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+
+## 2026-09-12 16:24:46 UTC
