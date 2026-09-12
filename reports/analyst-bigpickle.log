@@ -12350,3 +12350,138 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger: 68/100 — Pardot dual-tier accepts the already-filed legacy token-skip; sole remaining HIGH path (BU-id gate) infeasible with non-discriminative oracle and 62^15 keyspace; smartcard backend degraded ~108h (recovery remains the highest real trigger); 10/13 hosts firewalled. Residual value is drift/recovery change-detection. No new reportable finding this cycle.
+===== ANALYST bigpickle 2026-09-12 23:07:48 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/v5_version.txt -w "%{http_code}" "https://go.events.elringklinger.com/api/v5/version?api_key=0" ; sleep 1; echo; cat /tmp/opencode/v5_version.txt
+404
+{"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/v5_limits.txt -w "%{http_code}" "https://go.events.elringklinger.com/api/v5/limits?api_key=0" ; sleep 1; echo; cat /tmp/opencode/v5_limits.txt
+404
+{"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/root_noauth.txt -w "%{http_code}" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1; echo; cat /tmp/opencode/root_noauth.txt
+401
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/v5_jobs.txt -w "%{http_code}" "https://go.events.elringklinger.com/api/v5/jobs?api_key=0" ; sleep 1; echo; cat /tmp/opencode/v5_jobs.txt; echo; curl -sS --max-time 8 -o /tmp/opencode/v5_alerts.txt -w "%{http_code}" "https://go.events.elringklinger.com/api/v5/alerts?api_key=0"; sleep 1; echo; cat /tmp/opencode/v5_alerts.txt
+404
+{"code":198,"message":"Endpoint not found"}
+404
+{"code":198,"message":"Endpoint not found"}
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/root_bearer_bu.txt -w "%{http_code}" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000000" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1; echo; cat /tmp/opencode/root_bearer_bu.txt
+403
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/smart_health.txt -w "%{http_code}" "https://api.smartcard.elringklinger.com/api/v1/health"; sleep 1; echo; cat /tmp/opencode/smart_health.txt; echo; curl -sS --max-time 8 -o /tmp/opencode/smart_cards.txt -w "%{http_code}" "https://api.smartcard.elringklinger.com/api/v1/cards"; sleep 1; echo; cat /tmp/opencode/smart_cards.txt
+502
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+502
+<html>
+<head><title>502 Bad Gateway</title></head>
+<body>
+<center><h1>502 Bad Gateway</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+[0m
+[0m$ [0mcurl -sS --max-time 8 -o /tmp/opencode/root_xmlmeta.txt -w "%{http_code}" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv<br/>x" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1; echo; cat /tmp/opencode/root_xmlmeta.txt
+400
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="182">Invalid header value: Value in Pardot-Business-Unit-Id header is not valid. Expected the 18 character ID of the tenant. actual: 0Uv&lt;br/&gt;x</err>
+</rsp>
+[0m
+[0m$ [0mfor h in aircontrol.elringklinger.com avconf.elringklinger.com cctv.elringklinger.com cgline.elringklinger.com ektrcctv.elringklinger.com fwasvvideo1.elringklinger.com imap.elringklinger.com; do printf "%s: " "$h"; curl -sS --max-time 5 -o /dev/null -w "%{http_code}" "https://$h/" 2>&1 || printf "ERR"; echo; sleep 1; done
+aircontrol.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+avconf.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+cctv.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+cgline.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+ektrcctv.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+fwasvvideo1.elringklinger.com: curl: (7) Failed to connect to fwasvvideo1.elringklinger.com port 443 after 153 ms: Couldn't connect to server
+000ERR
+imap.elringklinger.com: curl: (28) Connection timed out after 5002 milliseconds
+000ERR
+[0m
+[0m◈ [0mParallel Web Search "elringklinger Pardot "business unit" OR "0Uv" salesforce API config"
+## STEP 1 — DELTA
+- [CHANGED] v5 non-resource paths (`/api/v5/version|limits|jobs|alerts?api_key=0`) all return 404/`{"code":198}` — credential-presence reject is GLOBAL, not route-scoped; non-resource handler hypothesis FALSIFIED
+- [CHANGED] Root legacy err_code 182 reflects supplied BU-id **HTML-escaped** (`0Uv<br/>x` → `0Uv&lt;br/&gt;x`) — last formatting angle inert/closed
+- [NO_CHANGE] Root legacy token-skip + BU gate: no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+fabricated 0Uv → 403/err_code:201 (XML); no drift
+- [NO_CHANGE] Smartcard backend 502 ~108h+ (re-probed `/api/v1/health`, `/api/v1/cards`)
+- [NO_CHANGE] 7 infra hosts (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap) still dead (timeout/refused); edi2/edi7 still timeout
+- [LEARN] Web RAG: no public ElringKlinger 0Uv BU-id exists anywhere on the web; BU-ids are Salesforce-admin-only secrets
+
+## STEP 2 — PRIORITIZE
+- [PRIO] go.events.elringklinger.com/api?method= (root), 6.80, auth-gate/token-skip sentinel
+- [PRIO] api.smartcard.elringklinger.com, 6.05, degraded-backend recovery (highest ceiling)
+- [PRIO] go.events.elringklinger.com/api/v5+, 5.70, dual-path-auth change-detection
+
+## STEP 3 — HYPOTHESES
+[HYP] Root legacy token-skip remains sole surviving pre-auth flaw; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Re-verified live this cycle: no-auth 401/err_code:49 (JSON) vs Bearer `00`+fabricated 0Uv → 403/err_code:201 (XML). Bearer≥2 chars bypasses token validation reaching BU layer; err_code 182 reflection HTML-escaped (inert); RAG confirms no public BU-id (62^15 keyspace, non-discriminative DB oracle) — enumeration infeasible. Last surviving pre-auth defect.
+evidence_needed: Any real 0Uv BU-id returning err_code 0/200 under Bearer `00`; or matrix shift to 404/198 under Bearer (consolidation completes).
+verify_steps: Passive per cycle: GET /api?method=getVersion no-auth (401/49) → Bearer `00` (400/181) → Bearer `00`+fabricated 0Uv (403/201). Watch for 200/records or status shift.
+impact: With a real BU-id: full cross-tenant read of prospects/campaigns/emails/visitors PII. HIGH, gate-blocked.
+testability: PASSIVE
+
+[HYP] Smartcard backend recovery restores versioned smartcard auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 ~108h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); no framework fingerprint; null origin vhost hypothesis exhausted; duration points to infra/deprovisioning rather than transient.
+evidence_needed: Any non-502 (200/401/403/JSON) on any versioned path.
+verify_steps: GET /api/v1/health && /api/v1/cards && /api/v1/auth once per cycle (1 rps).
+impact: token/card auth endpoints testable for broken auth/IDOR → credentials/PHI. HIGH if live.
+testability: PASSIVE
+
+[HYP] v5+ dual-path auth tier persists; any shift signals hardening consolidation
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Credential-presence reject now verified GLOBAL (all 12 resources + 4 non-resource paths → 404/198 under any credential; 401/49 with none). Prior observed down/reactivate cycle makes tier liveness itself the change signal; consolidation to uniform 401 would confirm hardening drift worth re-reporting.
+evidence_needed: Any v5+ path with credential returning ≠404/198, or a credential-less path returning ≠401/49; or tier re-disabling.
+verify_steps: GET /api/v5/prospects no-auth (expect 401/49) + Bearer `00` (expect 404/198) — 2 req/cycle.
+impact: Detection-only: shows unauthorized-read gap when gate logic shifts. MED (sentinel).
+testability: PASSIVE
+
+## STEP 4 — SELF-CRITIQUE
+- [PARKED] v5+ non-resource credential handlers: FALSIFIED this cycle — global pre-routing reject, no distinct handler map.
+- [PARKED] Root BU-id enumeration: non-discriminative DB oracle + 62^15 keyspace + no public BU-id after RAG → infeasible.
+- [PARKED] err_code 182 XML/metachar reflection: response HTML-escaped (`&lt;br/&gt;`), inert; also descriptive-error class is out of scope.
+- [FINAL] root drift sentinel (55) > smartcard recovery (45) = v5+ liveness sentinel (45).
+
+## STEP 5 — NEXT ACTION
+[NEXT] PROBE: one per cycle — `curl -sS --max-time 8 -w "%{http_code}" https://api.smartcard.elringklinger.com/api/v1/cards` ; status≠502 is the only recovery trigger worth a write-up this cycle.
+
+## STEP 6 — LEARNING
+- [LEARN] REJECTED AUTH @ go.events.elringklinger.com/api/v5+: version/limits/jobs/alerts under api_key=0 → identical 404/198 to resources; credential-presence reject is global, route-scoped router hypothesis falsified.
+- [LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api?method=: err_code 182 reflects provided BU-id HTML-escaped (`0Uv<br/>x`→`0Uv&lt;br/&gt;x`) — descriptive-error class, inert, closes last format angle.
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: token-skip + BU gate re-verified no-drift (401/49 JSON ↔ 403/201 XML); root is last surviving pre-auth flaw.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: 502 ~108h+ on /api/v1/health + /api/v1/cards; nginx gateway live; no recovery signal.
+- [LEARN] REJECTED OTHER @ elringklinger infra hosts: aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap all dead (timeout/refused) — 10/13 hosts blocked persists.
+- [LEARN] REJECTED OTHER @ go.events.elringklinger.com: Web RAG finds no public ElringKlinger 0Uv BU-id (Salesforce-admin-only); gate structurally locked.
+
+## STEP 7 — RISK
+[RISK] elringklinger: 68/100 — Steady-state saturation. Root token-skip (already filed) re-verified no-drift; BU-id gate now confirmed infeasible on 3 axes (non-discriminative oracle, base62 keyspace, no public BU-id source). v5+ router hypothesis falsified (global reject). Smartcard degraded 108h+ (recovery = highest remaining trigger). 10/13 hosts firewalled. No new reportable finding; residual value is drift/recovery change-detection only.
