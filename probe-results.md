@@ -606,3 +606,17 @@ https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/beta/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+
+## 2026-09-12 13:17:33 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v2/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v3/prospects -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/beta/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+https://go.events.elringklinger.com/api?api_key=test&method=getCampaigns&format=json -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getProspects&format=json -> HTTP 405
+https://go.events.elringklinger.com/api?api_key=test&method=getEmails&format=json -> HTTP 405
+https://edi2.elringklinger.com/ -> ERR <urlopen error timed out>

@@ -857,3 +857,27 @@
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+
+## RANKED HYPOTHESES 2026-09-12 13:17:06 UTC
+- [75] go.events.elringklinger.com/api?method=: Pardot Legacy BU-ID Enumeration via Error Code Discrimination (from art/lead_nemotron3.txt)
+- [68] go.events.elringklinger.com: EDI endpoint cross-tenant document access via IDOR (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: Test Smartcard API versioned endpoints with exact requests:
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" && GET https
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Versioned endpoints likely exist based on 404 at root. Auth systems are high-value targets per directives.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com: Pardot API error discrimination confirms method-level authorization logic. Enumeration may reveal accessible en
+- LEARN: ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
+- LEARN: REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
+- LEARN: REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only:
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~106h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only:
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU heade
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~106h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
