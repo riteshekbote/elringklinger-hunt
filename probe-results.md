@@ -587,3 +587,12 @@ https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/beta/ -> HTTP 502
 https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+
+## 2026-09-12 05:08:22 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/beta/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
+https://go.events.elringklinger.com/api/v1/prospects?format=json -> HTTP 401
