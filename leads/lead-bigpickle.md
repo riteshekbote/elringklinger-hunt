@@ -2126,3 +2126,4 @@ testability: AUTH_HELPED
 [RISK] elringklinger: 65/100. Surface is moderate — 13 dedicated hosts, 3 with HTTP responses, 1 API endpoint returning 404 (likely versioned). Program scope is broad ("all company-owned infrastructure") but discoverable attack surface is limited to:
 [NEW] `api.smartcard.elringklinger.com/api/v1/` returns HTTP 502 — live backend, versioned path confirmed
 [NEW] `go.events.elringklinger.com/api` returns HTTP 405 with method-specific error codes (1 vs 49) — Pardot API live
+## 2026-09-12 00:39:57 UTC [target] (model bigpickle)

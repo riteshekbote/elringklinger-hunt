@@ -190,3 +190,9 @@
 - 2026-09-11 ACCEPTED IDOR @ edi2.elringklinger.com: EDI/B2B systems are documented IDOR hotspots. Multi-tenant document exchange fits program scope.
 - 2026-09-11 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
 - 2026-09-11 REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
+- 2026-09-12 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). Format split by auth state.
+- 2026-09-12 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- 2026-09-12 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~106h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-12 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- 2026-09-12 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+- 2026-09-12 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.

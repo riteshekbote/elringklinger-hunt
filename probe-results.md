@@ -579,3 +579,11 @@ https://go.events.elringklinger.com/api?api_key=test&format=json&version=2` -> H
 https://go.events.elringklinger.com/api?api_key=test&method=getProspects` -> HTTP 405
 https://go.events.elringklinger.com/api?user_key=test&api_key=test` -> HTTP 405
 https://go.events.elringklinger.com/?pi_campaign=testcampaign` -> 200 len=210503
+
+## 2026-09-12 00:42:58 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v2/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/beta/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/health -> HTTP 502
