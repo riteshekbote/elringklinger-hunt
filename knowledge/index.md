@@ -213,3 +213,7 @@
 - 2026-09-13 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - 2026-09-13 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
 - 2026-09-13 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — 401/49 (JSON) → 400/181 → 403/201 (XML); token-skip + status differentiation intact; no drift.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00`→404/198, no-auth→401/49; dual-path leak stable; 12 endpoints live.
+- 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~112h+ on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
+- 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~110h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
