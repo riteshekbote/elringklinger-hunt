@@ -223,3 +223,6 @@
 - 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 - 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~114h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-13 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported by evidence — oracle non-discriminative across sampled space (suffixes to 10^11); [75] re-rank is stale-evidence outlier, not a live lead.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes) → Bearer `00` 400/err_code:181 (XML) → Bearer+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198} on /api/v5/prospects; dual-path leak intact; 12 endpoints live; no drift.
+- 2026-09-13 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; nemotron3 [75] re-rank is stale-evidence outlier, not a live lead.
