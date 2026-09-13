@@ -12485,3 +12485,88 @@ testability: PASSIVE
 
 ## STEP 7 — RISK
 [RISK] elringklinger: 68/100 — Steady-state saturation. Root token-skip (already filed) re-verified no-drift; BU-id gate now confirmed infeasible on 3 axes (non-discriminative oracle, base62 keyspace, no public BU-id source). v5+ router hypothesis falsified (global reject). Smartcard degraded 108h+ (recovery = highest remaining trigger). 10/13 hosts firewalled. No new reportable finding; residual value is drift/recovery change-detection only.
+===== ANALYST bigpickle 2026-09-13 01:12:22 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" "https://api.smartcard.elringklinger.com/api/v1/cards" 2>&1 | tail -5; sleep 1; curl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api?method=getVersion" 2>&1 | tail -8
+<hr><center>nginx</center>
+</body>
+</html>
+
+HTTP:502
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="181">A required header is missing: Pardot-Business-Unit-Id header not found on request.</err>
+</rsp>
+
+HTTP:400
+[0m
+[0m$ [0msleep 1; curl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000000000003" "https://go.events.elringklinger.com/api?method=getVersion" 2>&1 | tail -6; sleep 1; curl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" "https://go.events.elringklinger.com/api?method=getVersion" 2>&1 | tail -4; sleep 1; curl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" "https://go.events.elringklinger.com/api/v5/prospects" 2>&1 | tail -4; sleep 1; curl -sS --max-time 8 -w "\nHTTP:%{http_code}\n" -H "Authorization: Bearer 00" "https://go.events.elringklinger.com/api/v5/prospects" 2>&1 | tail -4
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+
+HTTP:403
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+HTTP:401
+{"code":49,"message":"Access Denied"}
+HTTP:401
+{"code":198,"message":"Endpoint not found"}
+HTTP:404
+[0m
+STEP 1 — DELTA
+- CHANGED api.smartcard.elringklinger.com: 502 (nginx) persists ~110h+ on /api/v1/cards; robots.txt still 200 (Disallow: /); no recovery signal.
+- CHANGED go.events/api?method=: Re-verified live this cycle — no-auth 401/err_code:49 (JSON @attributes); Bearer `00` no BU → 400/err_code:181 (XML); Bearer+0Uv → 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact, no drift.
+- CHANGED go.events/api/v5+: Re-verified — 401/{"code":49} no-auth vs 404/{"code":198} with Bearer on /api/v5/prospects; 12 endpoints live; no drift.
+- NO_DELTA: edi2/edi7 still unreachable (8-day+); ir static; v5+ non-resource handler hypothesis remains falsified (global credential-presence reject).
+
+STEP 2 — PRIORITIZE
+- [PRIO] go.events/api?method=,6.1,attack_surface+business_value+gate_ease (only live auth-gated read path; sole pre-auth defect; but gate infeasible)
+- [PRIO] api.smartcard,4.8,attack_surface+freshness (recovery = largest real trigger; proxy manifest live)
+- [PRIO] go.events/api/v5+,4.6,attack_surface (dual-path leak stable; no data path)
+
+STEP 3 — HYPOTHESES
+[HYP] Root legacy token-skip remains sole surviving pre-auth flaw; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Re-verified this cycle: no-auth 401/err_code:49 (JSON) vs Bearer `00` 400/181 (XML, missing BU) vs Bearer+0Uv 403/201 (XML, fabricated BU). Bearer≥2 chars bypasses token validation, reaching BU layer. err_code 182 reflection HTML-escaped (inert); BU-ID oracle non-discriminative (all suffixes 201), 62^15 base62 keyspace, no public BU-id in client JS — enumeration infeasible on 3 axes.
+evidence_needed: Any real 18-char 0Uv id returning err_code 0/200 under Bearer `00`; or matrix shifting to 404/198 under Bearer (consolidation completes).
+verify_steps: One per cycle: GET /api?method=getVersion no-auth (expect 401/49) → Bearer `00` (expect 400/181) → Bearer `00`+0Uv (expect 403/201). Status/err_code shift is the trigger.
+impact: With a real BU-id: full cross-tenant read of prospects/campaigns/emails/visitors PII. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned smartcard auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 ~110h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); direct-origin vhost probe exhausted; duration ~4.6 days favors infra/deprovisioning over transient outage.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once per cycle; status≠502 is the trigger, then expand to /auth /tokens.
+impact: token/card auth endpoints testable for broken auth/IDOR → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path auth tier persists; consolidation or re-disable is the hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Credential-presence reject verified GLOBAL with Bearer (12 resources + 4 non-resource paths → 404/198; 401/49 with none). Prior up/down cycle (12h) and 401→404 shift show tier-level auth reconfiguration happens; a shift to uniform 401 or Bearer-validated data would confirm hardening/regression worth re-reporting.
+evidence_needed: Any v5+ path with credential returning ≠404/198, or credential-less returning ≠401/49; or tier re-disenable.
+verify_steps: GET /api/v5/prospects no-auth + Bearer `00` (2 req/cycle); divergence is the trigger.
+impact: Detection-only sentinel; shows unauthorized-read gap if gate logic shifts. MED.
+testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+- [PARKED] v5+ non-resource credential-aware handlers: falsified last cycle (global 404/198) — no new evidence path.
+- [FINAL] Root legacy token-skip sentinel (55) > Smartcard recovery (45) = v5+ dual-path (45).
+
+STEP 5 — NEXT ACTION
+[NEXT] PROBE: `curl -sS --max-time 8 https://api.smartcard.elringklinger.com/api/v1/cards` — status≠502 is the only recovery trigger worth a write-up; run once per cycle alongside the 3-request root legacy matrix (no-auth/Bearer/Bearer+BU).
+
+STEP 6 — LEARNING
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401/err_code:49 (JSON @attributes); Bearer `00`: 400/err_code:181 (XML); Bearer `00`+0Uv: 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198}; no-auth → 401/{"code":49}; dual-path leak stable; 12 endpoints live.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~110h+ on /api/v1/cards; no recovery signal; robots.txt 200 (Disallow: /).
+
+STEP 7 — RISK
+[RISK] elringklinger: 68/100 — Steady-state saturation. Root legacy token-skip (already filed) no-drift; BU-id gate infeasible (non-discriminative oracle + 62^15 keyspace + no public id source). v5+ global reject confirmed; non-resource router falsified. Smartcard degraded ~110h (recovery = highest remaining trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.

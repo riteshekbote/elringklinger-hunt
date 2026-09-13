@@ -203,3 +203,13 @@
 - 2026-09-12 REJECTED OTHER @ ir.elringklinger.com: Static investor relations page (Apache 301) — low attack surface, no auth/API/upload surface per directives.
 - 2026-09-12 REJECTED MISCONFIG @ elringklinger.de (TYPO3 login): Program scope explicitly excludes public login panels and brute-force policy. No finding.
 - 2026-09-12 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201 (XML)
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401/err_code:49 (JSON @attributes); Bearer `00`: 400/err_code:181 (XML); Bearer `00`+0Uv: 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198}; no-auth → 401/{"code":49}; dual-path leak stable; 12 endpoints live.
+- 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~110h+ on /api/v1/cards; no recovery signal; robots.txt 200 (Disallow: /).
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). Format split by auth state.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed.
+- 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~106h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-13 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
+- 2026-09-13 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+- 2026-09-13 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.

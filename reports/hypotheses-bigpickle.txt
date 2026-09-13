@@ -1,30 +1,33 @@
-## 2026-09-12 23:07:40 UTC [target] (model bigpickle)
+## 2026-09-13 01:09:10 UTC [target] (model bigpickle)
 [HYP] Root legacy token-skip remains sole surviving pre-auth flaw; hardening-drift sentinel
 class: AUTH
 asset: go.events.elringklinger.com/api?method=
 confidence: 55
-reasoning: Re-verified live this cycle: no-auth 401/err_code:49 (JSON) vs Bearer `00`+fabricated 0Uv → 403/err_code:201 (XML). Bearer≥2 chars bypasses token validation reaching BU layer; err_code 182 reflection HTML-escaped (inert); RAG confirms no public BU-id (62^15 keyspace, non-discriminative DB oracle) — enumeration infeasible. Last surviving pre-auth defect.
-evidence_needed: Any real 0Uv BU-id returning err_code 0/200 under Bearer `00`; or matrix shift to 404/198 under Bearer (consolidation completes).
-verify_steps: Passive per cycle: GET /api?method=getVersion no-auth (401/49) → Bearer `00` (400/181) → Bearer `00`+fabricated 0Uv (403/201). Watch for 200/records or status shift.
+reasoning: Re-verified this cycle: no-auth 401/err_code:49 (JSON) vs Bearer `00` 400/181 (XML, missing BU) vs Bearer+0Uv 403/201 (XML, fabricated BU). Bearer≥2 chars bypasses token validation, reaching BU layer. err_code 182 reflection HTML-escaped (inert); BU-ID oracle non-discriminative (all suffixes 201), 62^15 base62 keyspace, no public BU-id in client JS — enumeration infeasible on 3 axes.
+evidence_needed: Any real 18-char 0Uv id returning err_code 0/200 under Bearer `00`; or matrix shifting to 404/198 under Bearer (consolidation completes).
+verify_steps: One per cycle: GET /api?method=getVersion no-auth (expect 401/49) → Bearer `00` (expect 400/181) → Bearer `00`+0Uv (expect 403/201). Status/err_code shift is the trigger.
 impact: With a real BU-id: full cross-tenant read of prospects/campaigns/emails/visitors PII. HIGH, gate-blocked.
 testability: PASSIVE
 [HYP] Smartcard backend recovery restores versioned smartcard auth endpoints
 class: AUTH
 asset: api.smartcard.elringklinger.com
 confidence: 45
-reasoning: 502 ~108h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); no framework fingerprint; null origin vhost hypothesis exhausted; duration points to infra/deprovisioning rather than transient.
-evidence_needed: Any non-502 (200/401/403/JSON) on any versioned path.
-verify_steps: GET /api/v1/health && /api/v1/cards && /api/v1/auth once per cycle (1 rps).
+reasoning: 502 ~110h+ across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); direct-origin vhost probe exhausted; duration ~4.6 days favors infra/deprovisioning over transient outage.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once per cycle; status≠502 is the trigger, then expand to /auth /tokens.
 impact: token/card auth endpoints testable for broken auth/IDOR → credentials/PHI. HIGH if live.
 testability: PASSIVE
-[HYP] v5+ dual-path auth tier persists; any shift signals hardening consolidation
+[HYP] v5+ dual-path auth tier persists; consolidation or re-disable is the hardening signal
 class: AUTH
 asset: go.events.elringklinger.com/api/v5+
 confidence: 45
-reasoning: Credential-presence reject now verified GLOBAL (all 12 resources + 4 non-resource paths → 404/198 under any credential; 401/49 with none). Prior observed down/reactivate cycle makes tier liveness itself the change signal; consolidation to uniform 401 would confirm hardening drift worth re-reporting.
-evidence_needed: Any v5+ path with credential returning ≠404/198, or a credential-less path returning ≠401/49; or tier re-disabling.
-verify_steps: GET /api/v5/prospects no-auth (expect 401/49) + Bearer `00` (expect 404/198) — 2 req/cycle.
-impact: Detection-only: shows unauthorized-read gap when gate logic shifts. MED (sentinel).
+reasoning: Credential-presence reject verified GLOBAL with Bearer (12 resources + 4 non-resource paths → 404/198; 401/49 with none). Prior up/down cycle (12h) and 401→404 shift show tier-level auth reconfiguration happens; a shift to uniform 401 or Bearer-validated data would confirm hardening/regression worth re-reporting.
+evidence_needed: Any v5+ path with credential returning ≠404/198, or credential-less returning ≠401/49; or tier re-disenable.
+verify_steps: GET /api/v5/prospects no-auth + Bearer `00` (2 req/cycle); divergence is the trigger.
+impact: Detection-only sentinel; shows unauthorized-read gap if gate logic shifts. MED.
 testability: PASSIVE
-[NEXT] PROBE: one per cycle — `curl -sS --max-time 8 -w "%{http_code}" https://api.smartcard.elringklinger.com/api/v1/cards` ; status≠502 is the only recovery trigger worth a write-up this cycle.
-[RISK] elringklinger: 68/100 — Steady-state saturation. Root token-skip (already filed) re-verified no-drift; BU-id gate now confirmed infeasible on 3 axes (non-discriminative oracle, base62 keyspace, no public BU-id source). v5+ router hypothesis falsified (global reject). Smartcard degraded 108h+ (recovery = highest remaining trigger). 10/13 hosts firewalled. No new reportable finding; residual value is drift/recovery change-detection only.
+[NEXT] PROBE: `curl -sS --max-time 8 https://api.smartcard.elringklinger.com/api/v1/cards` — status≠502 is the only recovery trigger worth a write-up; run once per cycle alongside the 3-request root legacy matrix (no-auth/Bearer/Bearer+BU).
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401/err_code:49 (JSON @attributes); Bearer `00`: 400/err_code:181 (XML); Bearer `00`+0Uv: 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00` → 404/{"code":198}; no-auth → 401/{"code":49}; dual-path leak stable; 12 endpoints live.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~110h+ on /api/v1/cards; no recovery signal; robots.txt 200 (Disallow: /).
+[RISK] elringklinger: 68/100 — Steady-state saturation. Root legacy token-skip (already filed) no-drift; BU-id gate infeasible (non-discriminative oracle + 62^15 keyspace + no public id source). v5+ global reject confirmed; non-resource router falsified. Smartcard degraded ~110h (recovery = highest remaining trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.

@@ -417,3 +417,10 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com: Backend 502 now ~106h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+
+## 2026-09-13 01:12:22 UTC
+- NEW go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier now returns err_code:198 ("Endpoint not found") for BOTH Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bea
+- NEW go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth sta
+- CHANGED api.smartcard.elringklinger.com: Backend 502 now ~106h+ on /api/v1/; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
