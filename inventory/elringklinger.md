@@ -450,3 +450,13 @@ www.elringklinger.com
 - NEW edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201
+
+## 2026-09-13 21:23:09 UTC
+- CHANGED RAG re-rank 19:03:46: nemotron3 "Pardot Legacy BU-ID Enumeration via Error Code Discrimination" [75] now ranks above bigpickle token-skip sentinel [55] — same asset/oracle, no new datapoint supporting
+- CHANGED api.smartcard.elringklinger.com backend outage counter ~110h→~114h+; no recovery datapoint (all entries still 502/robots.txt 200).
+- NEW go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier confirmed pre-routing Bearer reject — err_code:198 for both Bearer-only and Bearer+BU; BU header no effect (first observed 2026-09-12)
+- NEW go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth sta
+- NEW api.smartcard.elringklinger.com: Backend 502 ~114h+ on /api/v1/cards; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- NEW edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201

@@ -222,3 +222,4 @@
 - 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); token-skip + HTTP-status differentiation intact; no drift.
 - 2026-09-13 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 - 2026-09-13 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~114h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-13 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported by evidence — oracle non-discriminative across sampled space (suffixes to 10^11); [75] re-rank is stale-evidence outlier, not a live lead.

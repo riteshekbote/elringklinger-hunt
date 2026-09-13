@@ -2597,3 +2597,44 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~114h+ on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
 [RISK] elringklinger: 68/100 — Steady-state saturation. All 6 matrix probes matched expected codes; token-skip no-drift (55); BU-id gate infeasible (3 axes); v5+ reject stable; smartcard degraded ~114h (recovery = sole new-finding trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
+## 2026-09-13 21:22:06 UTC [target] (model bigpickle)
+[CHANGED] RAG re-rank 19:03:46: nemotron3 "Pardot Legacy BU-ID Enumeration via Error Code Discrimination" [75] now ranks above bigpickle token-skip sentinel [55] — same asset/oracle, no new datapoint supporting enumeration in KB.
+[CHANGED] api.smartcard.elringklinger.com backend outage counter ~110h→~114h+; no recovery datapoint (all entries still 502/robots.txt 200).
+[PRIO] go.events.elringklinger.com/api?method=,5.7,broken-auth primitive+CRM PII
+[PRIO] go.events.elringklinger.com/api/v5+,5.3,cross-tenant gate sentinel
+[PRIO] api.smartcard.elringklinger.com,4.95,recovery-gated card/token auth
+[HYP] Root legacy token-skip remains sole pre-auth flaw; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: KB 19:03:46 + this cycle re-verify no-auth 401/err_code:49 (JSON @attributes), Bearer `00`→400/181 (XML), Bearer+0Uv000000000000001→403/201 (XML). Bearer≥2 chars still skips token validation to reach BU layer; headers constant; format split by auth state.
+evidence_needed: Any real 0Uv id → err_code 0/200; or Bearer path shift to 404/198 (pre-routing reject migration), which is the hardening signal.
+verify_steps: GET /api?method=getVersion {no-auth, Bearer `00`, Bearer+0Uv000000000000001} — 3 req/cycle; divergence from 401/400/403 chain is trigger.
+impact: With real BU-id: cross-tenant PII read (prospects/emails/visitors). HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; consolidation/re-disable is the hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Stable no-auth 401/{"code":49} vs Bearer `00`→404/{"code":198} on /api/v5/prospects (12 endpoints); v1-v4 in parallel confirmed pre-routing Bearer reject (198 regardless of BU header). Prior up/down and 401→404 shifts prove tier reconfig occurs.
+evidence_needed: Any credentialed path ≠404/198 or credential-less ≠401/49; or tier re-disable (198 no-auth).
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle; divergence is trigger.
+impact: Sentinel; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 ~114h+ (~4.75d) on /api/v1/cards; nginx gateway live (robots.txt 200 Disallow:/); estate-wide outage incl. CloudFront sibling; ~115h duration favors permanent deprovisioning but recovery is sole new-finding trigger.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path of either host.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens on change.
+impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[PARKED] nemotron3 BU-ID enumeration [75]: contradicted by 10 days of my own oracle probes — 0Uv000000000000000→0Uv000100000000000 (suffix axes 1..10^11) all identical 403/err_code:201; no discriminating error code exists in sampled space. No new evidence in KB supports re-rank.
+[FINAL] 3 survivors retained (token-skip 55, v5+ 45, smartcard 45) — all ≥40, PASSIVE, with concrete verify steps.
+[NEXT] PROBE: 6-req/cycle steady-state matrix ≤1rps — (1) GET /api?method=getVersion no-auth [expect 401/49 JSON], (2) same + Bearer `00` [400/181 XML], (3) same + Bearer `00` + Pardot-Business-Unit-Id: 0Uv000000000000001 [403/201 XML], (4) GET /api/v5/prospects no-auth [401/{"code":49}], (5) same + Bearer `00` [404/{"code":198}], (6) GET /api/v1/cards [502]. Any divergence from expected states → write-up; else append no-drift LEARN.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~114h+ on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
+[LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported by evidence — oracle non-discriminative across sampled space (suffixes to 10^11); [75] re-rank is stale-evidence outlier, not a live lead.
+[RISK] elringklinger: 68/100 — Steady-state saturation sustained. All 6 matrix states matched expected codes; token-skip no-drift (55); BU-id gate infeasible (oracle non-discriminative, now contradicts nemotron [75]); v5+ reject stable; smartcard estate-wide 502 (~114h) with recovery as sole new-finding trigger; edi2/7 inert 8d. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.

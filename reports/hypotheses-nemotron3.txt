@@ -1,4 +1,4 @@
-## 2026-09-13 19:02:46 UTC [target] (model nemotron3)
+## 2026-09-13 21:22:58 UTC [target] (model nemotron3)
 [NEW] go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier confirmed pre-routing Bearer reject — err_code:198 for both Bearer-only and Bearer+BU; BU header no effect (first observed 2026-09-12)
 [NEW] go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth state stable
 [NEW] api.smartcard.elringklinger.com: Backend 502 ~114h+ on /api/v1/cards; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
