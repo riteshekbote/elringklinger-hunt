@@ -2496,3 +2496,41 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00`→404/198, no-auth→401/49; dual-path leak stable; 12 endpoints live.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~112h+ on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
 [RISK] elringklinger: 68/100 — Steady-state saturation. All 5 probes matched expected matrices; token-skip no-drift; BU-id gate infeasible (3 axes); v5+ router falsified; Smartcard degraded ~112h (recovery = sole remaining new-finding trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
+## 2026-09-13 12:07:01 UTC [target] (model bigpickle)
+[PRIO] go.events/api?method=,4.4,auth,gate+token-skip,businessvalue,Pardot PII
+[PRIO] go.events/api/v5+,4.2,dual-path-leak,sentinel
+[PRIO] api.smartcard/api/v1/*,3.9,recovery-sentinel,health/PHI
+[HYP] Root legacy token-skip remains sole pre-auth flaw; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Re-verified this cycle — no-auth 401/err_code:49 (JSON), Bearer `00` 400/181 (XML), Bearer+0Uv 403/201 (XML). Bearer≥2 chars bypasses token validation reaching BU layer; BU-id oracle non-discriminative (3 falsification axes: uniform 201 across 1B+ range, 62^15 keyspace, no public id source).
+evidence_needed: Any real 0Uv id → err_code 0/200; or matrix shift to 404/198 under Bearer.
+verify_steps: Per cycle: GET /api?method=getVersion no-auth → Bearer `00` → Bearer+BU. Shift = trigger.
+impact: With real BU-id: cross-tenant PII read (prospects/emails/visitors). HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; consolidation/re-disable is the hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Re-verified — Bearer `00`→404/198, no-auth→401/49; 12 endpoints live; prior up/down cycle + 401→404 shift show tier-level auth reconfig happens; BU header no effect (pre-routing reject).
+evidence_needed: Any credentialed path ≠404/198 or credential-less ≠401/49; or tier re-disable.
+verify_steps: GET /api/v5/prospects no-auth + Bearer (2 req/cycle). Divergence is the trigger.
+impact: Sentinel only; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: 502 ~114h (~4.75d) across /api/v1|v2|beta + /auth + /tokens + /cards + /health; nginx gateway live (robots.txt 200 Disallow:/); vhost hypothesis exhausted; duration now favors deprovisioning over transient outage.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens on change.
+impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[PARKED] BU-id enumeration via error-code discrimination: falsified 3 axes (non-discriminative oracle, keyspace, no public id source).
+[FINAL] 1) Root token-skip 55 2) v5+ sentinel 45 3) Smartcard recovery 45.
+[NEXT] PROBE: `curl -sS --max-time 8 https://api.smartcard.elringklinger.com/api/v1/cards` once/cycle — status≠502 is the only recovery write-up trigger; run alongside the 3-request legacy matrix + 2-request v5 sentinel (7 requests total, <1 rps).
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — 401/49 (JSON) → 400/181 → 403/201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — Bearer `00`→404/198, no-auth→401/49; dual-path leak stable; 12 endpoints live.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~114h+ on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
+[RISK] elringklinger: 68/100 — Steady-state saturation. All probes matched expected matrices; token-skip no-drift (55); BU-id gate infeasible (3 axes); v5+ global reject stable; Smartcard degraded ~114h (recovery = sole new-finding trigger). 10/13 hosts firewalled. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
