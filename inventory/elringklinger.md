@@ -442,3 +442,11 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth sta
 - CHANGED api.smartcard.elringklinger.com: Backend 502 now ~110h+ on /api/v1/cards; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+
+## 2026-09-13 19:03:46 UTC
+- NEW go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier confirmed pre-routing Bearer reject — err_code:198 for both Bearer-only and Bearer+BU; BU header no effect (first observed 2026-09-12)
+- NEW go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth sta
+- NEW api.smartcard.elringklinger.com: Backend 502 ~114h+ on /api/v1/cards; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- NEW edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201
