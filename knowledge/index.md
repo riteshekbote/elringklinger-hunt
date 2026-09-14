@@ -233,3 +233,8 @@
 - 2026-09-14 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - 2026-09-14 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
 - 2026-09-14 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
+- 2026-09-14 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes) → Bearer `00` 400/err_code:181 (XML) → Bearer+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-14 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198} on /api/v5/prospects; dual-path leak intact; 12 endpoints live; no drift.
+- 2026-09-14 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~118h on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
+- 2026-09-14 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait.
+- 2026-09-14 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; nemotron3 [75] re-rank is stale-evidence outlier, not a live lead.

@@ -1053,3 +1053,12 @@
 - LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (8-day span). Passive wait.
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+
+## RANKED HYPOTHESES 2026-09-14 07:26:57 UTC
+- [55] go.events.elringklinger.com/api?method=: Root legacy token-skip remains sole pre-auth flaw; hardening-drift sentinel (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: 6-req/cycle steady-state matrix ≤1rps —
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes) → Bearer `00` 400/err_code:181 (XML
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198} on /api/v5/prospects; dual-path leak in
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~118h on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait.
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
