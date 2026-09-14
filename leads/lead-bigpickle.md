@@ -2773,3 +2773,31 @@ evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
 verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens on change.
 impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
 testability: PASSIVE
+## 2026-09-14 19:30:14 UTC [target] (model bigpickle)
+[HYP] Root legacy token-skip remains sole pre-auth flaw; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: 2026-09-14 probe cycle: no-auth 401/err_code:49 (JSON), Bearer `00`→400/181 (XML, BU missing), Bearer+0Uv000000000000001→403/201 (XML, BU not found). Bearer≥2 chars unconditionally bypasses token validation; error-code chain 49→181→201 proves layered auth executes post-token-skip. Stable ≥7d (first observed 09-07 status shift).
+evidence_needed: Any real 0Uv id → err_code 0/200 or data response; or Bearer path shifts to 404/198 pre-routing reject (hardening signal).
+verify_steps: GET /api?method=getVersion {no-auth, Bearer `00`, Bearer `00`+Pardot-Business-Unit-Id: 0Uv000000000000001} — 3 req/cycle, ≤1rps; divergence from 401/400/403 is trigger.
+impact: With real BU-id: cross-tenant PII read (prospects/emails/visitors). HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: /api/v1/cards 502 (nginx, HTTP/2, len 150) at ~120h — estate-wide backend outage; nginx gateway + HSTS/CSP security headers live. Recovery is sole new-finding trigger.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens /health on change.
+impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; consolidation/re-disable is hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: 2026-09-14: no-auth 401/{"code":49} vs Bearer `00` 404/{"code":198}; 12 endpoints live; BU header no effect. Prior 401→404 shifts (09-04/09-05) prove tier reconfig occurs; stable since reactivation.
+evidence_needed: Any credentialed path ≠404/198 or credential-less ≠401/49; or tier re-disable (198 no-auth).
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle; divergence is trigger.
+impact: Sentinel; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
