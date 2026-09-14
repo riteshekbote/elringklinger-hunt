@@ -736,3 +736,11 @@ https://go.events.elringklinger.com/api/v2/campaigns -> HTTP 401
 
 ## 2026-09-14 07:26:57 UTC
 
+
+## 2026-09-14 14:19:52 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/auth -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502

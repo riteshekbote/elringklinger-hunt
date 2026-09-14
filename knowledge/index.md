@@ -238,3 +238,5 @@
 - 2026-09-14 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx) ~118h on /api/v1/cards; no recovery; robots.txt 200 (Disallow: /).
 - 2026-09-14 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait.
 - 2026-09-14 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; nemotron3 [75] re-rank is stale-evidence outlier, not a live lead.
+- 2026-09-14 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~118h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-14 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier, not a live lead.
