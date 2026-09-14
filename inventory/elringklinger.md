@@ -468,3 +468,5 @@ www.elringklinger.com
 - NEW edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (8-day timeout span); passive wait
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED go.events.elringklinger.com/api?method=: BU-ID oracle confirmed non-discriminative at 1M/10M/100M suffixes — all return identical HTTP 403/err_code:201
+
+## 2026-09-14 01:42:14 UTC
