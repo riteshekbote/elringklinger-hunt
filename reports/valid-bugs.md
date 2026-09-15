@@ -23,3 +23,7 @@
 - 2 lead(s) marked VALID at 2026-09-12 11:16:34 UTC
   - **VERDICT: VALID**
   - | Pardot v5 Bearer Auth Bypass | VALID | 8.6 | May be patched (404 current) |
+
+- 2 lead(s) marked VALID at 2026-09-15 01:15:21 UTC
+  - | **Q3 Impact** | YES — bypass of API authentication layer; with valid BU ID (0Uv prefix), enables unauthenticated read of prospect PII (emails, names, phone, company), campaigns, emails, visitor trac
+  - | **Q3 Impact** | NO — all 7 methods (getVersion, getCampaigns, getEmails, getLists, getTags, getVisitors, queryProspects) return 401/err_code:49 (Access Denied) or 400/181 or 403/201 with fabricated 
