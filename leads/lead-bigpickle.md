@@ -2993,3 +2993,31 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~126h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 [RISK] elringklinger: 68/100 — Steady-state saturation persists. All 6 sentinel probes matched expected chains; legacy token-skip no-drift ≥10d; BU-id gate sole barrier (oracle non-discriminative); v5+ stable; smartcard 502 ~126h; edi inert 9d. Findings remain gate-blocked — no exploit chain without real BU-id or smartcard recovery. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
+## 2026-09-15 19:51:13 UTC [target] (model bigpickle)
+[HYP] Root legacy token-skip + BU-id gate persists; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: This cycle's probes: no-auth → 401/err_code:49 (JSON @attributes); Bearer `00` → 400/err_code:181 (XML, "required header missing: Pardot-Business-Unit-Id"); Bearer `00`+fabricated 0Uv → 403/err_code:201 (XML, "not found or inactive"). Bearer≥2 chars bypasses token validation; HTTP-status 401/400/403 differentiation intact; stable ≥10d.
+evidence_needed: Any real 0Uv id → err_code 0/200 or data; or Bearer path shifts to 404/198 pre-routing reject.
+verify_steps: GET /api?method=getVersion {no-auth, Bearer `00`, Bearer `00`+BU} — 3 req/cycle, ≤1rps; divergence from 401/400/403 chain is trigger.
+impact: With real BU-id → cross-tenant prospect/email/visitor PII read. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: `/api/v1/cards` still 502 (nginx HTML) this cycle; robots.txt 200 (Disallow: /). ~126h outage. Recovery is the sole trigger for token/card auth endpoint testing.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens /health on change.
+impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; re-disable or auth-shift is the hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: This cycle: no-auth 401/{"code":49} vs Bearer `00` 404/{"code":198} on /api/v5/prospects; BU header no effect (pre-routing reject); 12 endpoints live; stable since reactivation (~09-05).
+evidence_needed: Any credentialed path ≠404/198 or credential-less ≠401/49; or tier re-disable (198 no-auth).
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle; divergence is trigger.
+impact: Sentinel only; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE

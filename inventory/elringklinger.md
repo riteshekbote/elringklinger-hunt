@@ -498,3 +498,10 @@ www.elringklinger.com
 ## 2026-09-15 11:55:39 UTC
 
 ## 2026-09-15 16:36:51 UTC
+
+## 2026-09-15 20:01:57 UTC
+- CHANGED go.events.elringklinger.com/api?method=: No-auth response format confirmed shifted to JSON @attributes (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by 
+- CHANGED go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 for BOTH Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift 98h+
+- CHANGED api.smartcard.elringklinger.com: Backend 502 (nginx) ~126h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait
