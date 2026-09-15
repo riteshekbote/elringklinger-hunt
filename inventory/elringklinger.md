@@ -505,3 +505,5 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift 98h+
 - CHANGED api.smartcard.elringklinger.com: Backend 502 (nginx) ~126h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait
+
+## 2026-09-15 22:59:31 UTC
