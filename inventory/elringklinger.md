@@ -483,3 +483,12 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED api.smartcard.elringklinger.com: Backend 502 ~118h+ across all versioned paths; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
 - CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (9-day timeout span); passive wait
+
+## 2026-09-15 01:21:56 UTC
+- CHANGED go.events.elringklinger.com/api?method=: No-auth response format shifted to JSON `@attributes` (401/err_code:49) vs XML for Bearer paths (400/err_code:181, 403/err_code:201) — format split by auth sta
+- CHANGED go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 for BOTH Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed
+- CHANGED go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- CHANGED api.smartcard.elringklinger.com: Backend 502 ~118h+ across all versioned paths; nginx gateway live, robots.txt 200 (Disallow: /); no recovery signal
+- CHANGED edi2.elringklinger.com, edi7.elringklinger.com: Still unreachable (9-day timeout span); passive wait
+- CHANGED go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-id
+- CHANGED go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant a
