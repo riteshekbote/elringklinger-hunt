@@ -257,3 +257,7 @@
 - 2026-09-15 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401/err_code:49 (JSON @attributes) → Bearer `00` 400/err_code:181 (XML) → Bearer+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
 - 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML, 150B) ~124h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~122h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-15 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-15 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00`→404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
+- 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~126h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~124h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
