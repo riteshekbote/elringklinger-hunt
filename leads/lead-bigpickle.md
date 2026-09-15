@@ -2876,3 +2876,42 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~122h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 [RISK] elringklinger: 68/100 — Steady-state saturation persists. All 6 sentinel probes matched expected chains; legacy token-skip no-drift ≥8d; BU-id gate sole barrier (oracle non-discriminative); v5+ stable; smartcard 502 ~122h; edi inert 9d. Two submitted findings (legacy token-skip, v5+ dual-path auth leak) remain gate-blocked — no exploit chain without real BU-id or smartcard recovery. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
+## 2026-09-15 06:13:39 UTC [target] (model bigpickle)
+[PRIO] go.events.elringklinger.com/api?method=,8.25,attack_surface=9 business_value=9 tech_exposure=7 gate_ease=6 cloud_surface=7 freshness=8
+[PRIO] api.smartcard.elringklinger.com,7.0,attack_surface=6 business_value=9 tech_exposure=5 gate_ease=2 cloud_surface=6 freshness=3
+[PRIO] go.events.elringklinger.com/api/v5+,6.5,attack_surface=7 business_value=8 tech_exposure=6 gate_ease=3 cloud_surface=5 freshness=7
+[HYP] Root legacy token-skip + BU-id gate persists; hardening-drift sentinel
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Probed this cycle: no-auth → 401 (JSON); Bearer `00` → 400/err_code:181 (XML); Bearer `00`+0Uv000000000000001 → 403/err_code:201 (XML). Token layer unconditionally bypassed by Bearer≥2 chars; error-chain 49→181→201 intact; stable ≥8d, no drift.
+evidence_needed: Any real 0Uv id → err_code 0/200 or data; or Bearer path shifts to 404/198 pre-routing reject.
+verify_steps: GET /api?method=getVersion {no-auth, Bearer `00`, Bearer `00`+BU-id} — 3 req/cycle, ≤1rps; divergence from 401/400/403 is trigger.
+impact: With real BU-id → cross-tenant prospect/email/visitor PII read. HIGH, gate-blocked.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: /api/v1/cards this cycle still 502 nginx (HTML 502, 150-byte body). Estate-wide outage via nginx gateway; robots.txt 200 (Disallow: /). ~122h duration favors deprovision, but recovery is sole new-finding trigger.
+evidence_needed: Any non-502 (200/401/403/JSON body) on any versioned path.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens /health on change.
+impact: token/card auth endpoints testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; re-disable or auth-shift is the hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: This cycle: no-auth 401/{"code":49} vs Bearer `00` 404/{"code":198} on /api/v5/prospects; 12 endpoints confirmed; BU header no effect (pre-routing reject). Stable since reactivation (~09-05).
+evidence_needed: Any credentialed path ≠404/198 or credential-less ≠401/49; or tier re-disable (198 no-auth).
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle; divergence is trigger.
+impact: Sentinel only; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
+[PARKED] Pardot BU-ID enumeration via err_code — oracle proven non-discriminative to 10^11; no live lead.
+[PARKED] edi2/edi7 EDI IDOR — 9-day unreachable, passive wait only.
+[FINAL] 1) legacy token-skip sentinel [55]; 2) smartcard recovery [45]; 3) v5+ drift sentinel [45].
+[NEXT] PROBE: same 6-req steady-state matrix next cycle (legacy 3-state, v5 2-state, smartcard /api/v1/cards); divergence from 401/400/403 + 401/404 + 502 chain is the only trigger.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401 (JSON) → Bearer `00` 400/err_code:181 (XML) → Bearer+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
+[LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~122h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
+[RISK] elringklinger: 68/100 — Steady-state saturation persists. All 6 sentinel probes matched expected chains; legacy token-skip no-drift ≥8d; BU-id gate sole barrier (oracle non-discriminative); v5+ stable; smartcard 502 ~122h; edi inert 9d. Two submitted findings (legacy token-skip, v5+ dual-path auth leak) remain gate-blocked — no exploit chain without real BU-id or smartcard recovery. Residual value is drift/recovery change-detection only; no new reportable finding this cycle.
