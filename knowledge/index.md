@@ -262,3 +262,11 @@
 - 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~126h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~124h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-15 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~126h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). Format split by auth state.
+- 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed.
+- 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- 2026-09-16 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~126h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-16 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait.
+- 2026-09-16 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+- 2026-09-16 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
+- 2026-09-16 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier, not a live lead.

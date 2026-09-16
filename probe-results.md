@@ -803,3 +803,11 @@ https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
 
 ## 2026-09-15 22:59:31 UTC
 
+
+## 2026-09-16 01:11:47 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/ -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/auth -> HTTP 502
+https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
