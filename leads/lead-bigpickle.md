@@ -3221,3 +3221,4 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, dual-path leak intact; 12 endpoints live; no drift.
 [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~130h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Bearer token-skip persists but is inert without a valid BU-id (non-discriminative 0Uv space to 10^11); api_key/user_key scheme strictly validated (err_code:1); v5 tier hard-rejects (198); smartcard 502 ~130h (deprovision likely); EDI unreachable 9 days. Live exposure = pre-auth response differentiation only (Info-tier).
+## 2026-09-16 22:44:49 UTC [target] (model bigpickle)

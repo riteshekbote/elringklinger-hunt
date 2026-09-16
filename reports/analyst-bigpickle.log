@@ -15113,3 +15113,15 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Bearer token-skip persists but is inert without a valid BU-id (non-discriminative 0Uv space to 10^11); api_key/user_key scheme strictly validated (err_code:1); v5 tier hard-rejects (198); smartcard 502 ~130h (deprovision likely); EDI unreachable 9 days. Live exposure = pre-auth response differentiation only (Info-tier).
+===== ANALYST bigpickle 2026-09-16 22:45:47 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcurl -s -o /tmp/p1.txt -w "P1 status=%{http_code} size=%{size_download}\n" "https://go.events.elringklinger.com/api?method=getForms"; sleep 1.1; curl -s -o /tmp/p2.txt -w "P2 status=%{http_code} size=%{size_download}\n" "https://go.events.elringklinger.com/api?method=getForms" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000"; sleep 1.1; curl -s -o /tmp/p3.txt -w "P3 status=%{http_code} size=%{size_download}\n" "https://api.smartcard.elringklinger.com/api/v1/cards"
+P1 status=401 size=79
+P2 status=403 size=184
+P3 status=502 size=150
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcat /tmp/p1.txt; echo "---"; cat /tmp/p2.txt; echo "---"; cat /tmp/p3.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

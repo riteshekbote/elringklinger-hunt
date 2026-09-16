@@ -1262,3 +1262,5 @@
 - LEARN: REJECTED AUTH @ go.events.elringklinger.com/api?method=: Pardot api_key/user_key scheme shape-drift falsified — `Pardot api_key=00,user_key=` + BU returns HTTP 
 - LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, dual-path leak intact; 12 endpoints live; no drift.
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~130h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
+
+## RANKED HYPOTHESES 2026-09-16 22:45:47 UTC
