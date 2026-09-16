@@ -509,3 +509,10 @@ www.elringklinger.com
 ## 2026-09-15 22:59:31 UTC
 
 ## 2026-09-16 01:11:40 UTC
+
+## 2026-09-16 06:13:19 UTC
+- NEW Systematic BU-ID space walk on legacy tier (1B/10B/100B suffixes: 0Uv000001000000000, 0Uv000010000000000, 0Uv000100000000000) all return HTTP 403/err_code:201 — oracle remains non-discriminative to 10
+- NEW go.events.elringklinger.com/api?method= format split confirmed live: no-auth → JSON @attributes (401/err_code:49); Bearer paths → XML (400/err_code:181, 403/err_code:201)
+- NEW go.events.elringklinger.com/api/v1-v4 pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
+- CHANGED Smartcard API backend 502 extended to ~126h+ (was ~124h); no recovery signal
+- CHANGED EDI hosts (edi2/edi7) still unreachable (9-day span); passive wait
