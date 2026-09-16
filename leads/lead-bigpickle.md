@@ -3154,3 +3154,33 @@ testability: PASSIVE
 [LEARN] REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header constant across all endpoints.
 [LEARN] REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier.
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed; token-skip exists but is inert without a valid BU-id (17,131-digit defensible space, oracle non-discriminative); smartcard backend down (deprovision likely); all live surfaces return hard auth errors. Exposure limited to pre-auth response differentiation (Info-tier).
+## 2026-09-16 16:30:17 UTC [target] (model bigpickle)
+[HYP] Legacy Pardot api_key/user_key scheme shape-drift bypass
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 40
+reasoning: Bearer scheme proven token-skipped (any ≥2 chars → BU gate). `Pardot api_key=,user_key=` scheme returns strict err_code:1, proving handler parses this scheme separately. Shape variants (empty/0/long/malformed) untested — if any drifts from err_code:1 toward 181/201, scheme-level bypass exists.
+evidence_needed: Any api_key/user_key shape yielding err_code ≠1, or reaching 181/201/200.
+verify_steps: GET /api?method=getVersion + BU header with 5 Authorization: Pardot api_key= variants (empty, `0`, `00`, 64-char, commas-only) at ≤1rps; tool-verified this cycle for `00`.
+impact: Auth bypass on legacy tier → prospect/campaign PII (PHI-adjacent). HIGH if drifted, LOW if gate persists.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 42
+reasoning: /api/v1/cards 502 ~129h; nginx gateway live so transition observable; deprovision vs outage unresolved.
+evidence_needed: any non-502 on versioned paths.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens /health on change.
+impact: token/card auth testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; auth-shift is hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: This cycle reproduced 401/49 vs 404/198; now embedded in 2-handler model covering v1-v99 + soap/rest/xmlrpc/services namespaces — more durable than v5-scoped view.
+evidence_needed: credentialed path ≠404/198, credential-less ≠401/49, or tier re-disable.
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle.
+impact: Sentinel only; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
+[NEXT] PROBE: GET /api?method=getVersion -H "Pardot-Business-Unit-Id: 0Uv000000001000000" with Authorization variants `Pardot api_key=,user_key=` (empty), `Pardot api_key=0,user_key=0`, `Pardot api_key=<64x a>,user_key=<64x a>`, `Basic Og==`, header-less api_key=00-only — 5 req ≤1rps; any divergence from 401/err_code:1 is trigger. Then GET /api/v1/cards sentinel (smartcard).
+[RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Token-skip bounded to Bearer scheme; api_key/user_key strictly validated (err_code:1); 10/10 legacy methods BU-gated (non-discriminative 0Uv space); smartcard backend 502 ~129h (deprovision likely); EDI unreachable 9+ days. Live exposure = pre-auth response differentiation only (Info-tier).

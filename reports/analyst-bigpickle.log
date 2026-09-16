@@ -14882,3 +14882,116 @@ STEP 6 — LEARNING
 STEP 7 — RISK
 
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed; token-skip exists but is inert without a valid BU-id (17,131-digit defensible space, oracle non-discriminative); smartcard backend down (deprovision likely); all live surfaces return hard auth errors. Exposure limited to pre-auth response differentiation (Info-tier).
+===== ANALYST bigpickle 2026-09-16 16:35:32 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mdate -u +%Y-%m-%dT%H:%M:%SZ
+2026-09-16T16:27:45Z
+[0m
+[0m$ [0mcurl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api?method=getForms&api_key=00' -H 'Authorization: Bearer 00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000'; sleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api?method=getUsers&api_key=00' -H 'Authorization: Bearer 00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000'; sleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api?method=getAccount&api_key=00' -H 'Authorization: Bearer 00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000'
+403 text/xml; charset=utf-8
+403 text/xml; charset=utf-8
+403 text/xml; charset=utf-8
+[0m
+[0m$ [0msleep 1.1; curl -s --max-time 15 'https://go.events.elringklinger.com/api?method=getForms&api_key=00' -H 'Authorization: Bearer 00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000' | head -c 400; echo; sleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://api.smartcard.elringklinger.com/api/v1/cards'
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="201">Business Unit specified in Pardot-Business-Unit-Id header not found or inactive.</err>
+</rsp>
+
+502 text/html
+[0m
+[0m$ [0msleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api?method=queryProspects&api_key=00&sort_by=created_at' -H 'Authorization: Bearer 00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000'; sleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api/v5/prospects' -H 'Authorization: Bearer 00'; sleep 1.1; curl -s -o /dev/null -w '%{http_code} %{content_type}\n' --max-time 15 'https://go.events.elringklinger.com/api/v5/prospects'
+403 text/xml; charset=utf-8
+404 application/json
+401 application/json
+[0m
+[0m$ [0mfor p in 'soap' 'soap/v1' 'soap/v2' 'rest' 'rest/v1' 'xml-rpc' 'xmlrpc' 'services'; do curl -s -o /dev/null -w "/api/$p -> %{http_code}\n" --max-time 12 "https://go.events.elringklinger.com/api/$p"; sleep 1.2; done
+/api/soap -> 401
+/api/soap/v1 -> 401
+/api/soap/v2 -> 401
+/api/rest -> 401
+/api/rest/v1 -> 401
+/api/xml-rpc -> 401
+/api/xmlrpc -> 401
+/api/services -> 401
+[0m
+[0m$ [0mfor p in 'soap' 'soap/v2' 'rest' 'rest/v1' 'xmlrpc' 'services'; do curl -s -o /dev/null -w "/api/$p -> %{http_code}\n" --max-time 12 "https://go.events.elringklinger.com/api/$p" -H 'Authorization: Bearer 00'; sleep 1.2; done
+/api/soap -> 404
+/api/soap/v2 -> 404
+/api/rest -> 404
+/api/rest/v1 -> 404
+/api/xmlrpc -> 404
+/api/services -> 404
+[0m
+[0m$ [0msleep 1.1; curl -s --max-time 12 'https://go.events.elringklinger.com/api/soap/v2' -H 'Authorization: Bearer 00'; echo; sleep 1.1; curl -s --max-time 12 'https://go.events.elringklinger.com/api/soap/v2'
+{"@attributes":{"stat":"fail","version":1,"err_code":198},"err":"Endpoint not found"}
+{"@attributes":{"stat":"fail","version":1,"err_code":49},"err":"Access Denied"}
+[0m
+[0m$ [0msleep 1.1; curl -s --max-time 12 -o /dev/null -w 'api_key= scheme -> %{http_code} %{content_type}\n' 'https://go.events.elringklinger.com/api?method=getVersion&api_key=00' -H 'Authorization: Pardot api_key=00, user_key=00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000'; sleep 1.1; curl -s --max-time 12 'https://go.events.elringklinger.com/api?method=getVersion&api_key=00' -H 'Authorization: Pardot api_key=00, user_key=00' -H 'Pardot-Business-Unit-Id: 0Uv000000001000000' | head -c 300
+api_key= scheme -> 401 text/xml; charset=utf-8
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="fail" version="1.0">
+   <err code="1">Invalid API key or user key</err>
+</rsp>
+[0m
+All probes complete. Composing analysis.
+
+STEP 1 — DELTA
+- NEW @ go.events/api?method=: Auth-scheme discrimination — `Authorization: Pardot api_key=00, user_key=00` → 401/err_code:1 "Invalid API key or user key" (STRICT) vs `Authorization: Bearer 00` → token-skip (181/201 chain). Token-skip is Bearer-scheme-scoped, not handler-wide.
+- NEW @ go.events/api: /api/soap, /api/soap/v1|v2, /api/rest, /api/rest/v1, /api/xml-rpc, /api/xmlrpc, /api/services all dual-path 401/49 → 404/198 in legacy @attributes format — confirms 2-handler routing (method-parser + generic-path reject); no distinct SOAP/XML-RPC surface.
+- CHANGED @ go.events/api?method=: Enumeration breadth now 10 methods (getForms/getUsers/getAccount added) — ALL uniform 403/201 at BU-gate; negative evidence for method-bypass.
+- CHANGED @ api.smartcard: /api/v1/cards still 502 (~129h).
+
+STEP 2 — PRIORITIZE
+- [PRIO] go.events.elringklinger.com/api?method=,5.60,a6/b7/t6/g4/c3/f5 — sole live auth-logic surface; scheme-scoped token-skip newly bounded, api_key/user_key scheme untested for shape-drift
+- [PRIO] api.smartcard.elringklinger.com,5.45,a7/b8/t6/g2/c3/f2 — high-value card/auth endpoints, backend 502 ~129h
+- [PRIO] go.events.elringklinger.com/api/v5+,5.15,a5/b7/t6/g3/c3/f5 — dual-path leak integral to 2-handler model, now globally confirmed
+- [PRIO] edi2.elringklinger.com,4.85,a8/b8/t7/g1/c2/f1 — EDI/B2B IDOR hotspot, unreachable 9+ days
+
+STEP 3 — HYPOTHESES
+[HYP] Legacy Pardot api_key/user_key scheme shape-drift bypass
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 40
+reasoning: Bearer scheme proven token-skipped (any ≥2 chars → BU gate). `Pardot api_key=,user_key=` scheme returns strict err_code:1, proving handler parses this scheme separately. Shape variants (empty/0/long/malformed) untested — if any drifts from err_code:1 toward 181/201, scheme-level bypass exists.
+evidence_needed: Any api_key/user_key shape yielding err_code ≠1, or reaching 181/201/200.
+verify_steps: GET /api?method=getVersion + BU header with 5 Authorization: Pardot api_key= variants (empty, `0`, `00`, 64-char, commas-only) at ≤1rps; tool-verified this cycle for `00`.
+impact: Auth bypass on legacy tier → prospect/campaign PII (PHI-adjacent). HIGH if drifted, LOW if gate persists.
+testability: PASSIVE
+[HYP] Smartcard backend recovery restores versioned auth endpoints
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 42
+reasoning: /api/v1/cards 502 ~129h; nginx gateway live so transition observable; deprovision vs outage unresolved.
+evidence_needed: any non-502 on versioned paths.
+verify_steps: GET /api/v1/cards once/cycle; expand to /auth /tokens /health on change.
+impact: token/card auth testable → credentials/PHI. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; auth-shift is hardening signal
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: This cycle reproduced 401/49 vs 404/198; now embedded in 2-handler model covering v1-v99 + soap/rest/xmlrpc/services namespaces — more durable than v5-scoped view.
+evidence_needed: credentialed path ≠404/198, credential-less ≠401/49, or tier re-disable.
+verify_steps: GET /api/v5/prospects {no-auth, Bearer `00`} — 2 req/cycle.
+impact: Sentinel only; reveals unauthorized-read gap if gate shifts. MED.
+testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+- [PARKED] Legacy method enumeration breadth: 10/10 methods uniform 403/201 this cycle — accumulated negative evidence, confidence ~34, but auth-scheme angle is the live refinement (see [HYP] 1).
+- [PARKED] BU-id oracle discrimination: REJECTED prior; sampled to 10^11, non-discriminative. No revival.
+- [FINAL] Legacy api_key/user_key shape-drift (40), Smartcard recovery (42), v5+ dual-path persistence (45).
+
+STEP 5 — NEXT ACTION
+[NEXT] PROBE: GET /api?method=getVersion -H "Pardot-Business-Unit-Id: 0Uv000000001000000" with Authorization variants `Pardot api_key=,user_key=` (empty), `Pardot api_key=0,user_key=0`, `Pardot api_key=<64x a>,user_key=<64x a>`, `Basic Og==`, header-less api_key=00-only — 5 req ≤1rps; any divergence from 401/err_code:1 is trigger. Then GET /api/v1/cards sentinel (smartcard).
+
+STEP 6 — LEARNING
+- [LEARN] ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api?method=: getForms/getUsers/getAccount uniform 403/201 — 10/10 enumerated methods BU-gated; no method bypasses the sole gate.
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Auth-scheme discrimination confirmed — `Pardot api_key=00,user_key=00` → 401/err_code:1 (strict) vs `Bearer 00` → token-skip; token-skip is Bearer-scheme-scoped.
+- [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api: /api/soap|soap/v1|soap/v2|rest|rest/v1|xml-rpc|xmlrpc|services all 401/49→404/198 (legacy @attributes) — no distinct SOAP/XML-RPC surface; 2-handler routing model (method-parser vs generic-path reject) confirmed.
+- [LEARN] ACCEPTED AUTH @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML) ~129h; no recovery.
+
+STEP 7 — RISK
+[RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Token-skip bounded to Bearer scheme; api_key/user_key strictly validated (err_code:1); 10/10 legacy methods BU-gated (non-discriminative 0Uv space); smartcard backend 502 ~129h (deprovision likely); EDI unreachable 9+ days. Live exposure = pre-auth response differentiation only (Info-tier).
