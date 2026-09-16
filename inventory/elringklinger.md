@@ -516,3 +516,5 @@ www.elringklinger.com
 - NEW go.events.elringklinger.com/api/v1-v4 pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
 - CHANGED Smartcard API backend 502 extended to ~126h+ (was ~124h); no recovery signal
 - CHANGED EDI hosts (edi2/edi7) still unreachable (9-day span); passive wait
+
+## 2026-09-16 11:50:44 UTC

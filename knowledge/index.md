@@ -273,3 +273,8 @@
 - 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); token-skip + HTTP-status differentiation intact, no drift.
 - 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact, no drift.
 - 2026-09-16 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~128h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified — no-auth 401/err_code:49 (JSON @attributes); Bearer `00` 400/err_code:181 (XML); Bearer+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-16 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12+ endpoints live; no drift.
+- 2026-09-16 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header constant across all endpoints.
+- 2026-09-16 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier.
+- 2026-09-16 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~128h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
