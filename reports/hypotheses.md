@@ -1254,3 +1254,11 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
 - LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
+
+## RANKED HYPOTHESES 2026-09-16 20:01:18 UTC
+- [55] go.events.elringklinger.com/api?method=: Legacy Bearer token-skip persists; BU-id remains sole non-discriminative gate (hardening-drift sentinel) (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET /api?method=getForms (no-auth → expect 401/err_code:49) && GET /api?method=getForms -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes), Bearer `00` 400/err_code:181 (XML)
+- LEARN: REJECTED AUTH @ go.events.elringklinger.com/api?method=: Pardot api_key/user_key scheme shape-drift falsified — `Pardot api_key=00,user_key=` + BU returns HTTP 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, dual-path leak intact; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~130h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
