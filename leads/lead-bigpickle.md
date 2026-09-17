@@ -3451,3 +3451,33 @@ impact: token/card auth surface unreachable; credential/PHI exposure only if rev
 testability: PASSIVE
 [NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion (no-auth, expect 401/err_code:49) && GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (expect 403/err_code:201) — 2 req <=1rps drift check; then GET https://api.smartcard.elringklinger.com/api/v1/cards (expect 502; any change = recovery/deprovision triage).
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Legacy token-skip [55] sole live anomaly, uniform 14/14 methods and inert (BU gate non-discriminative to 10^11, api_key strictly validated); v5 tier hard-rejects (404/198); smartcard 502 ~138h (deprovision likely); 10/13 infra hosts filtered full 15-day span; EDI down 10 days. Live exposure remains pre-auth response differentiation only (Info-tier). Sentinels carry no exploit path absent auth-state drift.
+## 2026-09-17 22:43:54 UTC [target] (model bigpickle)
+[HYP] Legacy token-skip sentinel stable; sole live anomaly, inert behind BU gate
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes, 79B); Bearer `00`+BU 0Uv000000001000000 → 403/err_code:201 (XML, 184B). 14/14 methods uniform. BU oracle non-discriminative to 10^11; api_key scheme strictly validated (200/err_code:1). Bearer≥2-char token-skip stable ~14d, inert.
+evidence_needed: non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth; GET /api?method=getVersion Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak (Salesforce tenant boundary, not enumerable). MED.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; Bearer pre-routing reject is hardening, still gating
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Re-verified — no-auth 401/{"code":49,"message":"Access Denied"} (37B) vs Bearer `00`→404/{"code":198} (43B) on /api/v5/prospects. 12 endpoints live. BU header no effect on either path. Stable since 09-05 hardening event.
+evidence_needed: non-404/198 credentialed response, non-401/49 credential-less response, or tier re-disable
+verify_steps: GET /api/v5/prospects no-auth and Bearer `00` — 2 req/cycle <=1rps
+impact: Sentinel for unauthorized-read gap if pre-routing reject removed. MED.
+testability: PASSIVE
+[HYP] Smartcard backend deprovisioned; no upstream to recover
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: /api/v1/cards 502 stock-nginx (constant 150B body) now ~140h; robots.txt 200 (Disallow: /); direct-origin vhost probes 000 across prior cycles. Nginx default page without live upstream across 6+ days = deprovision, not transient. Confidence up 5 from deprovision-signal persistence.
+evidence_needed: any non-502 on versioned paths
+verify_steps: GET /api/v1/cards once/cycle <=1rps; expand to /auth /tokens /health only on change
+impact: token/card auth surface unreachable; credential/PHI exposure only if revives. HIGH if live.
+testability: PASSIVE
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion (no-auth, expect 401/err_code:49) && GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (expect 403/err_code:201) — 2 req <=1rps drift check; then GET https://api.smartcard.elringklinger.com/api/v1/cards (expect 502; any change = recovery/deprovision triage).
+[RISK] elringklinger-ag: 18 — no change. Legacy token-skip [55] is sole live anomaly, uniform 14/14 methods and inert (BU gate non-discriminative to 10^11, api_key strictly validated); v5 tier hard-rejects (404/198); smartcard 502 ~140h → deprovision; EDI down 10 days; 10/13 infra hosts filtered full 15-day span. Live exposure remains pre-auth response differentiation only (Info-tier). Sentinels carry no exploit path absent auth-state drift.
