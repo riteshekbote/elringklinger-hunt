@@ -3936,3 +3936,4 @@ testability: PASSIVE
 [RISK] elringklinger: 76 — Primary live attack surface is Pardot dual-tier API (legacy /api?method= XML + v1-v4 REST XML + v5+ JSON, 12 v5 endpoints + 7 legacy methods + 11 v1-v4 resources, dual-path auth response leak across ALL versions). Legacy root token-skip intact (Bearer≥2 chars bypasses token validation, BU-id sole gate). Error code chain 49→181→201 with HTTP status differentiation (401/400/403) enables BU-ID enumeration without valid token. Oracle currently non-discriminative (all tested BU-IDs return 201). Smartcard API backend down 128+ hours. 10/13 dedicated hosts unreachable. Score reflects two live API tiers with enumeration potential, confirmed dual-path auth leak, root token-skip, and BU-ID enumeration path.
 ## 2026-09-16 20:01:10 UTC [target] (model nemotron3)
 ## 2026-09-16 22:45:38 UTC [target] (model nemotron3)
+## 2026-09-17 01:11:54 UTC [target] (model nemotron3)

@@ -524,3 +524,9 @@ www.elringklinger.com
 ## 2026-09-16 20:01:18 UTC
 
 ## 2026-09-16 22:45:47 UTC
+
+## 2026-09-17 01:12:34 UTC
+- NEW CHANGED legacy /api?method=getForms (last untested legacy method) → no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU 403/err_code:201 (XML) — uniform with all 10 prior methods; token-skip + 
+- NEW CHANGED api.smartcard /api/v1/cards → 502 nginx HTML ~132h (was ~130h); robots.txt 200 (Disallow: /); no recovery, deprovision increasingly likely.
+- NEW Infra host rescan (aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap, edi2, edi7, dtspc-tst): all still resolve to 193.100.2xx ElringKlinger subnet, TCP-filtered (000); no DNS/CNAME drift;
+- NEW go.events CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS, live) — managed third-party, NOT dangling; no takeover vector.

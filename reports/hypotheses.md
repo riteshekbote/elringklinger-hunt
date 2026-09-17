@@ -1264,3 +1264,23 @@
 - LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~130h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
 
 ## RANKED HYPOTHESES 2026-09-16 22:45:47 UTC
+
+## RANKED HYPOTHESES 2026-09-17 01:12:34 UTC
+- [45] <host/endpoint>: <title> (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET /api?method=getForms (no-auth → expect 401/err_code:49) && GET /api?method=getForms -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes), Bearer `00` 400/err_code:181 (XML)
+- LEARN: REJECTED AUTH @ go.events.elringklinger.com/api?method=: Pardot api_key/user_key scheme shape-drift falsified — `Pardot api_key=00,user_key=` + BU returns HTTP 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, dual-path leak intact; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~130h on /api/v1/cards; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only:
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU heade
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~128h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9-day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getForms: closes last untested legacy method — no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU
+- LEARN: ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~132h; robots.txt 200; deprovision signal strengthening ove
+- LEARN: REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-fi
+- LEARN: ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; B

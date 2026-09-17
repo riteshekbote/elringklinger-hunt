@@ -842,3 +842,11 @@ https://go.events.elringklinger.com/api?method=queryProspects -> HTTP 401
 
 ## 2026-09-16 22:45:47 UTC
 
+
+## 2026-09-17 01:12:42 UTC
+https://go.events.elringklinger.com/api?method=getForms -> HTTP 401
+https://go.events.elringklinger.com/api?method=getUsers -> HTTP 401
+https://go.events.elringklinger.com/api?method=getAccount -> HTTP 401
+https://go.events.elringklinger.com/api?method=queryProspects -> HTTP 401
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
