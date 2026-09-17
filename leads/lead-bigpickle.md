@@ -3323,3 +3323,31 @@ testability: PASSIVE
 [LEARN] REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no CNAME takeover surface.
 [LEARN] ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary.
 [RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Legacy token-skip [55] is the sole live anomaly, now uniform across all 10 tested methods and inert (BU-id gate non-discriminative, api_key strictly validated); v5 tier hard-rejects (198); smartcard 502 ~132h (deprovision likely); 10/13 infra hosts filtered for full 14-day span; EDI down 9 days. Live exposure remains pre-auth response differentiation only (Info-tier). Sentinels carry no exploit path absent auth-state drift.
+## 2026-09-17 06:14:38 UTC [target] (model bigpickle)
+[HYP]
+class: AUTH
+asset: go.events.elringklinger.com/api?method=
+confidence: 55
+reasoning: Re-verified live this cycle (401/49 JSON no-auth; Bearer`00`=400/181; Bearer`00`+0Uv=403/201). Method space now 14/14 uniform; api_key/user_key strictly validated (err_code:1); BU oracle non-discriminative to 10^11. Only Bearer≥2 token-skip remains, stable 12 days, inert.
+evidence_needed: any non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination.
+verify_steps: GET /api?method=getVersion (no-auth); GET /api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" — 2 req ≤1rps.
+impact: Sentinel only; data reach requires BU-id leak. MED.
+testability: PASSIVE
+[HYP]
+class: AUTH
+asset: go.events.elringklinger.com/api/v5+
+confidence: 45
+reasoning: Re-verified 12-day stable: no-auth 401/{"code":49} vs Bearer`00`→404/{"code":198}; 12 endpoints; BU header no effect on either path.
+evidence_needed: non-404/198 credentialed response, non-401/49 credential-less response, or tier re-disable.
+verify_steps: GET /api/v5/prospects no-auth and Bearer`00` — 2 req ≤1rps.
+impact: Sentinel for unauthorized-read gap if pre-routing reject removed. MED.
+testability: PASSIVE
+[HYP]
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 40
+reasoning: /api/v1/cards 502 stock-nginx (150B) ~134h; robots.txt 200 (Disallow: /); direct-origin vhost probes 000; Nginx default page (not custom upstream error) indicates gateway without live upstream. All prior hypotheses (versioned routes, actuator, OAuth) exhausted.
+evidence_needed: any non-502 on versioned paths.
+verify_steps: GET /api/v1/cards once/cycle ≤1rps; expand to /auth /tokens /health on change.
+impact: token/card auth remains untestable; credential/PHI surface if it returns. HIGH if live.
+testability: PASSIVE

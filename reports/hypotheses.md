@@ -1284,3 +1284,11 @@
 - LEARN: ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~132h; robots.txt 200; deprovision signal strengthening ove
 - LEARN: REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-fi
 - LEARN: ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; B
+
+## RANKED HYPOTHESES 2026-09-17 06:15:33 UTC
+- [55] go.events.elringklinger.com/api?method=: Pardot Legacy Root Token-Skip + BU-ID Gate (Hardening-Drift Sentinel) (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capt
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getForms: closes last untested legacy method — no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU
+- LEARN: ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~132h; robots.txt 200; deprovision signal strengthening ove
+- LEARN: REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-fi
+- LEARN: ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; B

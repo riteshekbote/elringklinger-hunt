@@ -530,3 +530,5 @@ www.elringklinger.com
 - NEW CHANGED api.smartcard /api/v1/cards → 502 nginx HTML ~132h (was ~130h); robots.txt 200 (Disallow: /); no recovery, deprovision increasingly likely.
 - NEW Infra host rescan (aircontrol, avconf, cctv, cgline, ektrcctv, fwasvvideo1, imap, edi2, edi7, dtspc-tst): all still resolve to 193.100.2xx ElringKlinger subnet, TCP-filtered (000); no DNS/CNAME drift;
 - NEW go.events CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS, live) — managed third-party, NOT dangling; no takeover vector.
+
+## 2026-09-17 06:15:33 UTC
