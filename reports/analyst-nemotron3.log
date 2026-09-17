@@ -8299,3 +8299,66 @@ testability: PASSIVE
 
 **STEP 7 — RISK**  
 [RISK] elringklinger: 76 — Primary live attack surface is Pardot dual-tier API (legacy /api?method= XML + v1-v4 REST XML + v5+ JSON, 12 v5 endpoints + 10 legacy methods + 11 v1-v4 resources, dual-path auth response leak across ALL versions). Legacy root token-skip intact (Bearer≥2 chars bypasses token validation, BU-id sole gate). Error code chain 49→181→201 with HTTP status differentiation (401/400/403) enables BU-ID enumeration without valid token. Oracle currently non-discriminative (all tested BU-IDs return 201). Smartcard API backend down 132+ hours. 10/13 dedicated hosts unreachable. Score reflects two live API tiers with enumeration potential, confirmed dual-path auth leak, root token-skip, and BU-ID enumeration path.
+===== ANALYST nemotron3 2026-09-17 16:35:53 UTC =====
+[0m
+> build · nemotron-3-ultra-free
+[0m
+[0m$ [0mls -la
+total 392
+drwxr-xr-x 12 runner runner   4096 Sep 17 16:32 .
+drwxr-xr-x  3 runner runner   4096 Sep 17 16:32 ..
+drwxr-xr-x  7 runner runner   4096 Sep 17 16:32 .git
+drwxr-xr-x  3 runner runner   4096 Sep 17 16:32 .github
+-rw-r--r--  1 runner runner   1776 Sep 17 16:32 README.md
+-rw-r--r--  1 runner runner     43 Sep 17 16:32 analyst-out.txt
+-rw-r--r--  1 runner runner 131940 Sep 17 16:32 analyst-prompt.txt
+-rw-r--r--  1 runner runner 128142 Sep 17 16:32 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 inventory
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 knowledge
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 leads
+-rw-r--r--  1 runner runner  47650 Sep 17 16:32 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 recon-notes
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 reports
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 reposcan-raw
+-rw-r--r--  1 runner runner   3211 Sep 17 16:32 scope.yml
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 scripts
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_laguna.json
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_ling3.json
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_longcat.json
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_mimo.json
+-rw-r--r--  1 runner runner     33 Sep 17 16:32 state_nemotron3.json
+drwxr-xr-x  2 runner runner   4096 Sep 17 16:32 triage
+[0m
+[0m→ [0mRead scope.yml
+[0m→ [0mRead inventory/elringklinger.md
+[0m→ [0mRead analyst-out.txt
+[0m→ [0mRead inventory/elringklinger.md[90m [offset=528][0m
+[0m✱ [0mGlob "**/*.txt"[90m in knowledge · 0 matches[0m
+[0m✱ [0mGlob "**/*"[90m in leads · 7 matches[0m
+[0m→ [0mRead leads/lead-nemotron3.md
+[0m→ [0mRead leads/lead-bigpickle.md
+[0m→ [0mRead leads/lead-longcat.md
+[0m→ [0mRead leads/lead-ling3.md
+[0m→ [0mRead leads/lead-laguna.md
+[0m→ [0mRead leads/lead-mimo.md
+[0m→ [0mRead probe-results.md[90m [limit=200][0m
+[0m
+[0m← [0mWrite analyst-report.md
+Wrote file successfully.
+[0m
+Now I have a comprehensive view. Let me produce the structured analysis following the 8 steps.
+Done. The analysis is written to `analyst-report.md` with all 8 steps.
+
+**Key findings:**
+- **Primary attack surface**: Pardot dual-tier API at `go.events.elringklinger.com` with three live tiers (legacy `/api?method=`, v1-v4 REST, v5+ REST)
+- **Critical auth anomaly**: Legacy tier root token-skip — any Bearer ≥2 chars bypasses token validation entirely, reaching BU-ID validation (error chain 49→181→201 with HTTP 401/400/403 differentiation)
+- **BU-ID gate**: Sole remaining barrier (18-char `0Uv` prefix); oracle non-discriminative across 10^11 suffix space
+- **v5+ tier**: Pre-routing Bearer reject (uniform 198) — different auth architecture from legacy
+- **v1-v4 tier**: Pre-routing Bearer reject (uniform 198) — BU header no effect
+- **Smartcard API**: Backend 502 for 136+ hours, deprovision signal strengthening
+- **10/13 hosts**: Internal-only/decommissioned (TCP filtered)
+
+**Top hypothesis** (confidence 55): Pardot Legacy Root Token-Skip + BU-ID Gate — hardening-drift sentinel monitoring for any BU-ID returning `err_code≠201`.
+
+**Next probe**: Test lower-range BU-ID suffixes on legacy tier (`0Uv000000001000000`).

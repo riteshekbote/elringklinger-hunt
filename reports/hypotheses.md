@@ -1309,3 +1309,7 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
 - LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
+
+## RANKED HYPOTHESES 2026-09-17 16:35:53 UTC
+- [55] go.events.elringklinger.com/api?method=: Legacy token-skip sentinel stable; sole live anomaly, inert behind BU gate (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion (no-auth, expect 401/err_code:49) && GET https://go.events.elringklinger.com/api?method=get

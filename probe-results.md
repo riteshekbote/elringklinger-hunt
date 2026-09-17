@@ -869,3 +869,7 @@ https://go.events.elringklinger.com/api?method=getProspects -> HTTP 401
 https://go.events.elringklinger.com/api?method=getLandingPages -> HTTP 401
 https://go.events.elringklinger.com/api?method=getDynamicContent -> HTTP 401
 https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
+
+## 2026-09-17 16:35:56 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://api.smartcard.elringklinger.com/api/v1/cards -> HTTP 502
