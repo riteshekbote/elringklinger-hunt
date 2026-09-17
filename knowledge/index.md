@@ -298,3 +298,7 @@
 - 2026-09-17 ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~132h; robots.txt 200; deprovision signal strengthening over outage.
 - 2026-09-17 REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no CNAME takeover surface.
 - 2026-09-17 ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary.
+- 2026-09-17 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getVersion: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU 403/err_code:201 (XML); token-skip + HTTP-status differentiation intact; no drift.
+- 2026-09-17 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
+- 2026-09-17 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 (nginx HTML) ~136h on /api/v1/cards; robots.txt 200 (Disallow: /); deprovision signal strengthening.
+- 2026-09-17 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~132h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
