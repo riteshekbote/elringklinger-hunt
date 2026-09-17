@@ -1,14 +1,14 @@
-## 2026-09-17 16:33:22 UTC [target] (model bigpickle)
+## 2026-09-17 19:51:45 UTC [target] (model bigpickle)
 [HYP] Legacy token-skip sentinel stable; sole live anomaly, inert behind BU gate
 class: AUTH
 asset: go.events.elringklinger.com/api?method=
 confidence: 55
-reasoning: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes); Bearer `00`+BU 403/err_code:201 (XML). 10/10 methods uniform. BU oracle non-discriminative to 10^11; api_key strictly validated. Bearer≥2-char token-skip is the only deviation, stable 13 days, still inert.
+reasoning: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes); Bearer `00`+BU 403/err_code:201 (XML). 14/14 methods uniform. BU oracle non-discriminative to 10^11; api_key scheme strictly validated (200/err_code:1, no BU-advance). Bearer≥2-char token-skip is the only deviation, stable ~14 days, inert.
 evidence_needed: any non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
 verify_steps: GET /api?method=getVersion no-auth; GET /api?method=getVersion Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
 impact: Sentinel only; data reach requires BU-id leak. MED.
 testability: PASSIVE
-[HYP] v5+ dual-path tier persists; Bearer pre-routing reject is historical hardening, still gating
+[HYP] v5+ dual-path tier persists; Bearer pre-routing reject is hardening, still gating
 class: AUTH
 asset: go.events.elringklinger.com/api/v5+
 confidence: 45
@@ -21,10 +21,10 @@ testability: PASSIVE
 class: AUTH
 asset: api.smartcard.elringklinger.com
 confidence: 40
-reasoning: /api/v1/cards 502 stock-nginx (constant 150B body) now ~136h; robots.txt 200 (Disallow: /); direct-origin vhost probes 000 across 2 prior cycles. Nginx default page without live upstream across 6 days = deprovision, not transient.
+reasoning: /api/v1/cards 502 stock-nginx (constant 150B body) ~138h; robots.txt 200 (Disallow: /); direct-origin vhost probes 000. Nginx default page without live upstream across 6+ days = deprovision, not transient.
 evidence_needed: any non-502 on versioned paths
 verify_steps: GET /api/v1/cards once/cycle <=1rps; expand to /auth /tokens /health only on change
 impact: token/card auth surface unreachable; credential/PHI exposure only if revives. HIGH if live.
 testability: PASSIVE
-[NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion (no-auth, expect 401/err_code:49) && GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (expect 403/err_code:201) — 2 req <=1rps, next-cycle drift check; then GET https://api.smartcard.elringklinger.com/api/v1/cards (expect 502, any change = recovery/deprovision triage).
-[RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Legacy token-skip [55] is sole live anomaly, uniform across 10/10 methods and inert (BU gate non-discriminative, api_key strictly validated); v5 tier hard-rejects (404/198); smartcard 502 ~136h = deprovision; 10/13 infra hosts filtered full 14-day span; EDI down 10 days. No live exposure beyond pre-auth response differentiation (Info-tier). Sentinels carry no exploit path absent auth-state drift.
+[NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion (no-auth, expect 401/err_code:49) && GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (expect 403/err_code:201) — 2 req <=1rps drift check; then GET https://api.smartcard.elringklinger.com/api/v1/cards (expect 502; any change = recovery/deprovision triage).
+[RISK] elringklinger-ag: 18 — no unauthorized access confirmed. Legacy token-skip [55] sole live anomaly, uniform 14/14 methods and inert (BU gate non-discriminative to 10^11, api_key strictly validated); v5 tier hard-rejects (404/198); smartcard 502 ~138h (deprovision likely); 10/13 infra hosts filtered full 15-day span; EDI down 10 days. Live exposure remains pre-auth response differentiation only (Info-tier). Sentinels carry no exploit path absent auth-state drift.
