@@ -588,3 +588,12 @@ www.elringklinger.com
 - NEW 2026-09-18 11:27:27 UTC: Probes confirm zero drift since 06:04 UTC — Legacy tier uniform 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); v5+ stable 401/49 vs 404/198; v1-v4 pre-routing Bearer reject (e
 
 ## 2026-09-18 15:14:04 UTC
+
+## 2026-09-18 18:39:01 UTC
+- NEW go.events.elringklinger.com/api?method=getVersion: Confirmed live — no-auth 401/err_code:49 (JSON @attributes); Bearer `00` 400/err_code:181 (XML); Bearer+BU 403/err_code:201 (XML). Token-skip + HTTP-
+- NEW go.events.elringklinger.com/api/v5/prospects: Confirmed live — no-auth 401/{"code":49}; Bearer `00` 404/{"code":198}. Dual-path auth leak intact; zero drift.
+- NEW go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/{"code":49}; Bearer `00` 404/{"code":198} (err_code:198). Pre-routing Bearer reject confirmed; BU header no effect.
+- NEW api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~140h; robots.txt 200 (Disallow: /); deprovision signal persistent.
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+- CHANGED Infra hosts (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/dtspc-tst): All A-records on 193.100.x owned ASN, TCP-filtered 000 — internal-only/decommissioned; no CNAME takeover surface.
+- CHANGED go.events.elringklinger.com CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary.
