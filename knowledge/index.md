@@ -321,3 +321,7 @@
 - 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12 endpoints live; no drift.
 - 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Re-verified — err_code:198 for both Bearer-only and Bearer+BU; BU header no effect; pre-routing reject on Bearer presence confirmed.
 - 2026-09-18 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~136h+, unchanged; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage.
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getVersion: Re-verified — 401/49 (JSON 79B) → 403/201 (XML 184B); token-skip + HTTP-status differentiation intact ~16.5d; zero drift.
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5/prospects: Re-verified — 401/49 ↔ 404/198; dual-path leak intact; zero drift.
+- 2026-09-18 ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx, constant 150B body) ~140h; robots.txt 200; deprovision signal persistent.
+- 2026-09-18 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~138h+, unchanged; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage.

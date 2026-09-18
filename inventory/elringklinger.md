@@ -586,3 +586,5 @@ www.elringklinger.com
 
 ## 2026-09-18 11:35:26 UTC
 - NEW 2026-09-18 11:27:27 UTC: Probes confirm zero drift since 06:04 UTC — Legacy tier uniform 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); v5+ stable 401/49 vs 404/198; v1-v4 pre-routing Bearer reject (e
+
+## 2026-09-18 15:14:04 UTC
