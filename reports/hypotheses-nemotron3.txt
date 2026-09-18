@@ -1,9 +1,8 @@
-## 2026-09-18 01:08:08 UTC [target] (model nemotron3)
-[NEW] go.events.elringklinger.com/api?method=getForms tested — closes last untested legacy method (10/10 uniform: 401/49 no-auth → 400/181 Bearer-only → 403/201 Bearer+BU); token-skip + HTTP-status differentiation intact, no drift
-[NEW] api.smartcard.elringklinger.com/api/v1/cards 502 (nginx HTML, constant 150B body) ~136h; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage
-[NEW] Infra host rescan: aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no CNAME takeover surface
-[NEW] go.events.elringklinger.com CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary
-[NEW] No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de; X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint
+## 2026-09-18 06:02:40 UTC [target] (model nemotron3)
+[CHANGED] go.events.elringklinger.com/api?method=getForms tested — closes last untested legacy method (10/10 uniform: 401/49 no-auth → 400/181 Bearer-only → 403/201 Bearer+BU); token-skip + HTTP-status differentiation intact, no drift
+[CHANGED] api.smartcard.elringklinger.com/api/v1/cards 502 (nginx HTML, constant 150B body) ~136h; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage
+[CHANGED] Infra host rescan: aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no CNAME takeover surface
+[CHANGED] go.events.elringklinger.com CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary
 [CHANGED] BU-ID oracle confirmed non-discriminative at 1B/10B/100B suffixes (0Uv000001000000000 through 0Uv000100000000000) — all return identical HTTP 403/err_code:201
 [CHANGED] Legacy /api?method= format split confirmed live: no-auth → JSON @attributes (401/err_code:49); Bearer paths → XML (400/err_code:181, 403/err_code:201)
 [CHANGED] v1-v4 REST tier pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
@@ -40,8 +39,8 @@ evidence_needed: Any undiscovered method returning err_code≠49/201 (i.e., err_
 verify_steps: GET https://go.events.elringklinger.com/api?method=getOpportunities -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getProspects -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getLandingPages -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getDynamicContent -H "Authorization: Bearer 00" (1 rps, capture err_code — test 4 high-value undiscovered methods on legacy tier)
 impact: Method without BU-ID requirement → unauthenticated data access to marketing PII, campaigns, forms, users. Severity HIGH.
 testability: PASSIVE
-[PARKED] Pardot Legacy Method Enumeration Breadth — Undiscovered Methods Bypass BU-ID Gate: confidence 42 < threshold for active pursuit; no evidence of differential auth behavior in 10/10 tested methods; all uniform with BU-ID gate
 [PARKED] Pardot v5+ REST Tier Pre-Routing Bearer Reject Bypass: confidence 45; pre-routing reject is uniform across 12 endpoints with no BU header effect; no evidence of bypass path; lower priority than legacy sentinel
+[PARKED] Pardot Legacy Method Enumeration Breadth — Undiscovered Methods Bypass BU-ID Gate: confidence 42 < threshold for active pursuit; no evidence of differential auth behavior in 10/10 tested methods; all uniform with BU-ID gate
 [FINAL] 1. Pardot Legacy Root Token-Skip + BU-ID Gate (Hardening-Drift Sentinel) (55)
 [NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capture err_code — test lower-range BU-ID suffixes near known Salesforce ID allocation patterns)
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getForms: closes last untested legacy method — no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU 403/err_code:201 (XML); uniform with 10/10 methods; token-skip intact, no drift

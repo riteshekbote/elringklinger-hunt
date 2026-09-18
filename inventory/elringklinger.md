@@ -572,3 +572,14 @@ www.elringklinger.com
 - CHANGED v1-v4 REST tier pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
 - CHANGED v5+ REST tier stable: 401/{"code":49} no-auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED Smartcard API backend 502 extended to ~136h+; no recovery signal
+
+## 2026-09-18 06:04:18 UTC
+- CHANGED go.events.elringklinger.com/api?method=getForms tested — closes last untested legacy method (10/10 uniform: 401/49 no-auth → 400/181 Bearer-only → 403/201 Bearer+BU); token-skip + HTTP-status differen
+- CHANGED api.smartcard.elringklinger.com/api/v1/cards 502 (nginx HTML, constant 150B body) ~136h; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage
+- CHANGED Infra host rescan: aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no C
+- CHANGED go.events.elringklinger.com CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary
+- CHANGED BU-ID oracle confirmed non-discriminative at 1B/10B/100B suffixes (0Uv000001000000000 through 0Uv000100000000000) — all return identical HTTP 403/err_code:201
+- CHANGED Legacy /api?method= format split confirmed live: no-auth → JSON @attributes (401/err_code:49); Bearer paths → XML (400/err_code:181, 403/err_code:201)
+- CHANGED v1-v4 REST tier pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
+- CHANGED v5+ REST tier stable: 401/{"code":49} no-auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
+- CHANGED Smartcard API backend 502 extended to ~136h+; no recovery signal

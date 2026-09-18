@@ -15858,3 +15858,26 @@ echo "== P2 legacy Bearer 00 + BU =="; curl -s --max-time 15 -o /tmp/p2.body -w 
 echo "== P3 v5 prospects noauth =="; curl -s --max-time 15 -o /tmp/p3.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" "https://go.events.elringklinger.com/api/v5/prospects"; cat /tmp/p3.body; sleep 1.2
 echo "== P4 smartcard cards =="; curl -s --max-time 15 -o /tmp/p4.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" "https://api.smartcard.elringklinger.com/api/v1/cards"; cat /tmp/p4.body failed
 [91m[1mError: [0mThe user rejected permission to use this specific tool call.
+===== ANALYST bigpickle 2026-09-18 06:04:18 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mdate -u; curl -s -o /tmp/g1.txt -w "go-legacy-noauth HTTP:%{http_code} size:%{size_download}\n" "https://go.events.elringklinger.com/api?method=getVersion" --max-time 25; sleep 1.2; curl -s -o /tmp/g2.txt -w "go-legacy-bearer HTTP:%{http_code} size:%{size_download}\n" "https://go.events.elringklinger.com/api?method=getVersion" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" --max-time 25; sleep 1.2; curl -s -o /tmp/g3.txt -w "go-v5 HTTP:%{http_code} size:%{size_download}\n" "https://go.events.elringklinger.com/api/v5/prospects" -H "Authorization: Bearer 00" --max-time 25; sleep 1.2; curl -s -o /tmp/g4.txt -w "smartcard HTTP:%{http_code} size:%{size_download}\n" "https://api.smartcard.elringklinger.com/api/v1/cards" --max-time 25
+Fri Sep 18 06:01:18 UTC 2026
+go-legacy-noauth HTTP:401 size:79
+go-legacy-bearer HTTP:403 size:184
+go-v5 HTTP:404 size:43
+smartcard HTTP:502 size:150
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mRead /tmp/g1.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mRead /tmp/g2.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mRead /tmp/g3.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mRead /tmp/g4.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
