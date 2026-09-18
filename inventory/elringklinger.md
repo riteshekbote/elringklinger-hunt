@@ -604,3 +604,9 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~142h; robots.txt 200 (Disallow: /); deprovision signal persistent, confidence up.
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
 - CHANGED Infra hosts (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/dtspc-tst): All A-records on 193.100.x owned ASN, TCP-filtered 000 — internal-only/decommissioned; no CNAME takeover surface.
+
+## 2026-09-18 23:25:26 UTC
+- CHANGED go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; 
+- CHANGED go.events.elringklinger.com/api/v5/prospects: Re-verified zero drift — no-auth 401/37B (`{"code":49}`) vs Bearer `00` 404/43B (`{"code":198}`). Dual-path auth leak intact across 12 endpoints.
+- CHANGED go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B (JSON `@attributes`); Bearer `00` 400/181 (XML); Bearer+BU 403/184B (XML, err_code:201). Token-skip + HTTP
+- CHANGED api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.

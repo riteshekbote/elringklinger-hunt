@@ -3627,3 +3627,4 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5/prospects: Body-verified zero drift — 401/{"code":49} (37B); dual-path leak intact.
 [LEARN] ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502, 150B byte-fixed body ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.
 [RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~145h byte-fixed 502 strengthens deprovision (zero exposure persists); EDI down ~10d; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no drift in any gating behavior, ~16.9d stability baseline.
+## 2026-09-18 23:22:34 UTC [target] (model bigpickle)

@@ -16242,3 +16242,24 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~145h byte-fixed 502 strengthens deprovision (zero exposure persists); EDI down ~10d; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no drift in any gating behavior, ~16.9d stability baseline.
+===== ANALYST bigpickle 2026-09-18 23:25:26 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mfor i in 1 2 3 4; do
+  case $i in
+    1) curl -s -o /tmp/p1.txt -w "R1 status=%{http_code} bytes=%{size_download}\n" --max-time 15 "https://go.events.elringklinger.com/api?method=getVersion" ;;
+    2) curl -s -o /tmp/p2.txt -w "R2 status=%{http_code} bytes=%{size_download}\n" --max-time 15 -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" "https://go.events.elringklinger.com/api?method=getVersion" ;;
+    3) curl -s -o /tmp/p3.txt -w "R3 status=%{http_code} bytes=%{size_download}\n" --max-time 15 "https://go.events.elringklinger.com/api/v5/prospects" ;;
+    4) curl -s -o /tmp/p4.txt -w "R4 status=%{http_code} bytes=%{size_download}\n" --max-time 15 "https://api.smartcard.elringklinger.com/api/v1/cards" ;;
+  esac
+  sleep 1.5
+done
+R1 status=401 bytes=79
+R2 status=403 bytes=184
+R3 status=401 bytes=37
+R4 status=502 bytes=150
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcat /tmp/p1.txt; echo; cat /tmp/p2.txt; echo; cat /tmp/p3.txt; echo; head -c 200 /tmp/p4.txt failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
