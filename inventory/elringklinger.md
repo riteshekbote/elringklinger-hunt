@@ -597,3 +597,10 @@ www.elringklinger.com
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
 - CHANGED Infra hosts (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/dtspc-tst): All A-records on 193.100.x owned ASN, TCP-filtered 000 — internal-only/decommissioned; no CNAME takeover surface.
 - CHANGED go.events.elringklinger.com CNAME = go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary.
+
+## 2026-09-18 21:17:34 UTC
+- NEW go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/{"code":49}; Bearer `00` 404/{"code":198} (err_code:198). Pre-routing Bearer reject confirmed; BU header no effect.
+- NEW go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — 401/49 JSON @attributes (79B) → 403/201 XML (184B), 16.7d stable; token-skip + HTTP-status differentiation intact.
+- CHANGED api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~142h; robots.txt 200 (Disallow: /); deprovision signal persistent, confidence up.
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+- CHANGED Infra hosts (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/dtspc-tst): All A-records on 193.100.x owned ASN, TCP-filtered 000 — internal-only/decommissioned; no CNAME takeover surface.

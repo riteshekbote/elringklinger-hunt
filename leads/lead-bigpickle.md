@@ -3588,3 +3588,42 @@ testability: PASSIVE
 [LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5/prospects: Body-verified zero drift — 401/{"code":49} (37B); dual-path leak intact.
 [LEARN] ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502, 150B byte-fixed body ~142h; robots.txt 200; deprovision signal persistent, confidence up.
 [RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~142h fixed-body 502 signals deprovision (zero exposure persists); EDI down ~10d; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no drift in any gating behavior.
+## 2026-09-18 21:15:01 UTC [target] (model bigpickle)
+[PRIO] api.smartcard.elringklinger.com,5.25,0.25*5+0.25*8+0.15*4+0.15*4+0.10*3+0.10*5 (card/token/PHI surface; deprovision signal ~145h byte-fixed; revive-probe stays on)
+[PRIO] go.events/api?method=,5.10,0.25*6+0.25*4+0.15*5+0.15*3+0.10*8+0.10*6 (Salesforce FE tenant; sole live Bearer token-skip anomaly, inert)
+[PRIO] go.events/api/v5+,4.95,0.25*6+0.25*4+0.15*4+0.15*3+0.10*8+0.10*6 (dual-path sentinel)
+[HYP] Legacy root token-skip + BU-id gate persistent (hardening-drift sentinel)
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 55
+reasoning: Body-verified this cycle — no-auth 401/err_code:49 (JSON @attributes 79B); Bearer `00`+BU 0Uv000000001000000 → 403/err_code:201 (XML 184B). 10/10 methods uniform; ~16.9d stable. BU oracle non-discriminative to 10^11; api_key= scheme strictly validated (200/err_code:1). Bearer≥2-char token-skip remains sole live anomaly, inert behind non-enumerable Salesforce BU gate.
+evidence_needed: non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth; GET /api?method=getVersion Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak (Salesforce tenant boundary). MED.
+testability: PASSIVE
+[HYP] Smartcard backend deprovisioned; no upstream to recover
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 52
+reasoning: /api/v1/cards 502 stock-nginx, byte-fixed 150B body ~145h; robots.txt 200/26B (Disallow: /) unchanged; direct-origin vhost probes 000; zero TLS/server drift across window. Confidence +2 this cycle — continued byte-fixity over ~6d makes transient upstream failure implausible.
+evidence_needed: any non-502 on versioned paths
+verify_steps: GET /api/v1/cards once/cycle <=1rps; expand to /auth /tokens /health only on change
+impact: token/card auth surface unreachable; credential/PHI exposure only if backend revives. HIGH if live.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; pre-routing Bearer reject is hardening, still gating
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 45
+reasoning: Body-verified — no-auth 401/{"code":49} (37B, JSON) vs Bearer `00` → 404/{"code":198}; BU header no effect; 12 endpoints live; stable since 09-05 hardening. No drift this cycle.
+evidence_needed: non-404/198 credentialed response, non-401/49 credential-less response, or tier re-disable
+verify_steps: GET /api/v5/prospects no-auth and Bearer `00` — 2 req/cycle <=1rps
+impact: Sentinel for unauthorized-read gap if pre-routing reject removed. MED.
+testability: PASSIVE
+[PARKED] v1-v4 pre-routing Bearer reject — subsumed by v5 sentinel; byte-identical 198 both paths, no independent oracle value.
+[PARKED] edi2/edi7 — unreachable ~10d, passive wait.
+[FINAL] Legacy token-skip sentinel [55]; Smartcard deprovision [52]; v5+ dual-path [45].
+[NEXT] PROBE: repeat 4-request drift check — GET https://go.events.elringklinger.com/api?method=getVersion no-auth (expect 401/49 @attributes 79B) + Bearer `00`+BU 0Uv000000001000000 (expect 403/201 XML 184B) + GET https://go.events.elringklinger.com/api/v5/prospects (expect 401/49 37B) + GET https://api.smartcard.elringklinger.com/api/v1/cards (expect 502/150B) — 4 req, >=1.1s spacing, next cycle.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — 401/49 JSON @attributes (79B) → 403/201 XML (184B), ~16.9d stable; token-skip + HTTP-status differentiation intact.
+[LEARN] ACCEPTED AUTH @ go.events.elringklinger.com/api/v5/prospects: Body-verified zero drift — 401/{"code":49} (37B); dual-path leak intact.
+[LEARN] ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502, 150B byte-fixed body ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.
+[RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~145h byte-fixed 502 strengthens deprovision (zero exposure persists); EDI down ~10d; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no drift in any gating behavior, ~16.9d stability baseline.
