@@ -1,1 +1,28 @@
-## 2026-09-18 06:01:25 UTC [target] (model bigpickle)
+## 2026-09-18 11:28:58 UTC [target] (model bigpickle)
+[HYP] Legacy root token-skip + BU-id gate persistent (hardening-drift sentinel)
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 55
+reasoning: Re-verified this cycle — 401/err_code:49 (JSON @attributes, 79B) no-auth; Bearer `00`+BU 0Uv000000001000000 → 403/err_code:201 (XML, 184B). 14/14 methods uniform, stable 16 days. api_key=/user_key= strictly validated (200/err_code:1, no BU-advance). BU oracle non-discriminative to 10^11.
+evidence_needed: non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth; GET /api?method=getVersion Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak (Salesforce tenant boundary, not enumerable). MED.
+testability: PASSIVE
+[HYP] v5+ dual-path tier persists; pre-routing Bearer reject is the hardening, still gating
+class: AUTH
+asset: go.events.elringklinger.com/api/v5/prospects
+confidence: 45
+reasoning: Re-verified this cycle — no-auth 401/{"code":49} vs Bearer `00` 404/{"code":198}; 12 endpoints live; BU header no effect on either path; stable since 09-05 hardening event.
+evidence_needed: non-404/198 credentialed response, non-401/49 credential-less response, or tier re-disable
+verify_steps: GET /api/v5/prospects no-auth and Bearer `00` — 2 req/cycle <=1rps
+impact: Sentinel for unauthorized-read gap if pre-routing reject removed. MED.
+testability: PASSIVE
+[HYP] Smartcard backend deprovisioned; no upstream to recover
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 45
+reasoning: /api/v1/cards 502 stock-nginx (constant 150B HTML body) ~140h; robots.txt 200 (Disallow: /); direct-origin vhost probes 000; nginx default-page-without-live-upstream across 6+ days = deprovision, not transient.
+evidence_needed: any non-502 on versioned paths
+verify_steps: GET /api/v1/cards once/cycle <=1rps; expand to /auth /tokens /health only on change
+impact: token/card auth surface unreachable; credential/token exposure only if backend revives. HIGH if live.
+testability: PASSIVE

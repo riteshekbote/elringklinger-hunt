@@ -583,3 +583,6 @@ www.elringklinger.com
 - CHANGED v1-v4 REST tier pre-routing Bearer reject confirmed: err_code:198 for both Bearer-only and Bearer+BU (BU header no effect)
 - CHANGED v5+ REST tier stable: 401/{"code":49} no-auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift
 - CHANGED Smartcard API backend 502 extended to ~136h+; no recovery signal
+
+## 2026-09-18 11:35:26 UTC
+- NEW 2026-09-18 11:27:27 UTC: Probes confirm zero drift since 06:04 UTC — Legacy tier uniform 401/49 (JSON) → 400/181 (XML) → 403/201 (XML); v5+ stable 401/49 vs 404/198; v1-v4 pre-routing Bearer reject (e
