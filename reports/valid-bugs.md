@@ -27,3 +27,7 @@
 - 2 lead(s) marked VALID at 2026-09-15 01:15:21 UTC
   - | **Q3 Impact** | YES — bypass of API authentication layer; with valid BU ID (0Uv prefix), enables unauthenticated read of prospect PII (emails, names, phone, company), campaigns, emails, visitor trac
   - | **Q3 Impact** | NO — all 7 methods (getVersion, getCampaigns, getEmails, getLists, getTags, getVisitors, queryProspects) return 401/err_code:49 (Access Denied) or 400/181 or 403/201 with fabricated 
+
+- 2 lead(s) marked VALID at 2026-09-18 22:51:00 UTC
+  - **Verdict: VALID**
+  - | 1 | Legacy Pardot Bearer Token Skip | **VALID** | 7.5 | YES — bugs.olivermaicher.eu |
