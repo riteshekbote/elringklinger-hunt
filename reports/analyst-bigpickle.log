@@ -15848,3 +15848,13 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger-ag: 18 — no change. Legacy token-skip [55] is sole live anomaly, uniform 14/14 methods and inert (BU gate non-discriminative to 10^11, api_key strictly validated); v5 tier hard-rejects (404/198); smartcard 502 ~140h → deprovision; EDI down 10 days; 10/13 infra hosts filtered full 15-day span. Live exposure remains pre-auth response differentiation only (Info-tier). Sentinels carry no exploit path absent auth-state drift.
+===== ANALYST bigpickle 2026-09-18 01:08:16 UTC =====
+[0m
+> build · big-pickle
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mecho "== P1 legacy noauth =="; curl -s --max-time 15 -o /tmp/p1.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" "https://go.events.elringklinger.com/api?method=getVersion"; cat /tmp/p1.body; sleep 1.2
+echo "== P2 legacy Bearer 00 + BU =="; curl -s --max-time 15 -o /tmp/p2.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" "https://go.events.elringklinger.com/api?method=getVersion"; cat /tmp/p2.body; sleep 1.2
+echo "== P3 v5 prospects noauth =="; curl -s --max-time 15 -o /tmp/p3.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" "https://go.events.elringklinger.com/api/v5/prospects"; cat /tmp/p3.body; sleep 1.2
+echo "== P4 smartcard cards =="; curl -s --max-time 15 -o /tmp/p4.body -w "HTTP:%{http_code} SIZE:%{size_download}\n" "https://api.smartcard.elringklinger.com/api/v1/cards"; cat /tmp/p4.body failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

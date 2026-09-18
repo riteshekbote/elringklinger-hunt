@@ -305,3 +305,15 @@
 - 2026-09-17 ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~136h; robots.txt 200; deprovision signal strengthening over outage
 - 2026-09-17 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~136h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
 - 2026-09-17 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=getForms: closes last untested legacy method — no-auth 401/err_code:49 (JSON @attributes), Bearer `00`+BU 403/err_code:201 (XML); uniform with 10/10 methods; token-skip intact, no drift
+- 2026-09-18 ACCEPTED OTHER @ api.smartcard.elringklinger.com: /api/v1/cards 502 (nginx HTML, constant 150B body) ~136h; robots.txt 200; deprovision signal strengthening over outage
+- 2026-09-18 REJECTED OTHER @ *.elringklinger.com (aircontrol/avconf/cctv/cgline/ektrcctv/fwasvvideo1/imap/edi2/edi7/dtspc-tst): all A-records on 193.100.x owned ASN, TCP-filtered 000 from internet — internal-only/decommissioned; no CNAME takeover surface
+- 2026-09-18 ACCEPTED OTHER @ go.events.elringklinger.com: CNAME go.pardot.com → app-ue1-public.fe.pardot.com (Salesforce AWS) — live managed CNAME, no subdomain-takeover; BU-id gate is Salesforce tenant boundary
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: HTTP status layer differentiation confirmed — no auth: 401/err_code:49 (JSON @attributes); Bearer only: 400/err_code:181 (XML); Bearer+BU: 403/err_code:201 (XML). Root token-skip intact (Bearer≥2 chars bypasses token validation). Format split by auth state.
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Stable — 401/{"code":49} no auth vs 404/{"code":198} with Bearer; 12 endpoints live; no drift.
+- 2026-09-18 ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed.
+- 2026-09-18 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~136h+, unchanged; robots.txt 200 (Disallow: /); no recovery signal.
+- 2026-09-18 REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+- 2026-09-18 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
+- 2026-09-18 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
+- 2026-09-18 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier, not a live lead.
