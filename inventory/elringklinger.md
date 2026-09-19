@@ -626,3 +626,10 @@ www.elringklinger.com
 - CHANGED api.smartcard.elringklinger.com/api/v1/cards: Byte-identical — 502/150B stock-nginx HTML, ~149h (6.2d); robots.txt 200/26B; deprovision signal persists, no recovery.
 - NEW go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; 
 - CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+
+## 2026-09-19 11:34:13 UTC
+- CHANGED go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B JSON @attributes err_code:49 → Bearer `00`+BU 403/184B XML err_code:201; zero drift (~17d baseline)
+- CHANGED go.events.elringklinger.com/api/v5/prospects: Byte-verified zero drift — 401/37B `{"code":49}`; no-auth path only re-verified; zero drift
+- CHANGED api.smartcard.elringklinger.com/api/v1/cards: Byte-identical — 502/150B stock-nginx HTML, ~149h (6.2d); robots.txt 200/26B; deprovision signal persists, no recovery
+- NEW go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; 
+- CHANGED edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait

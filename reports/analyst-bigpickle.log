@@ -16439,3 +16439,10 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~151h byte-fixed 502 strengthens deprovision (zero exposure persists); EDI down ~10d+; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no drift in any gating behavior, ~17.2d stability baseline.
+===== ANALYST bigpickle 2026-09-19 11:34:13 UTC =====
+[0m
+> build · big-pickle
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcurl -s -o /tmp/r1.body -w "HTTP %{http_code} | %{size_download}B | %{time_total}s\n" "https://go.events.elringklinger.com/api?method=getVersion"; sleep 1.2; echo "---"; cat /tmp/r1.body; echo; wc -c /tmp/r1.body failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
