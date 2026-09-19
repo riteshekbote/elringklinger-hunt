@@ -343,3 +343,4 @@
 - 2026-09-19 ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All formats return identical err_code:201 with fabricated BU-ids.
 - 2026-09-19 REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-Route header (e8229a0ff18ebffc83a98010d2521dd5) constant across all endpoints — static infrastructure routing fingerprint.
 - 2026-09-19 REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sampled space to 10^11; prior re-rank is stale-evidence outlier, not a live lead.
+- 2026-09-19 ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~149h+, unchanged; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage.

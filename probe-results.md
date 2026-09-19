@@ -976,3 +976,10 @@ https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
 https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
 https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
 https://go.events.elringklinger.com/api/v1/campaigns -> HTTP 401
+
+## 2026-09-19 14:52:09 UTC
+https://go.events.elringklinger.com/api?method=getVersion -> HTTP 401
+https://go.events.elringklinger.com/api/v5/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v5/campaigns -> HTTP 401
+https://go.events.elringklinger.com/api/v1/prospects -> HTTP 401
+https://go.events.elringklinger.com/api/v1/campaigns -> HTTP 401
