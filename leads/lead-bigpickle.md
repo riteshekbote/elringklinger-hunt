@@ -3756,3 +3756,34 @@ evidence_needed: 200/403-listing on non-root path vs placeholder; non-39B respon
 verify_steps: GET /en, /index.html, /api/, /.well-known/ (read-only <=1rps)
 impact: incidental data exposure on a card-brand asset. LOW-MED.
 testability: PASSIVE
+## 2026-09-19 20:16:50 UTC [target] (model bigpickle)
+[HYP] Smartcard product estate decommissioned; no upstream to revive
+class: AUTH
+asset: smartcard.elringklinger.com/api/
+confidence: 60
+reasoning: Cross-host byte-identical 502 (61b30d40…) on apex /api/ and api subdomain /api/v1/cards proves shared nginx gateway→single dead upstream; apex non-/api/ paths serve static 39B placeholder (x-cache Hit). ~157h byte-fixity past transient-failure plausibility; apex parked "available shortly" (mtime 2025-05-25).
+evidence_needed: any non-502 on /api/ (either host), or gateway config change (different 502 variant)
+verify_steps: 1× GET https://smartcard.elringklinger.com/api/ and 1× GET https://api.smartcard.elringklinger.com/api/v1/cards per cycle (<=1rps), compare hashes/bytes
+impact: card token/auth surface unreachable; exposure only if backend revives. HIGH if live.
+testability: PASSIVE
+[HYP] Legacy root token-skip + BU-id gate persistent (hardening-drift sentinel)
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 57
+reasoning: Body-verified zero drift — 401/79B JSON @attributes err_code:49 → Bearer `00`+BU 403/184B XML err_code:201; ~17.5d stable; BU oracle non-discriminative to 10^11; Bearer≥2-char token-skip sole live anomaly, inert behind Salesforce BU gate.
+evidence_needed: non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth + Bearer `00`+BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak. MED.
+testability: PASSIVE
+[HYP] Apex CloudFront origin serves path-scoped objects beyond catch-all
+class: MISCONFIG
+asset: smartcard.elringklinger.com
+confidence: 43
+reasoning: Non-/api/ paths uniformly 39B placeholder (/, /en, /index.html), so bucket is catch-all; the /api/→502 exception proves origin has path-based behavior mapping to the nginx gateway. Origin bucket may still host objects under non-common paths (S3-style). Prior leads found no alternate objects.
+evidence_needed: 200/403-listing on an untried path vs 39B placeholder; non-502 on /api/ subpath
+verify_steps: GET /.well-known/, /api/index.html, /static/, /health — read-only <=1rps
+impact: incidental data exposure on card-brand asset. LOW-MED.
+testability: PASSIVE
+[NEXT] PROBE: GET https://smartcard.elringklinger.com/.well-known/ (read-only, <=1rps) to test CloudFront origin object exposure beyond the 39B catch-all.
+[LEARN] ACCEPTED OTHER @ smartcard.elringklinger.com: apex /api/→502 byte-identical to api subdomain (sha256 61b30d40…) confirms shared nginx gateway→dead upstream; placeholder (39B, x-cache Hit) is catch-all for all non-/api/ paths; estate decommissioning consolidated across both hostnames.
+[RISK] elringklinger-ag: 18 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods uniform) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~157h byte-fixed 502 across two hostnames (shared origin, decommission confirmed); EDI down ~10d+; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, zero drift, ~17.5d stability baseline.

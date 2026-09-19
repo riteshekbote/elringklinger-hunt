@@ -1,8 +1,8 @@
-## 2026-09-19 17:52:59 UTC [target] (model nemotron3)
+## 2026-09-19 20:17:27 UTC [target] (model nemotron3)
 [PRIO] go.events.elringklinger.com/api?method=,8.15,attack_surface=9,business_value=8,tech_exposure=8,gate_ease=9,cloud_surface=6,freshness=6
 [PRIO] go.events.elringklinger.com/api/v5+,7.30,attack_surface=8,business_value=8,tech_exposure=7,gate_ease=6,cloud_surface=6,freshness=6
 [PRIO] go.events.elringklinger.com/api/v1-v4,6.45,attack_surface=7,business_value=7,tech_exposure=6,gate_ease=5,cloud_surface=5,freshness=6
-[PRIO] api.smartcard.elringklinger.com,3.80,attack_surface=4,business_value=7,tech_exposure=3,gate_ease=2,cloud_surface=3,freshness=2
+[PRIO] api.smartcard.elringklinger.com,2.80,attack_surface=3,business_value=7,tech_exposure=2,gate_ease=1,cloud_surface=2,freshness=2
 [HYP] Pardot Legacy Root Token-Skip + BU-ID Gate (Hardening-Drift Sentinel)
 class: AUTH
 asset: go.events.elringklinger.com/api?method=

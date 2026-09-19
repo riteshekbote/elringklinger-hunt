@@ -1525,3 +1525,18 @@
 - LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
 - LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
 - LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
+
+## RANKED HYPOTHESES 2026-09-19 20:17:35 UTC
+- [60] smartcard.elringklinger.com/api/: Smartcard product estate decommissioned; no upstream to revive (from art/lead_bigpickle.txt)
+- [57] go.events.elringklinger.com/api?method=: Pardot Legacy Root Token-Skip + BU-ID Gate (Hardening-Drift Sentinel) (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET https://smartcard.elringklinger.com/.well-known/ (read-only, <=1rps) to test CloudFront origin object exposure beyond the 39B catch-all.
+- NEXT(hypotheses-nemotron3.txt): PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capt
+- LEARN: ACCEPTED OTHER @ smartcard.elringklinger.com: apex /api/→502 byte-identical to api subdomain (sha256 61b30d40…) confirms shared nginx gateway→dead upstream; pla
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api?method=: Re-verified this cycle — no-auth 401/err_code:49 (JSON @attributes), Bearer `00` 400/err_code:181 (XML)
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v5+: Re-verified — no-auth 401/{"code":49}, Bearer `00` → 404/{"code":198}; dual-path leak intact; 12 endpoints 
+- LEARN: ACCEPTED AUTH @ go.events.elringklinger.com/api/v1-v4: Re-verified — err_code:198 for both Bearer-only and Bearer+BU; BU header no effect; pre-routing reject on
+- LEARN: ACCEPTED AUTH @ api.smartcard.elringklinger.com: Backend 502 ~149h+, unchanged; robots.txt 200 (Disallow: /); deprovision signal strengthening over outage.
+- LEARN: REJECTED OTHER @ edi2/edi7.elringklinger.com: Still unreachable (9+ day span). Passive wait.
+- LEARN: ACCEPTED BUSLOGIC @ go.events.elringklinger.com/api: format=json parameter controls response format (JSON vs XML) on legacy tier — not a separate code path. All
+- LEARN: REJECTED OTHER @ go.events.elringklinger.com: No Pardot BU-id (0Uv prefix) found in client-side JavaScript on go.events frontend or elringklinger.de. X-Pardot-R
+- LEARN: REJECTED BUSLOGIC @ go.events.elringklinger.com/api?method=: BU-ID enumeration via error-code discrimination not supported — oracle non-discriminative across sa
