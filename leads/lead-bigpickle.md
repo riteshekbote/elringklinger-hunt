@@ -3728,3 +3728,31 @@ evidence_needed: non-404/198 credentialed response, non-401/49 credential-less r
 verify_steps: GET /api/v5/prospects no-auth and Bearer `00` — 2 req/cycle <=1rps
 impact: Sentinel for unauthorized-read gap if pre-routing reject removed. MED.
 testability: PASSIVE
+## 2026-09-19 17:54:56 UTC [target] (model bigpickle)
+[HYP] Smartcard product estate decommissioned; no upstream to revive
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 58
+reasoning: /api/v1/cards 502 stock-nginx, byte-fixed 150B ~155h (6.5d); apex smartcard.elringklinger.com now parked on CloudFront/S3 "available shortly" (last-modified 2025-05-25); robots.txt 200/26B both hosts; direct-origin vhost 000; zero TLS drift.
+evidence_needed: any non-502 on versioned paths, or non-placeholder content on apex origin
+verify_steps: GET /api/v1/cards once/cycle; GET smartcard root /index.html /api/ /en (read-only, <=1rps)
+impact: token/card auth surface unreachable; exposure only if backend revives. HIGH if live.
+testability: PASSIVE
+[HYP] Legacy root token-skip + BU-id gate persistent (hardening-drift sentinel)
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 57
+reasoning: Byte-verified this cycle — 401/79B JSON @attributes err_code:49 → Bearer `00`+BU 403/184B XML err_code:201 (hash 80b6d44c...); 10/10 methods uniform; ~17.4d zero byte-drift. BU oracle non-discriminative to 10^11; Bearer≥2-char token-skip sole live anomaly, inert behind non-enumerable Salesforce BU gate.
+evidence_needed: any non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth; Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak (Salesforce tenant boundary). MED.
+testability: PASSIVE
+[HYP] Smartcard apex CloudFront origin exposes non-placeholder objects
+class: MISCONFIG
+asset: smartcard.elringklinger.com
+confidence: 42
+reasoning: Newly-cataloged S3-backed CloudFront (db652271uyh1a.cloudfront.net, x-cache Hit, ord58) serves 39B placeholder at root with production-grade HSTS/CSP — origin bucket may host other objects or allow listing; catch-all routing on sibling sharewithus shows this estate reuses loose configs.
+evidence_needed: 200/403-listing on non-root path vs placeholder; non-39B response
+verify_steps: GET /en, /index.html, /api/, /.well-known/ (read-only <=1rps)
+impact: incidental data exposure on a card-brand asset. LOW-MED.
+testability: PASSIVE

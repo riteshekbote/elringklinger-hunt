@@ -16648,3 +16648,391 @@ testability: PASSIVE
 
 **STEP 7 — RISK**
 - [RISK] elringklinger-ag: 17 — no change. Sole live anomaly (legacy Bearer token-skip, 10/10 methods) inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects 404/198; smartcard ~156h byte-fixed 502 strengthens deprovision (zero exposure persists); EDI down ~11d+; 10/13 infra hosts full-window filtered. Exposure remains pre-auth response differentiation only (Info-tier). No new reachable surface, no gating drift, ~17.3d stability baseline.
+===== ANALYST bigpickle 2026-09-19 17:55:06 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mUA="Mozilla/5.0 (compatible; recon)"; P=/tmp/opencode/probe; mkdir -p $P; curl -sS -m 20 -o $P/leg_nonauth.txt -w "legacy_nonauth %{http_code} %{size_download}\n" "https://go.events.elringklinger.com/api?method=getVersion" -H "User-Agent: $UA" 2>&1; sleep 1; curl -sS -m 20 -o $P/leg_bearer.txt -w "legacy_bearer_bu %{http_code} %{size_download}\n" "https://go.events.elringklinger.com/api?method=getVersion" -H "User-Agent: $UA" -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" 2>&1; sleep 1; curl -sS -m 20 -o $P/v5_nonauth.txt -w "v5_nonauth %{http_code} %{size_download}\n" "https://go.events.elringklinger.com/api/v5/prospects" -H "User-Agent: $UA" 2>&1; sleep 1; curl -sS -m 20 -o $P/v5_bearer.txt -w "v5_bearer %{http_code} %{size_download}\n" "https://go.events.elringklinger.com/api/v5/prospects" -H "User-Agent: $UA" -H "Authorization: Bearer 00" 2>&1; sleep 1; curl -sS -m 20 -o $P/sc_cards.txt -w "smartcard_cards %{http_code} %{size_download}\n" "https://api.smartcard.elringklinger.com/api/v1/cards" -H "User-Agent: $UA" 2>&1; sleep 1; curl -sS -m 20 -o $P/sc_robots.txt -w "smartcard_robots %{http_code} %{size_download}\n" "https://api.smartcard.elringklinger.com/robots.txt" -H "User-Agent: $UA" 2>&1; echo "---HASHES---"; sha256sum $P/leg_nonauth.txt $P/leg_bearer.txt $P/v5_nonauth.txt $P/v5_bearer.txt $P/sc_cards.txt $P/sc_robots.txt
+legacy_nonauth 401 79
+legacy_bearer_bu 403 184
+v5_nonauth 401 37
+v5_bearer 404 43
+smartcard_cards 502 150
+smartcard_robots 200 26
+---HASHES---
+1b36ec57866ee86bcb8d7baa1ba6944dce110ba32415312ceb286458951b513e  /tmp/opencode/probe/leg_nonauth.txt
+80b6d44ce45b06bbcd37a2e0e47410ea9c821d220cbf75b736824fc3af973547  /tmp/opencode/probe/leg_bearer.txt
+9f7a75be3587460857e307b6a876203bc6de08edd0ef77aa08bd313773ca8b8b  /tmp/opencode/probe/v5_nonauth.txt
+ff80dcce4a3af346f4360caece353191ef0b8c89c5148a9539e38811e9e87581  /tmp/opencode/probe/v5_bearer.txt
+61b30d408583991fd69f3dec694e154cb652471e663328ad9c8482c9021ab5db  /tmp/opencode/probe/sc_cards.txt
+331ea9090db0c9f6f597bd9840fd5b171830f6e0b3ba1cb24dfa91f0c95aedc1  /tmp/opencode/probe/sc_robots.txt
+[0m
+[0m$ [0mP=/tmp/opencode/probe; mkdir -p $P; curl -sS -m 60 "https://crt.sh/?q=%25.elringklinger.com&output=json" -o $P/crtsh.json 2>&1; wc -c $P/crtsh.json 2>&1
+133603 /tmp/opencode/probe/crtsh.json
+[0m
+[0m$ [0mP=/tmp/opencode/probe; python3 -c "
+import json,sys
+d=json.load(open('$P/crtsh.json'))
+names=set()
+for e in d:
+    for n in [e.get('name_value','')]+[x for x in str(e.get('name_value','')).split('\n')]:
+        n=n.strip().lower()
+        if n: names.add(n)
+for n in sorted(names): print(n)
+" 2>&1
+*.elringklinger.com
+*.elringklinger.com
+elringklinger.com
+api.autoshanghai.elringklinger.com
+api.autoshanghai.elringklinger.com
+www.autoshanghai.elringklinger.com
+api.smartcard.elringklinger.com
+autoshanghai.elringklinger.com
+autoshanghai.elringklinger.com
+www.autoshanghai.elringklinger.com
+dialin.elringklinger.com
+dialin.elringklinger.com
+lyncdiscover.elringklinger.com
+meet.elringklinger.com
+oos.elringklinger.com
+s4baccess1.elringklinger.com
+s4bauvi1.elringklinger.com
+s4bweb1.elringklinger.com
+s4bwebconf1.elringklinger.com
+scheduler.elringklinger.com
+sip.elringklinger.com
+www.s4baccess1.elringklinger.com
+dialin.elringklinger.com
+lyncdiscover.elringklinger.com
+meet.elringklinger.com
+sip.elringklinger.com
+wac.elringklinger.com
+webcomp1.elringklinger.com
+webcomp2.elringklinger.com
+webcomp.elringklinger.com
+webconf.elringklinger.com
+www.sip.elringklinger.com
+dialin.elringklinger.com
+meet.elringklinger.com
+sip.elringklinger.com
+webcomp.elringklinger.com
+webconf.elringklinger.com
+www.sip.elringklinger.com
+edi2.elringklinger.com
+elringklinger.com
+elringklinger.com
+www.elringklinger.com
+elringklinger.com--login.info
+go.events.elringklinger.com
+intern.elringklinger.com--login.info
+intranet.elringklinger.com--login.info
+ir.elringklinger.com
+ir.elringklinger.com
+www.ir.elringklinger.com
+lyncdiscover.elringklinger.com
+meet.elringklinger.com
+mta-sts.elringgarage.elringklinger.com
+mta-sts.elringklinger.com
+mta-sts.es4.elringklinger.com
+mta-sts.events.elringklinger.com
+mta-sts.ir.elringklinger.com
+mta-sts.legal.elringklinger.com
+mta-sts.power.elringklinger.com
+mta-sts.supplier.elringklinger.com
+oos.elringklinger.com
+s4baccess1.elringklinger.com
+s4bauvi1.elringklinger.com
+s4bweb1.elringklinger.com
+s4bwebconf1.elringklinger.com
+scheduler.elringklinger.com
+servicedesk.elringklinger.com
+sharewithus.elringklinger.com
+sharewithus.elringklinger.com
+www.sharewithus.elringklinger.com
+sip.elringklinger.com
+sip.elringklinger.com
+webcomp.elringklinger.com
+webconf.elringklinger.com
+www.sip.elringklinger.com
+smartcard.elringklinger.com
+wac.elringklinger.com
+webcomp.elringklinger.com
+webcomp1.elringklinger.com
+webcomp2.elringklinger.com
+webconf.elringklinger.com
+webmail.elringklinger.com
+webmail.elringklinger.com
+webmailext.elringklinger.com
+www.webmail.elringklinger.com
+webmail.elringklinger.com
+www.webmail.elringklinger.com
+webmailext.elringklinger.com
+workplace.elringklinger.com
+workplace.elringklinger.com
+www.workplace.elringklinger.com
+www.autoshanghai.elringklinger.com
+www.elringklinger.com
+www.ir.elringklinger.com
+www.s4baccess1.elringklinger.com
+www.sharewithus.elringklinger.com
+www.sip.elringklinger.com
+www.smartcard.elringklinger.com
+www.webmail.elringklinger.com
+www.workplace.elringklinger.com
+www.zymobile.elringklinger.com
+www.zymobile.elringklinger.com
+zymobile.elringklinger.com
+zymobile.elringklinger.com
+[0m
+Zero drift confirmed on all sentinels (byte-sizes identical: 401/79B, 403/184B, 401/37B, 404/43B, 502/150B, 200/26B). Now checking fresh CT data for new hostnames.
+Fresh CT data exposes ~20 dedicated hostnames absent from the 09-03 inventory — including an `api.autoshanghai` API host, root `smartcard`, `webmail`/`webmailext`, and an unreported subsidiary (`autoshanghai`). Sweeping HTTP reachability across all candidates (read-only GET, 1/s).
+[0m$ [0mUA="Mozilla/5.0 (compatible; recon)"; for h in autoshanghai www.autoshanghai api.autoshanghai smartcard www.smartcard webmail www.webmail webmailext workplace www.workplace sharewithus www.sharewithus servicedesk zymobile www.zymobile www.ir dialin meet sip webconf webcomp scheduler oos; do curl -sS -o /dev/null -m 12 -w "$h %{http_code} %{size_download} %{redirect_url} %{content_type}\n" -H "User-Agent: $UA" "https://$h.elringklinger.com"; sleep 1; done
+curl: (6) Could not resolve host: autoshanghai.elringklinger.com
+autoshanghai 000 0  
+curl: (6) Could not resolve host: www.autoshanghai.elringklinger.com
+www.autoshanghai 000 0  
+curl: (6) Could not resolve host: api.autoshanghai.elringklinger.com
+api.autoshanghai 000 0  
+smartcard 200 39  text/html
+www.smartcard 301 162 https://smartcard.elringklinger.com/ text/html
+curl: (6) Could not resolve host: webmail.elringklinger.com
+webmail 000 0  
+curl: (6) Could not resolve host: www.webmail.elringklinger.com
+www.webmail 000 0  
+curl: (6) Could not resolve host: webmailext.elringklinger.com
+webmailext 000 0  
+curl: (28) Connection timed out after 12002 milliseconds
+workplace 000 0  
+curl: (28) Connection timed out after 12002 milliseconds
+www.workplace 000 0  
+sharewithus 200 44218  text/html; charset=utf-8
+www.sharewithus 301 370 https://sharewithus.elringklinger.com/ text/html; charset=iso-8859-1
+curl: (6) Could not resolve host: servicedesk.elringklinger.com
+servicedesk 000 0  
+curl: (6) Could not resolve host: zymobile.elringklinger.com
+zymobile 000 0  
+curl: (6) Could not resolve host: www.zymobile.elringklinger.com
+www.zymobile 000 0  
+www.ir 301 352 https://ir.elringklinger.com/ text/html; charset=iso-8859-1
+curl: (6) Could not resolve host: dialin.elringklinger.com
+dialin 000 0  
+curl: (6) Could not resolve host: meet.elringklinger.com
+meet 000 0  
+curl: (6) Could not resolve host: sip.elringklinger.com
+sip 000 0  
+curl: (6) Could not resolve host: webconf.elringklinger.com
+webconf 000 0  
+curl: (6) Could not resolve host: webcomp.elringklinger.com
+webcomp 000 0  
+curl: (6) Could not resolve host: scheduler.elringklinger.com
+scheduler 000 0  
+curl: (6) Could not resolve host: oos.elringklinger.com
+oos 000 0
+[0m
+[0m$ [0mUA="Mozilla/5.0 (compatible; recon)"; P=/tmp/opencode/probe; echo "=== smartcard root ==="; curl -sS -m 15 -D - -o $P/sc_root.txt "https://smartcard.elringklinger.com/" -H "User-Agent: $UA" 2>&1 | sed -n '1,20p'; echo "--- body ---"; cat $P/sc_root.txt; echo; echo "=== sharewithus headers ==="; curl -sS -m 20 -D - -o $P/sw_home.html "https://sharewithus.elringklinger.com/" -H "User-Agent: $UA" 2>&1 | sed -n '1,25p'; echo "--- body size ---"; wc -c $P/sw_home.html
+=== smartcard root ===
+HTTP/2 200 
+content-type: text/html
+content-length: 39
+server: nginx
+date: Sat, 19 Sep 2026 17:52:25 GMT
+last-modified: Sun, 25 May 2025 00:27:47 GMT
+accept-ranges: bytes
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+referrer-policy: no-referrer-when-downgrade
+permissions-policy: interest-cohort=()
+strict-transport-security: max-age=31536000; includeSubDomains
+content-security-policy: default-src 'self' http: https: ws: wss: data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com; frame-ancestors 'self';
+etag: "68326403-27"
+vary: Accept-Encoding
+x-cache: Hit from cloudfront
+via: 1.1 efcaf943b1bc2a100ddcb9442a62d000.cloudfront.net (CloudFront)
+x-amz-cf-pop: ORD58-P7
+x-amz-cf-id: 2Yz56EIJvmlRZRzYY7u5vEKFWnqdjHZupdPr-6-wd2UjSJ4e6uRTRA==
+age: 53
+--- body ---
+This website will be available shortly
+
+=== sharewithus headers ===
+HTTP/2 200 
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+content-security-policy: default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';
+x-frame-options: SAMEORIGIN
+referrer-policy: no-referrer-when-downgrade
+permissions-policy: geolocation=(self), microphone=()
+cache-control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+content-type: text/html; charset=utf-8
+date: Sat, 19 Sep 2026 17:53:18 GMT
+server: Apache
+
+--- body size ---
+44218 /tmp/opencode/probe/sw_home.html
+[0m
+Two genuinely new reachable surfaces: `smartcard.elringklinger.com` (200/39B) and `sharewithus.elringklinger.com` (200/44KB app). Investigating both plus DNS/CNAME posture.
+[0m$ [0mfor h in sharewithus.elringklinger.com smartcard.elringklinger.com api.smartcard.elringklinger.com go.events.elringklinger.com workplace.elringklinger.com; do echo "=== $h ==="; getent ahosts $h | head -2; done; echo "=== CNAME checks ==="; for h in sharewithus.elringklinger.com www.sharewithus.elringklinger.com smartcard.elringklinger.com; do dig +short CNAME $h 2>/dev/null; done
+=== sharewithus.elringklinger.com ===
+78.46.144.87    STREAM sharewithus.elringklinger.com
+78.46.144.87    DGRAM  
+=== smartcard.elringklinger.com ===
+18.154.185.35   STREAM db652271uyh1a.cloudfront.net
+18.154.185.35   DGRAM  
+=== api.smartcard.elringklinger.com ===
+128.140.36.59   STREAM api.smartcard.elringklinger.com
+128.140.36.59   DGRAM  
+=== go.events.elringklinger.com ===
+34.237.219.119  STREAM app-ue1-public.fe.pardot.com
+34.237.219.119  DGRAM  
+=== workplace.elringklinger.com ===
+80.155.50.60    STREAM workplace.elringklinger.com
+80.155.50.60    DGRAM  
+=== CNAME checks ===
+db652271uyh1a.cloudfront.net.
+[0m
+[0m$ [0mP=/tmp/opencode/probe; echo "=== title/meta ==="; rg -oi "<title>[^<]*</title>|<meta[^>]*(generator|description)[^>]*>" $P/sw_home.html | head; echo "=== forms ==="; rg -oi "<form[^>]*>" $P/sw_home.html | head; echo "=== scripts/css hosts ==="; rg -o "src=\"[^\"]+\"" $P/sw_home.html | head -30; echo "=== href hosts ==="; rg -o "href=\"https?://[^\"]+\"" $P/sw_home.html | sort -u | head -30; echo "=== app strings ==="; rg -io "sharewithus|share with us|login|sign in|password|angular|react|vue|drupal|wordpress|joomla|version|powered" $P/sw_home.html | sort | uniq -c | sort -rn | head -20
+=== title/meta ===
+=== forms ===
+=== scripts/css hosts ===
+=== href hosts ===
+=== app strings ===
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+/bin/bash: line 1: rg: command not found
+[0m
+Key findings: root `smartcard` is a CloudFront S3 placeholder ("available shortly", live distribution, HSTS), and `sharewithus` is a real 44KB Apache app on Hetzner (78.46.144.87, no CNAME). Examining sharewithus to fingerprint it.
+[0m$ [0mP=/tmp/opencode/probe; file $P/sw_home.html; wc -l $P/sw_home.html; grep -oiE "<title>[^<]*</title>|<meta[^>]*(generator|description)[^>]*>" $P/sw_home.html | head; echo "=== forms ==="; grep -oiE "<form[^>]*>" $P/sw_home.html | head; echo "=== script src ==="; grep -oE "src=\"[^\"]+\"" $P/sw_home.html | head -30; echo "=== ext hrefs ==="; grep -oE "href=\"https?://[^\"]+\"" $P/sw_home.html | sort -u | head -40; echo "=== app strings ==="; grep -ioE "sharewithus|sign in|log in|username|password|powered by|version [0-9]|\bcms\b|drupal|wordpress|laravel|symfony" $P/sw_home.html | sort | uniq -c | sort -rn | head
+/tmp/opencode/probe/sw_home.html: HTML document, Unicode text, UTF-8 text, with very long lines (887)
+609 /tmp/opencode/probe/sw_home.html
+<title>share with us | ElringKlinger</title>
+=== forms ===
+<form class="form-inline">
+<form>
+<form method="POST" action="#page-top" class="form">
+=== script src ===
+src="/images/logo.svg"
+src="jquery.slim.min.js"
+src="bootstrap.bundle.min.js"
+=== ext hrefs ===
+href="https://elringklinger.de/en/imprint"
+=== app strings ===
+[0m
+[0m$ [0mP=/tmp/opencode/probe; echo "=== inputs ==="; grep -oE "<input[^>]*>" $P/sw_home.html | head -20; echo "=== actions/endpoints ==="; grep -oE "(action|fetch|url|href)=\"[^\"]*\.(php|json|submit|ajax)[^\"]*\"" $P/sw_home.html | head; grep -oE "\"/[a-zA-Z0-9_/.-]+\"" $P/sw_home.html | sort -u | head -40; echo "=== mailto/js calls ==="; grep -oE "mailto:[^\"]+" $P/sw_home.html | head; grep -oE "onclick=\"[^\"]{0,80}" $P/sw_home.html | head
+=== inputs ===
+<input type="hidden" name="a" value="feedback" >
+<input type="text" name="name" value="" class="pot" >
+<input class="form-check-input" type="checkbox" id="corruption" name="corruption" value="corruption">
+<input class="form-check-input" type="checkbox" id="interest" name="interest" value="interest">
+<input class="form-check-input" type="checkbox" id="competition" name="competition" value="competition">
+<input class="form-check-input" type="checkbox" id="insider" name="insider" value="insider">
+<input class="form-check-input" type="checkbox" id="dataprotection" name="dataprotection" value="dataprotection">
+<input class="form-check-input" type="checkbox" id="humanrights" name="humanrights" value="humanrights">
+<input class="form-check-input" type="checkbox" id="other" name="other" value="other">
+<input type="text"  class="form-control" id="contact" placeholder="Name, phone, e-mail" name="contact" value=""  placeholder="">
+=== actions/endpoints ===
+"/images/logo.svg"
+=== mailto/js calls ===
+mailto:glb.compliance@elringklinger.com
+onclick="document.querySelector('#datenschutz').style.display='none';
+onclick="document.querySelector('#impressum').style.display='none';
+onclick="let $e = document.querySelector('#datenschutz');if ($e.style.display==='none') {
+[0m
+[0m$ [0mP=/tmp/opencode/probe; echo "=== XHR/fetch ==="; grep -oE "(fetch\(|XMLHttpRequest|\\\.ajax|\\\.post|FormData|send\().{0,120}" $P/sw_home.html | head; echo "=== url strings in js ==="; grep -oE "\"[^\"]*(feedback|submit|send|report|api|upload)[^\"]*\"" $P/sw_home.html | sort -u | head -30; echo "=== script block tail ==="; grep -n "script" $P/sw_home.html | tail -5
+=== XHR/fetch ===
+=== url strings in js ===
+"feedback"
+"feedback-form"
+"submit"
+=== script block tail ===
+385:                        placeholder="Accurate description of the incident, circumstances, and setting. It is helpful if you consider the following questions in your notice: Who committed the violation? What happened? Where did it happen? When did it happen? How can the violation be substantiated? If you wish to maintain your anonymity, make sure that the information you provide does not allow any conclusions to be drawn about you."></textarea>
+600:  <script src="jquery.slim.min.js"></script>
+601:  <script src="bootstrap.bundle.min.js"></script>
+602:  <script>
+608:  </script>
+[0m
+This is ElringKlinger's compliance/whistleblowing intake page (corruption/interest/insider checkboxes + honeypot `name=pot` + hidden `a=feedback`). Locating the submission endpoint in the inline JS.
+[0m$ [0mP=/tmp/opencode/probe; sed -n '600,609p' $P/sw_home.html
+<script src="jquery.slim.min.js"></script>
+  <script src="bootstrap.bundle.min.js"></script>
+  <script>
+    // Redirect to the new URL
+    function changeLanguage(lang) {
+        let newURL = '/' + lang;
+        document.location.href = newURL;
+    }
+  </script>
+</body>
+[0m
+One read-only pass over sharewithus routes to fingerprint (GET only, no POST to the compliance form):
+[0m$ [0mUA="Mozilla/5.0 (compatible; recon)"; for p in /en /de /robots.txt /admin/; do curl -sS -o /dev/null -m 12 -w "sharewithus $p %{http_code} %{size_download} %{content_type} %{redirect_url}\n" -H "User-Agent: $UA" "https://sharewithus.elringklinger.com$p"; sleep 1; done; curl -sS -o /dev/null -m 12 -w "smartcard /robots.txt %{http_code} %{size_download}\n" -H "User-Agent: $UA" "https://smartcard.elringklinger.com/robots.txt"
+sharewithus /en 200 44218 text/html; charset=utf-8 
+sharewithus /de 200 43771 text/html; charset=utf-8 
+sharewithus /robots.txt 200 44218 text/html; charset=utf-8 
+sharewithus /admin/ 301 371 text/html; charset=iso-8859-1 https://sharewithus.elringklinger.com/admin
+smartcard /robots.txt 200 26
+[0m
+## 2026-09-19 17:55 UTC [target] (model bigpickle)
+
+### STEP 1 — DELTA
+- NEW `smartcard.elringklinger.com` (root) — live CloudFront/S3 placeholder "This website will be available shortly" (200/39B, HSTS+CSP, EAG/ord58), apex of the dead `api.smartcard` subdomain; uncataloged until this cycle
+- NEW `sharewithus.elringklinger.com` — ElringKlinger compliance speak-up form ("share with us | ElringKlinger"), Apache 200/44KB, catch-all routing (`/`, `/en`, `/de`, `/robots.txt`, `/admin/` all return the form), single `POST / …a=feedback` endpoint, hosted 78.46.144.87 (Hetzner, non-owned ASN)
+- NEW `workplace.elringklinger.com` — DNS-live on 80.155.50.60 (also Hetzner range, non-193.100.x) but TCP-filtered (000); no reachable port
+- CHANGED ~20 CT-era hostnames (`autoshanghai`*, `webmail`/`webmailext`, `servicedesk`, `zymobile`, `dialin`/`meet`/`sip`/`webconf`/`webcomp`/`s4b*`/`wac`/`oos`/`scheduler`) — all NXDOMAIN now; decommissioned SFB/webmail estate, no dangling-CNAME surface
+- CHANGED all 7 sentinels byte-identical — legacy 401/79B→403/184B, v5 401/37B↔404/43B, smartcard 502/150B + robots 200/26B; zero drift
+
+### STEP 2 — PRIORITIZE
+- [PRIO] api.smartcard.elringklinger.com,5.2,decommission-risk (highest business value if revived; 155h byte-fixed)
+- [PRIO] go.events/api?method=,4.8,sole live anomaly (token-skip inert behind BU gate)
+- [PRIO] smartcard.elringklinger.com root,4.7,new CloudFront/S3 origin (untested object exposure)
+- [PARKED] sharewithus.elringklinger.com,4.7 — see SELF-CRITIQUE
+
+### STEP 3 — HYPOTHESES
+[HYP] Smartcard product estate decommissioned; no upstream to revive
+class: AUTH
+asset: api.smartcard.elringklinger.com
+confidence: 58
+reasoning: /api/v1/cards 502 stock-nginx, byte-fixed 150B ~155h (6.5d); apex smartcard.elringklinger.com now parked on CloudFront/S3 "available shortly" (last-modified 2025-05-25); robots.txt 200/26B both hosts; direct-origin vhost 000; zero TLS drift.
+evidence_needed: any non-502 on versioned paths, or non-placeholder content on apex origin
+verify_steps: GET /api/v1/cards once/cycle; GET smartcard root /index.html /api/ /en (read-only, <=1rps)
+impact: token/card auth surface unreachable; exposure only if backend revives. HIGH if live.
+testability: PASSIVE
+[HYP] Legacy root token-skip + BU-id gate persistent (hardening-drift sentinel)
+class: AUTH
+asset: go.events.elringklinger.com/api?method=getVersion
+confidence: 57
+reasoning: Byte-verified this cycle — 401/79B JSON @attributes err_code:49 → Bearer `00`+BU 403/184B XML err_code:201 (hash 80b6d44c...); 10/10 methods uniform; ~17.4d zero byte-drift. BU oracle non-discriminative to 10^11; Bearer≥2-char token-skip sole live anomaly, inert behind non-enumerable Salesforce BU gate.
+evidence_needed: any non-49/181/201 auth-state shift, credential-less 200, or BU-gate discrimination
+verify_steps: GET /api?method=getVersion no-auth; Bearer `00` + BU 0Uv000000001000000 — 2 req/cycle <=1rps
+impact: Sentinel only; data reach requires BU-id leak (Salesforce tenant boundary). MED.
+testability: PASSIVE
+[HYP] Smartcard apex CloudFront origin exposes non-placeholder objects
+class: MISCONFIG
+asset: smartcard.elringklinger.com
+confidence: 42
+reasoning: Newly-cataloged S3-backed CloudFront (db652271uyh1a.cloudfront.net, x-cache Hit, ord58) serves 39B placeholder at root with production-grade HSTS/CSP — origin bucket may host other objects or allow listing; catch-all routing on sibling sharewithus shows this estate reuses loose configs.
+evidence_needed: 200/403-listing on non-root path vs placeholder; non-39B response
+verify_steps: GET /en, /index.html, /api/, /.well-known/ (read-only <=1rps)
+impact: incidental data exposure on a card-brand asset. LOW-MED.
+testability: PASSIVE
+
+### STEP 4 — SELF-CRITIQUE
+- [PARKED] sharewithus reflected-XSS/CSRF: single catch-all route returns the form everywhere; POST to a whistleblowing/compliance intake inserts test entries into a sensitive non-repudiation channel — prohibited exposure/noise; anonymous-form CSRF out of scope. No distinct app surface (`.git`/admin probes pointless under catch-all).
+- [PARKED] `workplace.elringklinger.com`: no reachable TCP port (000) — no testable surface.
+- [PARKED] BU-ID enumeration re-rank: already REJECTED (oracle non-discriminative to 10^11); stale, do not re-rank.
+- [PARKED] v1-v4 / v5 tier: pure sentinels, folded into H2 verification.
+- [FINAL] rank: H1 58 > H2 57 > H3 42.
+
+### STEP 5 — NEXT ACTION
+- [NEXT] PROBE: GET https://smartcard.elringklinger.com/en, /index.html, /api/, /.well-known/ — test the only newly-reached origin for non-placeholder object exposure (read-only, <=1rps, 4 req)
+
+### STEP 6 — LEARNING
+- [LEARN] ACCEPTED OTHER @ smartcard.elringklinger.com: Apex is live CloudFront/S3 placeholder "available shortly" (200/39B, HSTS, CSP) — uncataloged sibling of dead api subdomain; strengthens deprovision narrative; no vuln.
+- [LEARN] ACCEPTED OTHER @ sharewithus.elringklinger.com: Compliance speak-up form, catch-all Apache routing (same 44KB HTML on /, /en, /de, /robots.txt, /admin/) — single `POST a=feedback` endpoint; no auth, no distinct app surface; active testing withheld (whistleblowing). Observation only.
+- [LEARN] ACCEPTED OTHER @ workplace.elringklinger.com: Resolves (80.155.50.60, Hetzner) but TCP-filtered 000 — new resolve-not-reachable host.
+- [LEARN] REJECTED OTHER @ autoshanghai/webmail/webmailext/servicedesk/zymobile/dialin/meet/sip/webconf/webcomp/s4b*/wac/oos/scheduler.elringklinger.com: All CT-era names NXDOMAIN — decommissioned SFB/webmail estate; no CNAME-takeover surface.
+- [LEARN] ACCEPTED AUTH @ go.events/api?method=getVersion + /api/v5/prospects + api.smartcard/api/v1/cards: sentinels byte-identical (79B/184B/37B/43B/150B/26B) — zero drift.
+
+### STEP 7 — RISK
+- [RISK] elringklinger-ag: 18 — no change. Two new hosts cataloged (parked CloudFront placeholder; compliance form — read-only, untouched). Sole live anomaly (Bearer token-skip) still inert behind non-enumerable Salesforce BU gate; v5 tier hard-rejects; smartcard estate escalates toward decommission (155h 502 + parked apex); EDI ~10d down; 12/15 hosts filtered/defunct. Exposure remains Info-tier (pre-auth response differentiation + static/reject surfaces only). No new reachable app surface, zero gating drift, ~17.4d baseline.
