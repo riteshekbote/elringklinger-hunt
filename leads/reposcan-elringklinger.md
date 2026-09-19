@@ -321,3 +321,11 @@ TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
 TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
 ## REPOSCAN 2026-09-19 09:23:51 UTC
 TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
+## REPOSCAN 2026-09-19 13:23:46 UTC
+class: N/A
+asset: github.com/ElringklingerAG, github.com/elring-klinger
+confidence: 100
+reasoning: Both orgs confirmed empty via GitHub API and web search. cands.txt and scope.yml both state no candidates.
+impact: N/A — no attack surface from source-code exposure
+verify_steps: Visit https://github.com/ElringklingerAG and https://github.com/elring-klinger — both show "This organization has no public repositories."
+TARGET_ORG not configured for elringklinger; skipping public-org deep scan.
