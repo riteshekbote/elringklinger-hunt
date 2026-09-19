@@ -610,3 +610,12 @@ www.elringklinger.com
 - CHANGED go.events.elringklinger.com/api/v5/prospects: Re-verified zero drift — no-auth 401/37B (`{"code":49}`) vs Bearer `00` 404/43B (`{"code":198}`). Dual-path auth leak intact across 12 endpoints.
 - CHANGED go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B (JSON `@attributes`); Bearer `00` 400/181 (XML); Bearer+BU 403/184B (XML, err_code:201). Token-skip + HTTP
 - CHANGED api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.
+
+## 2026-09-19 01:35:31 UTC
+- CHANGED go.events/api?method=getVersion: byte-identical this cycle — no-auth 401/79B JSON @attributes err_code:49 → Bearer `00`+BU 403/184B XML err_code:201 "not found or inactive"; zero drift (~17d baseline)
+- CHANGED go.events/api/v5/prospects: byte-identical — 401/37B `{"code":49}`; no-auth path only re-verified; zero drift.
+- CHANGED api.smartcard/api/v1/cards: byte-identical — 502/150B stock-nginx HTML, ~149h (6.2d); robots.txt 200/26B; deprovision signal persists, no recovery.
+- NEW go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; 
+- NEW go.events.elringklinger.com/api/v5/prospects: Re-verified zero drift — no-auth 401/37B (`{"code":49}`) vs Bearer `00` 404/43B (`{"code":198}`). Dual-path auth leak intact across 12 endpoints.
+- NEW go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B (JSON `@attributes`); Bearer `00` 400/181 (XML); Bearer+BU 403/184B (XML, err_code:201). Token-skip + HTTP
+- CHANGED api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.

@@ -1,7 +1,7 @@
-## 2026-09-18 23:25:15 UTC [target] (model nemotron3)
-[CHANGED] go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; BU header no effect.
-[CHANGED] go.events.elringklinger.com/api/v5/prospects: Re-verified zero drift — no-auth 401/37B (`{"code":49}`) vs Bearer `00` 404/43B (`{"code":198}`). Dual-path auth leak intact across 12 endpoints.
-[CHANGED] go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B (JSON `@attributes`); Bearer `00` 400/181 (XML); Bearer+BU 403/184B (XML, err_code:201). Token-skip + HTTP-status differentiation stable ~17 days.
+## 2026-09-19 01:35:00 UTC [target] (model nemotron3)
+[NEW] go.events.elringklinger.com/api/v1/prospects: Confirmed live — no-auth 401/79B (JSON `{"code":49}`); Bearer `00` 404/85B (JSON `{"code":198}`). Pre-routing Bearer reject confirmed on v1-v4 REST tier; BU header no effect.
+[NEW] go.events.elringklinger.com/api/v5/prospects: Re-verified zero drift — no-auth 401/37B (`{"code":49}`) vs Bearer `00` 404/43B (`{"code":198}`). Dual-path auth leak intact across 12 endpoints.
+[NEW] go.events.elringklinger.com/api?method=getVersion: Body-verified zero drift — no-auth 401/79B (JSON `@attributes`); Bearer `00` 400/181 (XML); Bearer+BU 403/184B (XML, err_code:201). Token-skip + HTTP-status differentiation stable ~17 days.
 [CHANGED] api.smartcard.elringklinger.com/api/v1/cards: Still 502 (nginx HTML, constant 150B body) ~145h; robots.txt 200 (Disallow: /) 26B; deprovision signal persistent, confidence up.
 [PRIO] go.events.elringklinger.com/api?method=,8.15,attack_surface=9,business_value=8,tech_exposure=8,gate_ease=9,cloud_surface=6,freshness=6
 [PRIO] go.events.elringklinger.com/api/v5+,7.30,attack_surface=8,business_value=8,tech_exposure=7,gate_ease=6,cloud_surface=6,freshness=6
@@ -25,16 +25,16 @@ evidence_needed: Any v5+ endpoint returning non-198 with Bearer header (success 
 verify_steps: GET https://go.events.elringklinger.com/api/v5/prospects -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" && GET https://go.events.elringklinger.com/api/v5/campaigns -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capture code — confirm uniform 198 across endpoints; test OPTIONS for CORS preflight)
 impact: If pre-routing layer bypassed, valid BU-ID + minimal Bearer → full Pardot REST API access on modern tier. Severity HIGH if bypass found.
 testability: PASSIVE
-[HYP] Pardot Legacy Method Enumeration Breadth — Undiscovered Methods Bypass BU-ID Gate
-class: BUSLOGIC
-asset: go.events.elringklinger.com/api?method=
-confidence: 42
-reasoning: Only 10 methods confirmed (getCampaigns, getVersion, getEmails, getLists, getTags, getVisitors, queryProspects, getForms, getUsers, getAccount). Pardot API supports 50+ methods (getOpportunities, getProspects, getLandingPages, getDynamicContent, etc.). Undiscovered methods may have different auth requirements or bypass BU-ID gate entirely. Error code discrimination (err_code:1 vs 49) proves method-level auth logic executes pre-rejection.
-evidence_needed: Any undiscovered method returning err_code≠49/201 (i.e., err_code:0 success or different error) without valid BU-ID
-verify_steps: GET https://go.events.elringklinger.com/api?method=getOpportunities -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getProspects -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getLandingPages -H "Authorization: Bearer 00" && GET https://go.events.elringklinger.com/api?method=getDynamicContent -H "Authorization: Bearer 00" (1 rps, capture err_code — test 4 high-value undiscovered methods on legacy tier)
-impact: Method without BU-ID requirement → unauthenticated data access to marketing PII, campaigns, forms, users. Severity HIGH.
+[HYP] Pardot v1-v4 REST Tier Pre-Routing Bearer Reject Bypass
+class: AUTH
+asset: go.events.elringklinger.com/api/v1-v4
+confidence: 40
+reasoning: v1-v4 REST tier returns err_code:198 ("Endpoint not found") for both Bearer-only and Bearer+BU — BU header does NOT alter response; pre-routing reject on Bearer presence confirmed. Same 11 resource paths as v5+ but XML format. Distinct from legacy /api?method= tier which does process BU validation. No-auth returns JSON `{"code":49}` (not @attributes format).
+evidence_needed: Any v1-v4 endpoint returning non-198 with Bearer header (success 200 or different error like 181/201) indicating routing past pre-reject layer
+verify_steps: GET https://go.events.elringklinger.com/api/v1/prospects -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" && GET https://go.events.elringklinger.com/api/v1/campaigns -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capture response — confirm uniform 198; test OPTIONS for CORS preflight)
+impact: If pre-routing layer bypassed, valid BU-ID + minimal Bearer → full Pardot REST API access on legacy REST tier. Severity HIGH if bypass found.
 testability: PASSIVE
-[PARKED] Pardot Legacy Method Enumeration Breadth — Undiscovered Methods Bypass BU-ID Gate: confidence 42 < threshold for active pursuit; no evidence of differential auth behavior in 10/10 tested methods; all uniform with BU-ID gate
+[PARKED] Pardot v1-v4 REST Tier Pre-Routing Bearer Reject Bypass: confidence 40 at threshold; no evidence of differential behavior vs v5+; both show uniform pre-routing reject; lower priority than legacy token-skip path
 [FINAL] 1. Pardot Legacy Root Token-Skip + BU-ID Gate (Hardening-Drift Sentinel) (55)
 [FINAL] 2. Pardot v5+ REST Tier Pre-Routing Bearer Reject Bypass (45)
 [NEXT] PROBE: GET https://go.events.elringklinger.com/api?method=getVersion -H "Authorization: Bearer 00" -H "Pardot-Business-Unit-Id: 0Uv000000001000000" (1 rps, capture err_code — test lower-range BU-ID suffixes near known Salesforce ID allocation patterns)
